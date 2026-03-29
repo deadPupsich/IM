@@ -261,7 +261,7 @@ export default function IncidentTypeSettings() {
                   </div>
 
                   <div className="space-y-2">
-                    {type.fields.map((field, index) => {
+                    {type.fields.map((field) => {
                       const fieldData = getFieldById(field.fieldId);
                       if (!fieldData) return null;
 
@@ -270,24 +270,14 @@ export default function IncidentTypeSettings() {
                           key={field.id}
                           className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg"
                         >
-                          <GripVertical className="w-4 h-4 text-gray-400" />
+                          <GripVertical className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                           
                           <span className="flex-1 text-sm text-gray-700 dark:text-gray-300">{fieldData.name}</span>
                           <span className="text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-2 py-1 rounded">{fieldData.type}</span>
                           
-                          <label className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              checked={field.required}
-                              onChange={(e) => updateFieldInType(type.id, field.id, e.target.checked)}
-                              className="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500"
-                            />
-                            <span className="text-xs text-gray-700 dark:text-gray-300">Обязательное</span>
-                          </label>
-                          
                           <button
                             onClick={() => removeFieldFromType(type.id, field.id)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                            className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
