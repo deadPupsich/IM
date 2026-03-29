@@ -1,4 +1,4 @@
-```
+```gitignore
 # Dependencies
 node_modules/
 
@@ -7,20 +7,22 @@ dist/
 build/
 target/
 
-# Environment variables
-.env
-.env.local
-*.env.*
-
-# Python specific
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.py.class
 .Python
 env/
 venv/
 .venv/
+.ENV
+.env
+.env.*
+.env.local
+.python-version
+.venv.bak/
 pip-log.txt
 pip-delete-this-directory.txt
 .tox/
@@ -31,36 +33,74 @@ nosetests.xml
 coverage.xml
 *.cover
 *.log
-*.tmp
-*.swp
-.DS_Store
-Thumbs.db
+.git/modules/
+.httplib2/
+.mypy_cache/
+.pytest_cache/
+.hypothesis/
 
-# IDE specific
+# Compiled and binary files
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
+*.out
+*.class
+
+# Editor/IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# Logs
+*.tmp
 *.log
+*~
+.DS_Store
+Thumbs.db
 
-# Testing
+# Compressed files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
+
+# Coverage reports
 coverage/
 htmlcov/
-.pytest_cache/
-.mypy_cache/
+.coverage
 
-# Distribution / packaging
-.Python
-env/
-venv/
-.venv/
-.ENV
-.venv.bak/
-env.bak/
+# Environment specific
+.env
+.env.local
+*.env
+*.env.*
 
-# System files
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 ```

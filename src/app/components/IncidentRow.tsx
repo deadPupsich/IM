@@ -34,7 +34,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
               e.stopPropagation();
               setIsExpanded(!isExpanded);
             }}
-            className="w-12 flex items-center justify-center border-r border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex-shrink-0"
+            className="w-12 flex items-center justify-center border-r border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
           >
             {isExpanded ? (
               <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-400" />
@@ -61,7 +61,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
       </div>
 
       {isExpanded && (
-        <div className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-6">
+        <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6">
           <div className="max-w-4xl">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Детали инцидента</h3>
             

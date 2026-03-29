@@ -109,7 +109,7 @@ export default function IncidentDetailPage() {
   if (!incident) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-400">
           Инцидент не найден
         </div>
         <button
@@ -127,17 +127,17 @@ export default function IncidentDetailPage() {
       <div className="mb-6">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-4"
+          className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
           Назад
         </button>
-        <h1 className="text-3xl font-bold text-gray-900">Карточка инцидента</h1>
-        <p className="text-sm text-gray-600 mt-1">ID: {incident.id}</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Карточка инцидента</h1>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">ID: {incident.id}</p>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-        <p className="text-sm text-blue-800">
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+        <p className="text-sm text-blue-800 dark:text-blue-300">
           💡 Вы можете перетаскивать поля для изменения их порядка
         </p>
       </div>
@@ -157,7 +157,7 @@ export default function IncidentDetailPage() {
       </div>
 
       <div className="mt-8 pt-6 border-t border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Действия</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Действия</h3>
         <div className="mb-4">
           <ExportButtons incident={incident} />
         </div>
@@ -165,7 +165,7 @@ export default function IncidentDetailPage() {
           <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             Редактировать
           </button>
-          <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+          <button className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
             История изменений
           </button>
         </div>

@@ -76,7 +76,7 @@ export default function ResizableDraggableColumnHeader({
   return (
     <div
       ref={ref}
-      className={`relative flex items-center gap-2 px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 font-medium text-sm text-gray-700 dark:text-gray-300 ${
+      className={`relative flex items-center gap-2 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 font-medium text-sm text-gray-700 dark:text-gray-300 ${
         isDragging ? 'opacity-50' : ''
       }`}
       style={{ width: `${width}px` }}
