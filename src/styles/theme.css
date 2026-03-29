@@ -29,3 +29,14 @@
 .dark {
   color-scheme: dark;
 }
+
+/* Dark mode color overrides */
+.dark {
+  --tw-bg-opacity: 1;
+  --tw-text-opacity: 1;
+}
+
+/* Table row hover in dark mode */
+.dark .dark\:hover\:bg-gray-750:hover {
+  background-color: rgb(55 65 81 / var(--tw-bg-opacity));
+}

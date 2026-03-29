@@ -130,13 +130,13 @@ export default function ActionSettings() {
       case 'user':
         return (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Выбор пользователя
             </label>
             <select
               value={config.userId || ''}
               onChange={(e) => updateTargetConfig(action.id, { userId: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Выберите пользователя</option>
               {mockUsers.map(user => (
@@ -149,13 +149,13 @@ export default function ActionSettings() {
       case 'team':
         return (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Выбор команды
             </label>
             <select
               value={config.teamId || ''}
               onChange={(e) => updateTargetConfig(action.id, { teamId: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Выберите команду</option>
               {mockTeams.map(team => (
@@ -170,13 +170,13 @@ export default function ActionSettings() {
         return (
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Изменяемое поле
               </label>
               <select
                 value={config.fieldId || ''}
                 onChange={(e) => updateTargetConfig(action.id, { fieldId: e.target.value, value: '' })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Выберите поле</option>
                 {mockFields.map(field => (
@@ -187,14 +187,14 @@ export default function ActionSettings() {
 
             {selectedField && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Значение поля
                 </label>
                 {selectedField.type === 'select' && (
                   <select
                     value={config.value || ''}
                     onChange={(e) => updateTargetConfig(action.id, { ...config, value: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Выберите значение</option>
                     {selectedField.id === 'f1' && (
@@ -223,7 +223,7 @@ export default function ActionSettings() {
                         name={`bool-${action.id}`}
                         checked={config.value === 'true'}
                         onChange={() => updateTargetConfig(action.id, { ...config, value: 'true' })}
-                        className="text-blue-600 focus:ring-blue-500"
+                        className="text-blue-600 dark:text-blue-400 focus:ring-blue-500"
                       />
                       <span className="text-sm">Да</span>
                     </label>
@@ -233,7 +233,7 @@ export default function ActionSettings() {
                         name={`bool-${action.id}`}
                         checked={config.value === 'false'}
                         onChange={() => updateTargetConfig(action.id, { ...config, value: 'false' })}
-                        className="text-blue-600 focus:ring-blue-500"
+                        className="text-blue-600 dark:text-blue-400 focus:ring-blue-500"
                       />
                       <span className="text-sm">Нет</span>
                     </label>
@@ -245,7 +245,7 @@ export default function ActionSettings() {
                     value={config.value || ''}
                     onChange={(e) => updateTargetConfig(action.id, { ...config, value: e.target.value })}
                     placeholder="Введите значение"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 )}
                 {selectedField.type === 'multiline' && (
@@ -254,7 +254,7 @@ export default function ActionSettings() {
                     onChange={(e) => updateTargetConfig(action.id, { ...config, value: e.target.value })}
                     placeholder="Введите значение"
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 )}
               </div>
@@ -270,8 +270,8 @@ export default function ActionSettings() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Настройка действий</h3>
-        <p className="text-sm text-gray-600 mb-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Настройка действий</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
           Создайте автоматизированные действия для работы с инцидентами
         </p>
       </div>
@@ -291,7 +291,7 @@ export default function ActionSettings() {
           const isExpanded = expandedAction === action.id;
 
           return (
-            <div key={action.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <div key={action.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
               <div className="p-4">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
@@ -299,27 +299,27 @@ export default function ActionSettings() {
                       <IconComponent className={`w-5 h-5 ${colorClasses.text}`} />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900">
+                      <h4 className="font-semibold text-gray-900 dark:text-gray-100">
                         {action.name || 'Новое действие'}
                       </h4>
-                      <p className="text-xs text-gray-600">{action.description}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">{action.description}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setExpandedAction(isExpanded ? null : action.id)}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-gray-800 rounded-lg transition-colors"
                     >
                       {isExpanded ? (
-                        <ChevronUp className="w-5 h-5 text-gray-600" />
+                        <ChevronUp className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                       ) : (
-                        <ChevronDown className="w-5 h-5 text-gray-600" />
+                        <ChevronDown className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                       )}
                     </button>
                     <button
                       onClick={() => removeAction(action.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -327,10 +327,10 @@ export default function ActionSettings() {
                 </div>
 
                 {isExpanded && (
-                  <div className="space-y-4 pt-4 border-t border-gray-200">
+                  <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           Название действия
                         </label>
                         <input
@@ -338,12 +338,12 @@ export default function ActionSettings() {
                           value={action.name}
                           onChange={(e) => updateAction(action.id, { name: e.target.value })}
                           placeholder="Назначить на"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           Тип цели
                         </label>
                         <select
@@ -352,7 +352,7 @@ export default function ActionSettings() {
                             updateAction(action.id, { targetType: e.target.value as any });
                             updateTargetConfig(action.id, {});
                           }}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="user">Пользователь</option>
                           <option value="team">Команда</option>
@@ -361,7 +361,7 @@ export default function ActionSettings() {
                       </div>
 
                       <div className="col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           Описание
                         </label>
                         <textarea
@@ -369,18 +369,18 @@ export default function ActionSettings() {
                           onChange={(e) => updateAction(action.id, { description: e.target.value })}
                           placeholder="Описание действия"
                           rows={2}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           Иконка
                         </label>
                         <select
                           value={action.icon}
                           onChange={(e) => updateAction(action.id, { icon: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           {iconsList.map((icon) => (
                             <option key={icon} value={icon}>{icon}</option>
@@ -389,7 +389,7 @@ export default function ActionSettings() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           Цвет иконки
                         </label>
                         <div className="flex gap-2">
@@ -409,13 +409,13 @@ export default function ActionSettings() {
                     </div>
 
                     {/* Target Selector */}
-                    <div className="pt-4 border-t border-gray-200">
+                    <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                       {renderTargetSelector(action)}
                     </div>
 
-                    <div className="pt-4 border-t border-gray-200">
+                    <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                       <div className="flex items-center justify-between mb-3">
-                        <h5 className="text-sm font-semibold text-gray-900">Автоматические активности</h5>
+                        <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Автоматические активности</h5>
                         <select
                           onChange={(e) => {
                             if (e.target.value) {
@@ -423,7 +423,7 @@ export default function ActionSettings() {
                               e.target.value = '';
                             }
                           }}
-                          className="text-sm px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="text-sm px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="">Добавить активность</option>
                           {activityTypes.map((activity) => (
@@ -438,12 +438,12 @@ export default function ActionSettings() {
                         {action.activities.map((activity, index) => (
                           <div
                             key={index}
-                            className="flex items-center justify-between bg-gray-50 p-3 rounded-lg"
+                            className="flex items-center justify-between bg-gray-50 dark:bg-gray-900 p-3 rounded-lg"
                           >
-                            <span className="text-sm text-gray-700">{activity.label}</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300">{activity.label}</span>
                             <button
                               onClick={() => removeActivity(action.id, index)}
-                              className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                              className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -464,7 +464,7 @@ export default function ActionSettings() {
         })}
       </div>
 
-      <div className="pt-6 border-t border-gray-200">
+      <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
         <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
           Сохранить настройки
         </button>
