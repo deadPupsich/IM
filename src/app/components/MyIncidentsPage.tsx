@@ -1,14 +1,20 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { mockIncidents, mockUser } from '../data/mockData';
 import CollapsibleIncidentTable from './CollapsibleIncidentTable';
 
 export default function MyIncidentsPage() {
+  const [tables, setTables] = useState([
+    { id: 'assigned-to-me', title: 'Назначенные на меня' },
+    { id: 'assigned-by-me', title: 'Назначенные мной' },
+    { id: 'closed-by-me', title: 'Закрытые мной' }
+  ]);
+
   const assignedToMe = useMemo(() => {
     return mockIncidents.filter((incident) => 
       incident.ответственный === mockUser.name && incident.статус !== 'Закрыт'
     );
   }, []);
-
+  
   const closedByMe = useMemo(() => {
     return mockIncidents.filter((incident) => 
       incident.ответственный === mockUser.name && incident.статус === 'Закрыт'
@@ -22,6 +28,28 @@ export default function MyIncidentsPage() {
     );
   }, []);
 
+  const moveTable = useCallback((dragIndex: number, hoverIndex: number) => {
+    setTables((prevTables) => {
+      const newTables = [...prevTables];
+      const [removed] = newTables.splice(dragIndex, 1);
+      newTables.splice(hoverIndex, 0, removed);
+      return newTables;
+    });
+  }, []);
+
+  const getIncidentsForTable = (tableId: string) => {
+    switch (tableId) {
+      case 'assigned-to-me':
+        return assignedToMe;
+      case 'assigned-by-me':
+        return assignedByMe;
+      case 'closed-by-me':
+        return closedByMe;
+      default:
+        return [];
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="mb-6">
@@ -31,26 +59,17 @@ export default function MyIncidentsPage() {
         </p>
       </div>
 
-      <CollapsibleIncidentTable
-        title="Назначенные на меня"
-        incidents={assignedToMe}
-        defaultExpanded={true}
-        id="assigned-to-me"
-      />
-
-      <CollapsibleIncidentTable
-        title="Назначенные мной"
-        incidents={assignedByMe}
-        defaultExpanded={false}
-        id="assigned-by-me"
-      />
-
-      <CollapsibleIncidentTable
-        title="Закрытые мной"
-        incidents={closedByMe}
-        defaultExpanded={false}
-        id="closed-by-me"
-      />
+      {tables.map((table, index) => (
+        <CollapsibleIncidentTable
+          key={table.id}
+          title={table.title}
+          incidents={getIncidentsForTable(table.id)}
+          defaultExpanded={table.id === 'assigned-to-me'}
+          id={table.id}
+          index={index}
+          moveTable={moveTable}
+        />
+      ))}
     </div>
   );
 }

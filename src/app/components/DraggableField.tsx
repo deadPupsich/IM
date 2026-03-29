@@ -33,13 +33,38 @@ export default function DraggableField({
 
   const [, drop] = useDrop({
     accept: FIELD_TYPE,
-    hover: (item: { index: number; id: string }) => {
+    hover: (item: { index: number; id: string }, monitor) => {
       if (!ref.current) return;
 
       const dragIndex = item.index;
       const hoverIndex = index;
 
       if (dragIndex === hoverIndex) return;
+
+      // Получаем прямоугольник элемента
+      const hoverBoundingRect = ref.current.getBoundingClientRect();
+      
+      // Получаем позицию мыши относительно элемента
+      const clientOffset = monitor.getClientOffset();
+      if (!clientOffset) return;
+      
+      // Вычисляем середину элемента по вертикали
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+      
+      // Определяем направление перемещения
+      const isDraggingDown = dragIndex < hoverIndex;
+      const isDraggingUp = dragIndex > hoverIndex;
+      
+      // При перемещении вниз - срабатываем когда мышь прошла больше половины
+      // При перемещении вверх - срабатываем когда мышь прошла меньше половины
+      if (isDraggingDown && hoverClientY < hoverMiddleY) {
+        return;
+      }
+      
+      if (isDraggingUp && hoverClientY > hoverMiddleY) {
+        return;
+      }
 
       moveField(dragIndex, hoverIndex);
       item.index = hoverIndex;
