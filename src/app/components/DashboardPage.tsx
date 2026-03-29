@@ -91,17 +91,17 @@ export default function DashboardPage() {
     <div className="p-6 space-y-6" ref={dashboardRef}>
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900">Дашборд</h2>
-          <p className="text-sm text-gray-600 mt-1">Статистика и аналитика инцидентов</p>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">Дашборд</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Статистика и аналитика инцидентов</p>
         </div>
         
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2">
-            <Calendar className="w-4 h-4 text-gray-500" />
+          <div className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2">
+            <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="text-sm bg-transparent border-none focus:outline-none cursor-pointer"
+              className="text-sm bg-transparent border-none focus:outline-none cursor-pointer text-gray-900 dark:text-gray-100"
             >
               <option value="all">Все время</option>
               <option value="today">Сегодня</option>
@@ -122,50 +122,50 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Всего инцидентов</p>
-              <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Всего инцидентов</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.total}</p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Открыто</p>
-              <p className="text-3xl font-bold text-blue-600">{stats.open}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Открыто</p>
+              <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.open}</p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <AlertCircle className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+              <AlertCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">В работе</p>
-              <p className="text-3xl font-bold text-yellow-600">{stats.inProgress}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">В работе</p>
+              <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{stats.inProgress}</p>
             </div>
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <Clock className="w-6 h-6 text-yellow-600" />
+            <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
+              <Clock className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Закрыто</p>
-              <p className="text-3xl font-bold text-green-600">{stats.closed}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Закрыто</p>
+              <p className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.closed}</p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <CheckCircle className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+              <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
           </div>
         </div>
@@ -174,14 +174,14 @@ export default function DashboardPage() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Status Chart */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6" id="status-chart">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6" id="status-chart">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Статусы инцидентов</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Статусы инцидентов</h3>
             <button
               onClick={() => exportChart('status-chart', 'status-chart')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
-              <Download className="w-4 h-4 text-gray-600" />
+              <Download className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </button>
           </div>
           <ResponsiveContainer width="100%" height={300}>
@@ -200,52 +200,73 @@ export default function DashboardPage() {
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'rgba(31, 41, 55, 0.9)', 
+                  border: 'none', 
+                  borderRadius: '8px',
+                  color: '#f3f4f6'
+                }} 
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>
 
         {/* Team Chart */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6" id="team-chart">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6" id="team-chart">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Инциденты по командам</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Инциденты по командам</h3>
             <button
               onClick={() => exportChart('team-chart', 'team-chart')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
-              <Download className="w-4 h-4 text-gray-600" />
+              <Download className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </button>
           </div>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={teamData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis stroke="#9ca3af" />
+              <YAxis stroke="#9ca3af" />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'rgba(31, 41, 55, 0.9)', 
+                  border: 'none', 
+                  borderRadius: '8px',
+                  color: '#f3f4f6'
+                }} 
+              />
+              <Legend wrapperStyle={{ color: '#f3f4f6' }} />
               <Bar dataKey="value" name="Количество" fill="#3b82f6" />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         {/* Source Chart */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 lg:col-span-2" id="source-chart">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 lg:col-span-2" id="source-chart">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Источники инцидентов</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Источники инцидентов</h3>
             <button
               onClick={() => exportChart('source-chart', 'source-chart')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
-              <Download className="w-4 h-4 text-gray-600" />
+              <Download className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </button>
           </div>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={sourceData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis stroke="#9ca3af" />
+              <YAxis stroke="#9ca3af" />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'rgba(31, 41, 55, 0.9)', 
+                  border: 'none', 
+                  borderRadius: '8px',
+                  color: '#f3f4f6'
+                }} 
+              />
+              <Legend wrapperStyle={{ color: '#f3f4f6' }} />
               <Line type="monotone" dataKey="value" name="Количество" stroke="#8b5cf6" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>

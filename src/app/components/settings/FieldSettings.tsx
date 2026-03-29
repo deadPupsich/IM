@@ -130,8 +130,8 @@ export default function FieldSettings() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Настройка полей</h3>
-        <p className="text-sm text-gray-600 mb-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Настройка полей</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
           Создайте и настройте поля для использования в инцидентах
         </p>
       </div>
@@ -147,7 +147,7 @@ export default function FieldSettings() {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -169,13 +169,13 @@ export default function FieldSettings() {
           return (
             <div
               key={field.id}
-              className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow"
             >
               {isEditing ? (
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Название поля
                       </label>
                       <input
@@ -183,18 +183,18 @@ export default function FieldSettings() {
                         value={field.name}
                         onChange={(e) => updateField(field.id, { name: e.target.value })}
                         placeholder="название_поля"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Тип поля
                       </label>
                       <select
                         value={field.type}
                         onChange={(e) => updateField(field.id, { type: e.target.value as any })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="string">Строка</option>
                         <option value="multiline">Многострочное</option>
@@ -207,7 +207,7 @@ export default function FieldSettings() {
                     </div>
 
                     <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Иконка
                       </label>
                       <div className="space-y-2">
@@ -216,9 +216,9 @@ export default function FieldSettings() {
                           placeholder="Поиск иконок..."
                           value={iconSearchTerm}
                           onChange={(e) => setIconSearchTerm(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
-                        <div className="grid grid-cols-8 gap-2 max-h-48 overflow-y-auto p-2 border border-gray-200 rounded-lg bg-gray-50">
+                        <div className="grid grid-cols-8 gap-2 max-h-48 overflow-y-auto p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900">
                           {filteredIcons.map((iconName) => {
                             const Icon = getIconComponent(iconName);
                             return (
@@ -233,7 +233,7 @@ export default function FieldSettings() {
                                 }`}
                                 title={iconName}
                               >
-                                <Icon className="w-5 h-5 text-gray-700" />
+                                <Icon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
                               </button>
                             );
                           })}
@@ -242,7 +242,7 @@ export default function FieldSettings() {
                     </div>
 
                     <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Цвет иконки
                       </label>
                       <div className="grid grid-cols-10 gap-2">
@@ -265,7 +265,7 @@ export default function FieldSettings() {
                     </div>
 
                     <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Описание
                       </label>
                       <input
@@ -273,20 +273,20 @@ export default function FieldSettings() {
                         value={field.description || ''}
                         onChange={(e) => updateField(field.id, { description: e.target.value })}
                         placeholder="Описание поля"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                     <label className="flex items-center gap-2">
                       <input
                         type="checkbox"
                         checked={field.required}
                         onChange={(e) => updateField(field.id, { required: e.target.checked })}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500"
                       />
-                      <span className="text-sm text-gray-700">Обязательное поле</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Обязательное поле</span>
                     </label>
 
                     <button
@@ -309,14 +309,14 @@ export default function FieldSettings() {
                     
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-gray-900">{field.name}</h4>
+                        <h4 className="font-semibold text-gray-900 dark:text-gray-100">{field.name}</h4>
                         {field.required && (
-                          <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">
+                          <span className="text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-0.5 rounded">
                             Обязательное
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
                         {field.description || `Тип: ${field.type}`}
                       </p>
                     </div>
@@ -325,13 +325,13 @@ export default function FieldSettings() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setEditingField(field.id)}
-                      className="px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      className="px-3 py-1.5 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                     >
                       Изменить
                     </button>
                     <button
                       onClick={() => removeField(field.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -345,8 +345,8 @@ export default function FieldSettings() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-          <div className="text-sm text-gray-600">
+        <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
             Показано {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, filteredFields.length)} из {filteredFields.length}
           </div>
           
@@ -354,7 +354,7 @@ export default function FieldSettings() {
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -378,7 +378,7 @@ export default function FieldSettings() {
             <button
               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -386,7 +386,7 @@ export default function FieldSettings() {
         </div>
       )}
 
-      <div className="pt-6 border-t border-gray-200">
+      <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
         <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
           Сохранить настройки
         </button>
