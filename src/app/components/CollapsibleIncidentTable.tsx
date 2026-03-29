@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { ChevronDown, ChevronRight, GripVertical } from 'lucide-react';
 import IncidentTable from './IncidentTable';
 import { Incident } from '../types/incident';
@@ -9,6 +9,8 @@ interface CollapsibleIncidentTableProps {
   incidents: Incident[];
   defaultExpanded?: boolean;
   id: string;
+  index: number;
+  moveTable: (dragIndex: number, hoverIndex: number) => void;
 }
 
 const TABLE_TYPE = 'TABLE';
@@ -17,13 +19,16 @@ export default function CollapsibleIncidentTable({
   title, 
   incidents, 
   defaultExpanded = true,
-  id
+  id,
+  index,
+  moveTable
 }: CollapsibleIncidentTableProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const ref = useRef<HTMLDivElement>(null);
 
   const [{ isDragging }, drag, preview] = useDrag({
     type: TABLE_TYPE,
-    item: { id, title },
+    item: { id, title, index },
     collect: (monitor) => ({
       isDragging: monitor.isDragging()
     })
@@ -31,22 +36,57 @@ export default function CollapsibleIncidentTable({
 
   const [, drop] = useDrop({
     accept: TABLE_TYPE,
-    hover: () => {
-      // Здесь можно реализовать перемещение таблиц
+    hover: (item: { index: number; id: string }, monitor) => {
+      if (!ref.current) return;
+
+      const dragIndex = item.index;
+      const hoverIndex = index;
+
+      if (dragIndex === hoverIndex) return;
+
+      // Получаем прямоугольник элемента
+      const hoverBoundingRect = ref.current.getBoundingClientRect();
+      
+      // Получаем позицию мыши относительно элемента
+      const clientOffset = monitor.getClientOffset();
+      if (!clientOffset) return;
+      
+      // Вычисляем середину элемента по вертикали
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+      
+      // Определяем направление перемещения
+      const isDraggingDown = dragIndex < hoverIndex;
+      const isDraggingUp = dragIndex > hoverIndex;
+      
+      // При перемещении вниз - срабатываем когда мышь прошла больше половины
+      // При перемещении вверх - срабатываем когда мышь прошла меньше половины
+      if (isDraggingDown && hoverClientY < hoverMiddleY) {
+        return;
+      }
+      
+      if (isDraggingUp && hoverClientY > hoverMiddleY) {
+        return;
+      }
+
+      moveTable(dragIndex, hoverIndex);
+      item.index = hoverIndex;
     }
   });
 
-  preview(drop(drag(null)));
+  preview(drop(ref));
 
   return (
     <div 
-      ref={isDragging ? undefined : undefined}
+      ref={ref}
       className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden ${
         isDragging ? 'opacity-50' : ''
       }`}
     >
       <div className="flex items-center gap-2 px-6 py-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-        <GripVertical className="w-5 h-5 text-gray-400 dark:text-gray-500 cursor-move" />
+        <div ref={drag} className="cursor-move">
+          <GripVertical className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+        </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="flex items-center gap-3 flex-1 hover:bg-gray-100 dark:hover:bg-gray-800 -mx-2 px-2 py-1 rounded transition-colors"
