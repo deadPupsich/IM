@@ -156,7 +156,7 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
             <div>
               {/* Header */}
               <div className="flex border-b border-gray-200 dark:border-gray-700">
-                <div className="w-12 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex-shrink-0" />
+                <div className="w-12 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex-shrink-0" />
                 <div className="flex">
                   {columns.map((col, index) => (
                     <div key={col.key} className="border-r border-gray-200 dark:border-gray-700 last:border-r-0 relative flex-shrink-0">
