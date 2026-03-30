@@ -10,14 +10,26 @@ interface AppSettings {
 
 export const useAppSettings = create<AppSettings>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       theme: 'light',
       itemsPerPage: 20,
-      setTheme: (theme) => set({ theme }),
+      setTheme: (theme) => {
+        set({ theme });
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      },
       setItemsPerPage: (itemsPerPage) => set({ itemsPerPage }),
     }),
     {
       name: 'app-settings',
+      onRehydrateStorage: () => (state) => {
+        if (state?.theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+      },
     }
   )
 );
