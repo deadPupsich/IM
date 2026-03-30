@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { ColumnKey } from '../types/incident';
 
 interface ResizableDraggableColumnHeaderProps {
@@ -10,6 +10,8 @@ interface ResizableDraggableColumnHeaderProps {
   width: number;
   moveColumn: (dragIndex: number, hoverIndex: number) => void;
   onResize: (columnKey: ColumnKey, width: number) => void;
+  onSort: (columnKey: ColumnKey, direction: 'asc' | 'desc' | null) => void;
+  sortDirection: 'asc' | 'desc' | null;
 }
 
 const COLUMN_TYPE = 'COLUMN';
@@ -20,7 +22,9 @@ export default function ResizableDraggableColumnHeader({
                                                          index,
                                                          width,
                                                          moveColumn,
-                                                         onResize
+                                                         onResize,
+                                                         onSort,
+                                                         sortDirection
                                                        }: ResizableDraggableColumnHeaderProps) {
   const ref = useRef<HTMLDivElement>(null);
   const dragHandleRef = useRef<HTMLDivElement>(null);
@@ -73,6 +77,22 @@ export default function ResizableDraggableColumnHeader({
     document.addEventListener('mouseup', handleMouseUp);
   };
 
+  const handleSortClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    let newDirection: 'asc' | 'desc' | null = null;
+    if (sortDirection === null) {
+      newDirection = 'asc';
+    } else if (sortDirection === 'asc') {
+      newDirection = 'desc';
+    } else {
+      newDirection = null;
+    }
+    
+    onSort(columnKey, newDirection);
+  };
+
   // Применяем drop к основному элементу
   drop(ref);
   // Применяем drag к ручке
@@ -89,7 +109,17 @@ export default function ResizableDraggableColumnHeader({
         <div ref={dragHandleRef} className="cursor-move flex-shrink-0">
           <GripVertical className="w-4 h-4 text-gray-400 dark:text-gray-500" />
         </div>
-        <span className="truncate flex-1">{label}</span>
+        <span 
+          onClick={handleSortClick}
+          className="truncate flex-1 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1"
+        >
+          {label}
+          {sortDirection !== null && (
+            sortDirection === 'asc' ? 
+              <ArrowUp className="w-3 h-3 flex-shrink-0" /> : 
+              <ArrowDown className="w-3 h-3 flex-shrink-0" />
+          )}
+        </span>
 
         <div
             onMouseDown={handleMouseDown}

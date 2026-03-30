@@ -226,7 +226,7 @@ export default function FieldSettings() {
                                 key={iconName}
                                 type="button"
                                 onClick={() => updateField(field.id, { icon: iconName })}
-                                className={`p-2 rounded-lg border-2 transition-all hover:bg-white ${
+                                className={`p-2 rounded-lg border-2 transition-all hover:bg-white flex flex-col items-center gap-1 ${
                                   field.icon === iconName
                                     ? 'border-blue-600 bg-blue-50'
                                     : 'border-transparent hover:border-gray-300'
@@ -234,6 +234,7 @@ export default function FieldSettings() {
                                 title={iconName}
                               >
                                 <Icon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                                <span className="text-[10px] text-gray-600 dark:text-gray-400 truncate w-full text-center">{iconName}</span>
                               </button>
                             );
                           })}
@@ -278,17 +279,7 @@ export default function FieldSettings() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={field.required}
-                        onChange={(e) => updateField(field.id, { required: e.target.checked })}
-                        className="rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">Обязательное поле</span>
-                    </label>
-
+                  <div className="flex items-center justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
                     <button
                       onClick={() => {
                         setEditingField(null);
