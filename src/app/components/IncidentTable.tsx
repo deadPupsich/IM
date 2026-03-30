@@ -28,6 +28,7 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
   const [customItemsPerPage, setCustomItemsPerPage] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);
   const { itemsPerPage, setItemsPerPage } = useAppSettings();
+  const [sortConfig, setSortConfig] = useState<{ columnKey: ColumnKey; direction: 'asc' | 'desc' } | null>(null);
 
   const moveColumn = useCallback((dragIndex: number, hoverIndex: number) => {
     setColumns((prevColumns) => {
@@ -45,6 +46,14 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
             col.key === columnKey ? { ...col, width } : col
         )
     );
+  }, []);
+
+  const handleSort = useCallback((columnKey: ColumnKey, direction: 'asc' | 'desc' | null) => {
+    if (direction === null) {
+      setSortConfig(null);
+    } else {
+      setSortConfig({ columnKey, direction });
+    }
   }, []);
 
   const handleFilterChange = useCallback((columnKey: ColumnKey, selected: Set<string>) => {
@@ -84,9 +93,38 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
     });
   }, [incidents, filters]);
 
-  const totalPages = Math.ceil(filteredIncidents.length / itemsPerPage);
+  const sortedIncidents = useMemo(() => {
+    if (!sortConfig) return filteredIncidents;
+
+    const { columnKey, direction } = sortConfig;
+    
+    return [...filteredIncidents].sort((a, b) => {
+      let aValue = a[columnKey] as string;
+      let bValue = b[columnKey] as string;
+      
+      // Обработка特殊 случаев для списка файлов
+      if (columnKey === 'списокФайлов') {
+        aValue = Array.isArray(aValue) ? (aValue.length > 0 ? `${aValue.length} файл(ов)` : 'Нет файлов') : aValue;
+        bValue = Array.isArray(bValue) ? (bValue.length > 0 ? `${bValue.length} файл(ов)` : 'Нет файлов') : bValue;
+      }
+      
+      // Попытка сравнить как числа (для дат и чисел)
+      const aNum = Number(aValue);
+      const bNum = Number(bValue);
+      
+      if (!isNaN(aNum) && !isNaN(bNum)) {
+        return direction === 'asc' ? aNum - bNum : bNum - aNum;
+      }
+      
+      // Сравнение строк
+      const comparison = aValue.localeCompare(bValue, 'ru');
+      return direction === 'asc' ? comparison : -comparison;
+    });
+  }, [filteredIncidents, sortConfig]);
+
+  const totalPages = Math.ceil(sortedIncidents.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedIncidents = filteredIncidents.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedIncidents = sortedIncidents.slice(startIndex, startIndex + itemsPerPage);
 
   const handleItemsPerPageChange = (value: string) => {
     if (value === 'custom') {
@@ -147,7 +185,7 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
           </div>
 
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            Показано {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredIncidents.length)} из {filteredIncidents.length}
+            Показано {startIndex + 1}-{Math.min(startIndex + itemsPerPage, sortedIncidents.length)} из {sortedIncidents.length}
           </div>
         </div>
 
@@ -171,6 +209,8 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
                             width={col.width}
                             moveColumn={moveColumn}
                             onResize={handleResize}
+                            onSort={handleSort}
+                            sortDirection={sortConfig?.columnKey === col.key ? sortConfig.direction : null}
                         />
                         <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10">
                           <ColumnFilter

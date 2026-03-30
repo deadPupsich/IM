@@ -268,26 +268,47 @@ export default function IncidentTypeSettings() {
                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
+                    
+                    <div className="mt-2 max-h-40 overflow-y-auto bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                      {availableActions
+                        .filter(a => 
+                          a.name.toLowerCase().includes((actionSearch[type.id] || '').toLowerCase()) &&
+                          !type.actions.includes(a.id)
+                        )
+                        .map(action => (
+                          <button
+                            key={action.id}
+                            onClick={() => toggleAction(type.id, action.id)}
+                            className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-between"
+                          >
+                            <span>{action.name}</span>
+                            <Plus className="w-4 h-4 text-gray-400" />
+                          </button>
+                        ))}
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
-                    {availableActions
-                      .filter(a => 
-                        a.name.toLowerCase().includes((actionSearch[type.id] || '').toLowerCase())
-                      )
-                      .map(action => (
-                        <button
-                          key={action.id}
-                          onClick={() => toggleAction(type.id, action.id)}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all text-sm ${
-                            type.actions.includes(action.id)
-                              ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 dark:text-blue-400'
-                              : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                          }`}
+                  <div className="space-y-2">
+                    {type.actions.map((actionId) => {
+                      const actionData = getActionById(actionId);
+                      if (!actionData) return null;
+
+                      return (
+                        <div
+                          key={actionId}
+                          className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg"
                         >
-                          <span>{action.name}</span>
-                        </button>
-                      ))}
+                          <span className="flex-1 text-sm text-gray-700 dark:text-gray-300">{actionData.name}</span>
+                          
+                          <button
+                            onClick={() => toggleAction(type.id, actionId)}
+                            className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
