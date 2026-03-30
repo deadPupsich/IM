@@ -16,7 +16,7 @@ export default function ViewSettings() {
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
           Выберите предпочтительную тему интерфейса
         </p>
-
+ п
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
             onClick={() => setTheme('light')}
