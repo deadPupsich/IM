@@ -15,17 +15,18 @@ interface ResizableDraggableColumnHeaderProps {
 const COLUMN_TYPE = 'COLUMN';
 
 export default function ResizableDraggableColumnHeader({
-  columnKey,
-  label,
-  index,
-  width,
-  moveColumn,
-  onResize
-}: ResizableDraggableColumnHeaderProps) {
+                                                         columnKey,
+                                                         label,
+                                                         index,
+                                                         width,
+                                                         moveColumn,
+                                                         onResize
+                                                       }: ResizableDraggableColumnHeaderProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const dragHandleRef = useRef<HTMLDivElement>(null);
   const [isResizing, setIsResizing] = useState(false);
 
-  const [{ isDragging }, drag, preview] = useDrag({
+  const [{ isDragging }, drag] = useDrag({
     type: COLUMN_TYPE,
     item: { index, columnKey },
     canDrag: !isResizing,
@@ -51,6 +52,7 @@ export default function ResizableDraggableColumnHeader({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsResizing(true);
     const startX = e.clientX;
     const startWidth = width;
@@ -71,26 +73,29 @@ export default function ResizableDraggableColumnHeader({
     document.addEventListener('mouseup', handleMouseUp);
   };
 
-  preview(drop(ref));
+  // Применяем drop к основному элементу
+  drop(ref);
+  // Применяем drag к ручке
+  drag(dragHandleRef);
 
   return (
-    <div
-      ref={ref}
-      className={`relative flex items-center gap-2 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 font-medium text-sm text-gray-700 dark:text-gray-300 ${
-        isDragging ? 'opacity-50' : ''
-      }`}
-      style={{ width: `${width}px` }}
-    >
-      <div ref={drag} className="cursor-move">
-        <GripVertical className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-      </div>
-      <span className="truncate">{label}</span>
-      
       <div
-        onMouseDown={handleMouseDown}
-        className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 dark:hover:bg-blue-400 transition-colors"
-        style={{ background: isResizing ? '#3b82f6' : 'transparent' }}
-      />
-    </div>
+          ref={ref}
+          className={`relative flex items-center gap-2 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-r border-gray-200 dark:border-gray-700 font-medium text-sm text-gray-700 dark:text-gray-300 ${
+              isDragging ? 'opacity-50' : ''
+          }`}
+          style={{ width: `${width}px` }}
+      >
+        <div ref={dragHandleRef} className="cursor-move flex-shrink-0">
+          <GripVertical className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+        </div>
+        <span className="truncate flex-1">{label}</span>
+
+        <div
+            onMouseDown={handleMouseDown}
+            className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-500 dark:hover:bg-blue-400 transition-colors z-20"
+            style={{ background: isResizing ? '#3b82f6' : 'transparent' }}
+        />
+      </div>
   );
 }

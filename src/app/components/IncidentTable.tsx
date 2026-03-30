@@ -33,19 +33,17 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
     setColumns((prevColumns) => {
       if (dragIndex === hoverIndex) return prevColumns;
       const newColumns = [...prevColumns];
-      // Обмен местами вместо перемещения
-      const temp = newColumns[dragIndex];
-      newColumns[dragIndex] = newColumns[hoverIndex];
-      newColumns[hoverIndex] = temp;
+      const [removed] = newColumns.splice(dragIndex, 1);
+      newColumns.splice(hoverIndex, 0, removed);
       return newColumns;
     });
   }, []);
 
   const handleResize = useCallback((columnKey: ColumnKey, width: number) => {
     setColumns((prevColumns) =>
-      prevColumns.map((col) =>
-        col.key === columnKey ? { ...col, width } : col
-      )
+        prevColumns.map((col) =>
+            col.key === columnKey ? { ...col, width } : col
+        )
     );
   }, []);
 
@@ -111,148 +109,148 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
   };
 
   return (
-    <div className="space-y-4">
-      {/* Items per page selector */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-600 dark:text-gray-400">Показывать на странице:</span>
-          <select
-            value={itemsPerPageOptions.includes(itemsPerPage) ? itemsPerPage.toString() : 'custom'}
-            onChange={(e) => handleItemsPerPageChange(e.target.value)}
-            className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {itemsPerPageOptions.map(option => (
-              <option key={option} value={option}>{option}</option>
-            ))}
-            <option value="custom">Своё количество</option>
-          </select>
-          
-          {showCustomInput && (
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                value={customItemsPerPage}
-                onChange={(e) => setCustomItemsPerPage(e.target.value)}
-                placeholder="Введите число"
-                min="1"
-                max="1000"
-                className="w-32 px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                onClick={handleCustomItemsPerPage}
-                className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-              >
-                ОК
-              </button>
-            </div>
-          )}
+      <div className="space-y-4">
+        {/* Items per page selector */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-600 dark:text-gray-400">Показывать на странице:</span>
+            <select
+                value={itemsPerPageOptions.includes(itemsPerPage) ? itemsPerPage.toString() : 'custom'}
+                onChange={(e) => handleItemsPerPageChange(e.target.value)}
+                className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {itemsPerPageOptions.map(option => (
+                  <option key={option} value={option}>{option}</option>
+              ))}
+              <option value="custom">Своё количество</option>
+            </select>
+
+            {showCustomInput && (
+                <div className="flex items-center gap-2">
+                  <input
+                      type="number"
+                      value={customItemsPerPage}
+                      onChange={(e) => setCustomItemsPerPage(e.target.value)}
+                      placeholder="Введите число"
+                      min="1"
+                      max="1000"
+                      className="w-32 px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button
+                      onClick={handleCustomItemsPerPage}
+                      className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                  >
+                    ОК
+                  </button>
+                </div>
+            )}
+          </div>
+
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            Показано {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredIncidents.length)} из {filteredIncidents.length}
+          </div>
         </div>
 
-        <div className="text-sm text-gray-600 dark:text-gray-400">
-          Показано {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredIncidents.length)} из {filteredIncidents.length}
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="overflow-x-auto">
-          <div className="inline-block min-w-full align-middle">
-            <div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="overflow-x-auto">
+            <div className="inline-block min-w-full align-middle">
               {/* Header */}
               <div className="flex border-b border-gray-200 dark:border-gray-700">
                 <div className="w-12 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex-shrink-0" />
-                <div className="flex">
+                <div className="flex flex-1 min-w-0">
                   {columns.map((col, index) => (
-                    <div key={col.key} className="border-r border-gray-200 dark:border-gray-700 last:border-r-0 relative flex-shrink-0">
-                      <div className="flex items-center justify-between pr-2">
+                      <div
+                          key={col.key}
+                          className="relative flex-shrink-0"
+                          style={{ width: `${col.width}px` }}
+                      >
                         <ResizableDraggableColumnHeader
-                          columnKey={col.key}
-                          label={col.label}
-                          index={index}
-                          width={col.width}
-                          moveColumn={moveColumn}
-                          onResize={handleResize}
+                            columnKey={col.key}
+                            label={col.label}
+                            index={index}
+                            width={col.width}
+                            moveColumn={moveColumn}
+                            onResize={handleResize}
                         />
-                        <div className="absolute right-8 top-1/2 -translate-y-1/2 z-10">
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10">
                           <ColumnFilter
-                            values={getColumnValues(col.key)}
-                            selectedValues={filters.get(col.key) || new Set()}
-                            onFilterChange={(selected) => handleFilterChange(col.key, selected)}
+                              values={getColumnValues(col.key)}
+                              selectedValues={filters.get(col.key) || new Set()}
+                              onFilterChange={(selected) => handleFilterChange(col.key, selected)}
                           />
                         </div>
                       </div>
-                    </div>
                   ))}
                 </div>
               </div>
 
               {/* Rows */}
               {paginatedIncidents.length > 0 ? (
-                paginatedIncidents.map((incident) => (
-                  <IncidentRow
-                    key={incident.id}
-                    incident={incident}
-                    columns={columns}
-                  />
-                ))
+                  paginatedIncidents.map((incident) => (
+                      <IncidentRow
+                          key={incident.id}
+                          incident={incident}
+                          columns={columns}
+                      />
+                  ))
               ) : (
-                <div className="py-12 text-center text-gray-500 dark:text-gray-400">
-                  Нет инцидентов, соответствующих фильтрам
-                </div>
+                  <div className="py-12 text-center text-gray-500 dark:text-gray-400">
+                    Нет инцидентов, соответствующих фильтрам
+                  </div>
               )}
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
-          <button
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
-            className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            Назад
-          </button>
-          
-          <div className="flex items-center gap-1">
-            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-              let pageNum;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
-              
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={`w-8 h-8 rounded-lg transition-colors ${
-                    currentPage === pageNum
-                      ? 'bg-blue-600 text-white'
-                      : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
-          </div>
-          
-          <button
-            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            Вперёд
-          </button>
-        </div>
-      )}
-    </div>
+        {/* Pagination */}
+        {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2">
+              <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Назад
+              </button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  return (
+                      <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`w-8 h-8 rounded-lg transition-colors ${
+                              currentPage === pageNum
+                                  ? 'bg-blue-600 text-white'
+                                  : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                          }`}
+                      >
+                        {pageNum}
+                      </button>
+                  );
+                })}
+              </div>
+
+              <button
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Вперёд
+              </button>
+            </div>
+        )}
+      </div>
   );
 }
