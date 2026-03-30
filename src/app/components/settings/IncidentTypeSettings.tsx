@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { Plus, Trash2, ChevronDown, ChevronRight, Search, GripVertical } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, Trash2, ChevronDown, ChevronRight, Search } from 'lucide-react';
 import { CustomField } from '../../types/settings';
 
 interface IncidentField {
@@ -53,8 +53,6 @@ export default function IncidentTypeSettings() {
 
   const [fieldSearch, setFieldSearch] = useState<{ [key: string]: string }>({});
   const [actionSearch, setActionSearch] = useState<{ [key: string]: string }>({});
-  const [draggedActionIndex, setDraggedActionIndex] = useState<number | null>(null);
-  const dragOverIndexRef = useRef<number | null>(null);
 
   const addIncidentType = () => {
     const newType: IncidentType = {
@@ -121,36 +119,6 @@ export default function IncidentTypeSettings() {
           : [...t.actions, actionId]
       };
     }));
-  };
-
-  const handleActionDragStart = (e: React.DragEvent, index: number) => {
-    setDraggedActionIndex(index);
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleActionDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault();
-    dragOverIndexRef.current = index;
-  };
-
-  const handleActionDrop = (e: React.DragEvent, typeId: string) => {
-    e.preventDefault();
-    
-    if (draggedActionIndex === null || dragOverIndexRef.current === null) return;
-    if (draggedActionIndex === dragOverIndexRef.current) return;
-
-    setIncidentTypes(incidentTypes.map(t => {
-      if (t.id !== typeId) return t;
-      
-      const newActions = [...t.actions];
-      const [draggedAction] = newActions.splice(draggedActionIndex, 1);
-      newActions.splice(dragOverIndexRef.current!, 0, draggedAction);
-      
-      return { ...t, actions: newActions };
-    }));
-
-    setDraggedActionIndex(null);
-    dragOverIndexRef.current = null;
   };
 
   const getFieldById = (fieldId: string) => availableFields.find(f => f.id === fieldId);
@@ -270,8 +238,6 @@ export default function IncidentTypeSettings() {
                           key={field.id}
                           className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg"
                         >
-                          <GripVertical className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                          
                           <span className="flex-1 text-sm text-gray-700 dark:text-gray-300">{fieldData.name}</span>
                           <span className="text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-2 py-1 rounded">{fieldData.type}</span>
                           
@@ -323,34 +289,6 @@ export default function IncidentTypeSettings() {
                         </button>
                       ))}
                   </div>
-
-                  {type.actions.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Порядок отображения (перетащите для изменения):</p>
-                      <div className="space-y-1">
-                        {type.actions.map((actionId, index) => {
-                          const action = getActionById(actionId);
-                          if (!action) return null;
-
-                          return (
-                            <div
-                              key={actionId}
-                              draggable
-                              onDragStart={(e) => handleActionDragStart(e, index)}
-                              onDragOver={(e) => handleActionDragOver(e, index)}
-                              onDrop={(e) => handleActionDrop(e, type.id)}
-                              className={`flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg cursor-move hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors ${
-                                draggedActionIndex === index ? 'opacity-50' : ''
-                              }`}
-                            >
-                              <GripVertical className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-700 dark:text-gray-300">{action.name}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             )}
