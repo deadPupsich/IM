@@ -30,9 +30,12 @@ export default function MyIncidentsPage() {
 
   const moveTable = useCallback((dragIndex: number, hoverIndex: number) => {
     setTables((prevTables) => {
+      if (dragIndex === hoverIndex) return prevTables;
       const newTables = [...prevTables];
-      const [removed] = newTables.splice(dragIndex, 1);
-      newTables.splice(hoverIndex, 0, removed);
+      // Обмен местами вместо перемещения
+      const temp = newTables[dragIndex];
+      newTables[dragIndex] = newTables[hoverIndex];
+      newTables[hoverIndex] = temp;
       return newTables;
     });
   }, []);

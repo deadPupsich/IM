@@ -31,9 +31,12 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
 
   const moveColumn = useCallback((dragIndex: number, hoverIndex: number) => {
     setColumns((prevColumns) => {
+      if (dragIndex === hoverIndex) return prevColumns;
       const newColumns = [...prevColumns];
-      const [removed] = newColumns.splice(dragIndex, 1);
-      newColumns.splice(hoverIndex, 0, removed);
+      // Обмен местами вместо перемещения
+      const temp = newColumns[dragIndex];
+      newColumns[dragIndex] = newColumns[hoverIndex];
+      newColumns[hoverIndex] = temp;
       return newColumns;
     });
   }, []);

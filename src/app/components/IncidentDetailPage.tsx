@@ -99,9 +99,12 @@ export default function IncidentDetailPage() {
 
   const moveField = useCallback((dragIndex: number, hoverIndex: number) => {
     setFields((prevFields) => {
+      if (dragIndex === hoverIndex) return prevFields;
       const newFields = [...prevFields];
-      const [removed] = newFields.splice(dragIndex, 1);
-      newFields.splice(hoverIndex, 0, removed);
+      // Обмен местами вместо перемещения
+      const temp = newFields[dragIndex];
+      newFields[dragIndex] = newFields[hoverIndex];
+      newFields[hoverIndex] = temp;
       return newFields;
     });
   }, []);
