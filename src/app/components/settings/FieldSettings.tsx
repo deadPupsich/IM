@@ -28,53 +28,84 @@ const colorOptions = [
 ];
 
 const ITEMS_PER_PAGE = 10;
+const SYSTEM_FIELD_SLUGS = new Set(['title', 'assignee', 'source', 'login', 'status']);
+
+function slugify(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/[^a-zа-я0-9_]/gi, '');
+}
 
 export default function FieldSettings() {
   const [fields, setFields] = useState<CustomField[]>([
     {
       id: '1',
       name: 'название',
+      slug: 'title',
       type: 'string',
       icon: 'FileText',
       iconColor: 'blue',
       required: true,
-      description: 'Название инцидента'
+      description: 'Название инцидента',
+      slugLocked: true,
     },
     {
       id: '2',
       name: 'ответственный',
+      slug: 'assignee',
       type: 'string',
       icon: 'User',
       iconColor: 'green',
       required: true,
-      description: 'Ответственный за инцидент'
+      description: 'Ответственный за инцидент',
+      slugLocked: true,
     },
     {
       id: '3',
       name: 'источник',
+      slug: 'source',
       type: 'string',
       icon: 'Database',
       iconColor: 'purple',
       required: true,
-      description: 'Источник инцидента'
+      description: 'Источник инцидента',
+      slugLocked: true,
     },
     {
       id: '4',
       name: 'нарушитель',
+      slug: 'login',
       type: 'string',
       icon: 'AlertTriangle',
       iconColor: 'red',
       required: true,
-      description: 'Нарушитель'
+      description: 'Это должен быть логин пользователя из AD',
+      slugLocked: true,
     },
     {
       id: '5',
       name: 'статус',
+      slug: 'status',
       type: 'select',
       icon: 'Activity',
       iconColor: 'indigo',
       required: true,
-      description: 'Статус инцидента'
+      description: 'Статус инцидента',
+      selectOptions: ['Открыт', 'Закрыт', 'Расследование', 'Ложный'],
+      slugLocked: true,
+    },
+    {
+      id: '6',
+      name: 'хост',
+      slug: 'host',
+      type: 'string',
+      icon: 'Monitor',
+      iconColor: 'gray',
+      required: true,
+      description: 'Хост, на котором зафиксирован инцидент',
+      slugLocked: true,
     },
   ]);
 
@@ -82,15 +113,19 @@ export default function FieldSettings() {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [iconSearchTerm, setIconSearchTerm] = useState('');
+  const [newSelectOption, setNewSelectOption] = useState<Record<string, string>>({});
 
   const addField = () => {
     const newField: CustomField = {
       id: Date.now().toString(),
       name: '',
+      slug: '',
       type: 'string',
       icon: 'FileText',
       iconColor: 'blue',
-      required: false
+      required: false,
+      selectOptions: [],
+      slugLocked: false,
     };
     setFields([...fields, newField]);
     setEditingField(newField.id);
@@ -103,6 +138,32 @@ export default function FieldSettings() {
 
   const updateField = (id: string, updates: Partial<CustomField>) => {
     setFields(fields.map(f => f.id === id ? { ...f, ...updates } : f));
+  };
+
+  const addSelectOption = (fieldId: string) => {
+    const value = (newSelectOption[fieldId] || '').trim();
+    if (!value) return;
+
+    setFields(fields.map(field =>
+      field.id === fieldId
+        ? {
+            ...field,
+            selectOptions: [...(field.selectOptions || []), value]
+          }
+        : field
+    ));
+    setNewSelectOption((prev) => ({ ...prev, [fieldId]: '' }));
+  };
+
+  const removeSelectOption = (fieldId: string, option: string) => {
+    setFields(fields.map(field =>
+      field.id === fieldId
+        ? {
+            ...field,
+            selectOptions: (field.selectOptions || []).filter((value) => value !== option)
+          }
+        : field
+    ));
   };
 
   const filteredFields = fields.filter(f =>
@@ -165,6 +226,7 @@ export default function FieldSettings() {
           const IconComponent = getIconComponent(field.icon);
           const colorClasses = getColorClasses(field.iconColor);
           const isEditing = editingField === field.id;
+          const isSystemField = SYSTEM_FIELD_SLUGS.has(field.slug);
 
           return (
             <div
@@ -183,8 +245,33 @@ export default function FieldSettings() {
                         value={field.name}
                         onChange={(e) => updateField(field.id, { name: e.target.value })}
                         placeholder="название_поля"
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        disabled={isSystemField}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 dark:disabled:bg-gray-700"
                       />
+                      {isSystemField && (
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Для системного поля название менять нельзя.
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Slug в БД
+                      </label>
+                      <input
+                        type="text"
+                        value={field.slug}
+                        onChange={(e) => updateField(field.id, { slug: e.target.value })}
+                        placeholder="db_slug"
+                        disabled={field.slugLocked}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 dark:disabled:bg-gray-700"
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        {field.slugLocked
+                          ? 'Slug уже зафиксирован и больше не редактируется.'
+                          : 'Выбирается один раз при создании поля и потом не меняется.'}
+                      </p>
                     </div>
 
                     <div>
@@ -205,6 +292,49 @@ export default function FieldSettings() {
                         <option value="boolean">Да/Нет</option>
                       </select>
                     </div>
+
+                    {field.type === 'select' && (
+                      <div className="col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Значения списка
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={newSelectOption[field.id] || ''}
+                            onChange={(e) => setNewSelectOption((prev) => ({ ...prev, [field.id]: e.target.value }))}
+                            placeholder="Новое значение"
+                            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => addSelectOption(field.id)}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                          >
+                            <Plus className="w-4 h-4" />
+                            Добавить
+                          </button>
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {(field.selectOptions || []).map((option) => (
+                            <div
+                              key={option}
+                              className="inline-flex items-center gap-2 rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200"
+                            >
+                              <span>{option}</span>
+                              <button
+                                type="button"
+                                onClick={() => removeSelectOption(field.id, option)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="col-span-2">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -274,14 +404,25 @@ export default function FieldSettings() {
                         value={field.description || ''}
                         onChange={(e) => updateField(field.id, { description: e.target.value })}
                         placeholder="Описание поля"
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        disabled={isSystemField}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 dark:disabled:bg-gray-700"
                       />
+                      {isSystemField && (
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Для системного поля описание менять нельзя.
+                        </p>
+                      )}
                     </div>
                   </div>
 
                   <div className="flex items-center justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
                     <button
                       onClick={() => {
+                        const nextSlug = field.slug.trim() || slugify(field.name) || `field_${field.id}`;
+                        updateField(field.id, {
+                          slug: nextSlug,
+                          slugLocked: true,
+                        });
                         setEditingField(null);
                         setIconSearchTerm('');
                       }}
@@ -310,6 +451,12 @@ export default function FieldSettings() {
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         {field.description || `Тип: ${field.type}`}
                       </p>
+                      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Slug: {field.slug}
+                        {field.type === 'select' && field.selectOptions && field.selectOptions.length > 0 && (
+                          <span> • Значений: {field.selectOptions.length}</span>
+                        )}
+                      </div>
                     </div>
                   </div>
 

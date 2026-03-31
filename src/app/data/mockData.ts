@@ -1,11 +1,44 @@
 import { Incident, User } from '../types/incident';
 
 export const mockUser: User = {
+  id: 'u1',
   name: 'Иван Петров',
   email: 'ivan.petrov@company.com',
   avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ivan',
   teams: ['SOC L1', 'SOC L2', 'DLP']
 };
+
+export const mockUsersDirectory: User[] = [
+  mockUser,
+  {
+    id: 'u2',
+    name: 'Алексей Смирнов',
+    email: 'alexey.smirnov@company.com',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alexey',
+    teams: ['SOC L1', 'SOC L2']
+  },
+  {
+    id: 'u3',
+    name: 'Мария Иванова',
+    email: 'maria.ivanova@company.com',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Maria',
+    teams: ['SOC L2', 'DLP']
+  },
+  {
+    id: 'u4',
+    name: 'Дмитрий Козлов',
+    email: 'dmitry.kozlov@company.com',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Dmitry',
+    teams: ['DLP']
+  },
+  {
+    id: 'u5',
+    name: 'Ольга Морозова',
+    email: 'olga.morozova@company.com',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Olga',
+    teams: ['SOC L1']
+  }
+];
 
 export const mockIncidents: Incident[] = [
   {
@@ -13,8 +46,9 @@ export const mockIncidents: Incident[] = [
     название: 'Подозрительная активность в сети',
     ответственный: 'Алексей Смирнов',
     источник: 'SIEM',
+    хост: 'SRV-EDGE-01',
     списокФайлов: ['log_2026-03-26.txt', 'report.pdf'],
-    нарушитель: '192.168.1.105',
+    login: 'a.smirnov',
     команда: 'SOC L1',
     статус: 'Открыт',
     дата: '2026-03-26 10:30',
@@ -29,8 +63,9 @@ export const mockIncidents: Incident[] = [
     название: 'Попытка несанкционированного доступа',
     ответственный: 'Мария Иванова',
     источник: 'Firewall',
+    хост: 'GW-AUTH-02',
     списокФайлов: ['access_log.txt'],
-    нарушитель: '10.0.0.45',
+    login: 'svc.vpn',
     команда: 'SOC L2',
     статус: 'В работе',
     дата: '2026-03-26 09:15',
@@ -45,8 +80,9 @@ export const mockIncidents: Incident[] = [
     название: 'Утечка конфиденциальных данных',
     ответственный: 'Дмитрий Козлов',
     источник: 'DLP System',
+    хост: 'WS-DLP-014',
     списокФайлов: ['evidence_001.zip', 'screenshot.png', 'metadata.json'],
-    нарушитель: 'user.name@company.com',
+    login: 'user.name',
     команда: 'DLP',
     статус: 'Расследование',
     дата: '2026-03-26 08:00',
@@ -61,8 +97,9 @@ export const mockIncidents: Incident[] = [
     название: 'Вредоносное ПО обнаружено',
     ответственный: 'Ольга Морозова',
     источник: 'Antivirus',
+    хост: 'WKS-USER-042',
     списокФайлов: ['malware_sample.exe'],
-    нарушитель: 'WKS-USER-042',
+    login: 'p.sidorov',
     команда: 'SOC L1',
     статус: 'Закрыт',
     дата: '2026-03-25 16:45',
@@ -77,8 +114,9 @@ export const mockIncidents: Incident[] = [
     название: 'Аномальный трафик к внешнему IP',
     ответственный: 'Сергей Волков',
     источник: 'Network Monitor',
+    хост: 'FW-CORE-02',
     списокФайлов: ['traffic_dump.pcap', 'analysis.xlsx'],
-    нарушитель: '172.16.50.12',
+    login: 'net.monitor',
     команда: 'SOC L2',
     статус: 'Открыт',
     дата: '2026-03-26 11:20',
@@ -93,8 +131,9 @@ export const mockIncidents: Incident[] = [
     название: 'Отправка файлов на личную почту',
     ответственный: 'Елена Новикова',
     источник: 'Email Gateway',
+    хост: 'MAIL-GW-01',
     списокФайлов: ['email_headers.txt', 'attachment_list.csv'],
-    нарушитель: 'employee@company.com',
+    login: 'employee',
     команда: 'DLP',
     статус: 'В работе',
     дата: '2026-03-26 07:30',

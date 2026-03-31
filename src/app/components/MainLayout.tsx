@@ -7,7 +7,7 @@ import { useAppSettings } from '../store/settings';
 
 export default function MainLayout() {
   const [activeTeam, setActiveTeam] = useState(mockUser.teams[0]);
-  const { theme } = useAppSettings();
+  const theme = useAppSettings((state) => state.theme);
 
   useEffect(() => {
     if (theme === 'dark') {

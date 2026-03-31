@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronRight, ChevronDown, FileText, User, Database, FileStack, AlertTriangle } from 'lucide-react';
+import { ChevronRight, ChevronDown, FileText, User, Database, FileStack, AlertTriangle, Shield, Activity, Calendar, Workflow } from 'lucide-react';
 import { DynamicColumnKey, Incident } from '../types/incident';
 import ExportButtons from './ExportButtons';
 import { getIncidentColumnValue, getIncidentTypeDefinition } from '../config/incident-config';
+import { useIncidentCollaboration } from '../store/incidentCollaboration';
+import DraggableIncidentAction from './DraggableIncidentAction';
 
 interface IncidentRowProps {
   incident: Incident;
@@ -14,6 +16,73 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
   const incidentType = getIncidentTypeDefinition(incident.типИнцидента);
+  const actionsByIncident = useIncidentCollaboration((state) => state.actionsByIncident);
+  const initializeIncidentActions = useIncidentCollaboration((state) => state.initializeIncidentActions);
+
+  useEffect(() => {
+    initializeIncidentActions(incident.id, incident.типИнцидента);
+  }, [incident.id, incident.типИнцидента, initializeIncidentActions]);
+
+  const actions = actionsByIncident[incident.id] ?? [];
+
+  const requiredDetails = useMemo(() => ([
+    {
+      key: 'название',
+      label: 'Название',
+      value: incident.название,
+      icon: <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
+      iconBg: 'bg-blue-100 dark:bg-blue-900',
+    },
+    {
+      key: 'ответственный',
+      label: 'Ответственный',
+      value: incident.ответственный,
+      icon: <User className="w-5 h-5 text-green-600 dark:text-green-400" />,
+      iconBg: 'bg-green-100 dark:bg-green-900',
+    },
+    {
+      key: 'источник',
+      label: 'Источник',
+      value: incident.источник,
+      icon: <Database className="w-5 h-5 text-purple-600 dark:text-purple-400" />,
+      iconBg: 'bg-purple-100 dark:bg-purple-900',
+    },
+    {
+      key: 'login',
+      label: 'Нарушитель',
+      value: incident.login,
+      icon: <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />,
+      iconBg: 'bg-red-100 dark:bg-red-900',
+    },
+    {
+      key: 'хост',
+      label: 'Хост',
+      value: incident.хост,
+      icon: <Shield className="w-5 h-5 text-slate-600 dark:text-slate-400" />,
+      iconBg: 'bg-slate-100 dark:bg-slate-900',
+    },
+    {
+      key: 'статус',
+      label: 'Статус',
+      value: incident.статус,
+      icon: <Activity className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />,
+      iconBg: 'bg-indigo-100 dark:bg-indigo-900',
+    },
+    {
+      key: 'команда',
+      label: 'Команда',
+      value: incident.команда,
+      icon: <Shield className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />,
+      iconBg: 'bg-cyan-100 dark:bg-cyan-900',
+    },
+    {
+      key: 'дата',
+      label: 'Дата создания',
+      value: incident.дата,
+      icon: <Calendar className="w-5 h-5 text-pink-600 dark:text-pink-400" />,
+      iconBg: 'bg-pink-100 dark:bg-pink-900',
+    },
+  ]), [incident]);
 
   const handleRowClick = () => {
     navigate(`/incident/${incident.id}`);
@@ -59,55 +128,59 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
               <div className="max-w-4xl">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Детали инцидента</h3>
 
-                <div className="mb-4">
+                <div className="mb-4 flex flex-wrap items-center gap-3">
                   <ExportButtons incident={incident} />
+                  <button
+                    onClick={() => navigate(`/incident/${incident.id}`)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                  >
+                    Редактировать
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                {actions.length > 0 && (
+                  <div className="mb-5">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                      <Workflow className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      Действия
                     </div>
-                    <div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Название</div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{incident.название}</div>
-                      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Тип: {incidentType?.label ?? incident.типИнцидента}
+                    <div className="flex flex-wrap gap-2">
+                      {actions.map((action, index) => (
+                        <DraggableIncidentAction
+                          key={action.id}
+                          action={action}
+                          index={index}
+                          moveAction={() => {}}
+                          onRemove={() => {}}
+                          readonly
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  {requiredDetails.map((detail) => (
+                    <div key={detail.key} className="flex items-start gap-3">
+                      <div className={`w-10 h-10 ${detail.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                        {detail.icon}
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{detail.label}</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{detail.value}</div>
+                        {detail.key === 'название' && (
+                          <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            Тип: {incidentType?.label ?? incident.типИнцидента}
+                          </div>
+                        )}
                       </div>
                     </div>
-                  </div>
+                  ))}
+                </div>
 
+                <div className="mt-5 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Дополнительные поля</div>
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <User className="w-5 h-5 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Ответственный</div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{incident.ответственный}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Database className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Источник</div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{incident.источник}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Нарушитель</div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{incident.нарушитель}</div>
-                    </div>
-                  </div>
-
-                  <div className="col-span-2 flex items-start gap-3">
                     <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center flex-shrink-0">
                       <FileStack className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                     </div>
@@ -130,37 +203,6 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
                       )}
                     </div>
                   </div>
-
-                  <div className="col-span-2 grid grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Статус</div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{incident.статус}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Команда</div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{incident.команда}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Дата создания</div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{incident.дата}</div>
-                    </div>
-                  </div>
-
-                  {incidentType && incidentType.extraFields.length > 0 && (
-                    <div className="col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-3">Поля типа инцидента</div>
-                      <div className="grid grid-cols-2 gap-4">
-                        {incidentType.extraFields.map((field) => (
-                          <div key={field.id}>
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{field.label}</div>
-                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                              {incident.дополнительныеПоля?.[field.id] ?? '—'}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>

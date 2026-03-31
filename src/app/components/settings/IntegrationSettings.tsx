@@ -18,7 +18,7 @@ interface Integration {
 }
 
 const incidentTypes = ['Безопасность', 'DLP', 'Сеть', 'Вредоносное ПО', 'Другое'];
-const internalFields = ['название', 'ответственный', 'источник', 'нарушитель', 'статус', 'дата', 'описание'];
+const internalFields = ['название', 'ответственный', 'источник', 'хост', 'login', 'статус', 'дата', 'описание'];
 
 export default function IntegrationSettings() {
   const [integrations, setIntegrations] = useState<Integration[]>([

@@ -1,11 +1,14 @@
 export interface CustomField {
   id: string;
   name: string;
+  slug: string;
   type: 'string' | 'multiline' | 'datetime' | 'file' | 'select' | 'number' | 'boolean';
   icon: string;
   iconColor: string;
   required: boolean;
   description?: string;
+  selectOptions?: string[];
+  slugLocked?: boolean;
 }
 
 export interface ActionActivity {

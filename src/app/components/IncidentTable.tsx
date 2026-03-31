@@ -37,7 +37,8 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [selectedIncidentType, setSelectedIncidentType] = useState<'all' | IncidentTypeId>('all');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const { itemsPerPage, setItemsPerPage } = useAppSettings();
+  const itemsPerPage = useAppSettings((state) => state.itemsPerPage);
+  const setItemsPerPage = useAppSettings((state) => state.setItemsPerPage);
   const [sortConfig, setSortConfig] = useState<{ columnKey: DynamicColumnKey; direction: 'asc' | 'desc' } | null>(null);
 
   const selectedTypeDefinition = selectedIncidentType === 'all'

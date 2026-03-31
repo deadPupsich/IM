@@ -19,9 +19,9 @@ export default function ExportButtons({ incident }: ExportButtonsProps) {
   };
 
   const handleExportByViolator = () => {
-    console.log('Выгрузка всех инцидентов нарушителя:', incident.нарушитель);
-    alert(`Выгружаются все инциденты нарушителя: ${incident.нарушитель}`);
-    // Здесь будет логика выгрузки всех инцидентов нарушителя
+    console.log('Выгрузка всех инцидентов по login:', incident.login);
+    alert(`Выгружаются все инциденты по login: ${incident.login}`);
+    // Здесь будет логика выгрузки всех инцидентов по login
   };
 
   return (
@@ -45,7 +45,7 @@ export default function ExportButtons({ incident }: ExportButtonsProps) {
         className="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
       >
         <FileArchive className="w-4 h-4" />
-        Все по нарушителю
+        Все по login
       </button>
     </div>
   );

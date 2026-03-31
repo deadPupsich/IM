@@ -6,8 +6,9 @@ export type BaseColumnKey =
   | 'название'
   | 'ответственный'
   | 'источник'
+  | 'хост'
   | 'списокФайлов'
-  | 'нарушитель'
+  | 'login'
   | 'статус'
   | 'дата';
 
@@ -18,8 +19,9 @@ export interface Incident {
   название: string;
   ответственный: string;
   источник: string;
+  хост: string;
   списокФайлов: string[];
-  нарушитель: string;
+  login: string;
   команда: IncidentTeam;
   статус: string;
   дата: string;
@@ -28,6 +30,7 @@ export interface Incident {
 }
 
 export interface User {
+  id: string;
   name: string;
   email: string;
   avatar: string;

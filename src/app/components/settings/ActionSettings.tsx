@@ -3,6 +3,7 @@ import { Plus, Trash2, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { CustomAction, ActionActivity } from '../../types/settings';
 import { CustomField } from '../../types/settings';
+import { SYSTEM_INCIDENT_ACTIONS } from '../../config/incident-actions';
 
 const iconsList = [
   'UserPlus', 'UserCheck', 'Mail', 'MessageSquare', 'Send', 'CheckCircle',
@@ -40,26 +41,26 @@ const mockTeams = [
 ];
 
 const mockFields: CustomField[] = [
-  { id: 'f1', name: 'статус', type: 'select', icon: 'Activity', iconColor: 'blue', required: true },
-  { id: 'f2', name: 'приоритет', type: 'select', icon: 'Flag', iconColor: 'orange', required: false },
-  { id: 'f3', name: 'ответственный', type: 'string', icon: 'User', iconColor: 'green', required: true },
-  { id: 'f4', name: 'описание', type: 'multiline', icon: 'FileText', iconColor: 'gray', required: false },
-  { id: 'f5', name: 'закрыт', type: 'boolean', icon: 'CheckCircle', iconColor: 'green', required: false },
+  { id: 'f1', name: 'статус', slug: 'status', type: 'select', icon: 'Activity', iconColor: 'blue', required: true, selectOptions: ['Открыт', 'Закрыт', 'Расследование', 'Ложный'] },
+  { id: 'f2', name: 'приоритет', slug: 'priority', type: 'select', icon: 'Flag', iconColor: 'orange', required: false, selectOptions: ['Низкий', 'Средний', 'Высокий'] },
+  { id: 'f3', name: 'ответственный', slug: 'assignee', type: 'string', icon: 'User', iconColor: 'green', required: true },
+  { id: 'f4', name: 'описание', slug: 'description', type: 'multiline', icon: 'FileText', iconColor: 'gray', required: false },
+  { id: 'f5', name: 'закрыт', slug: 'closed', type: 'boolean', icon: 'CheckCircle', iconColor: 'green', required: false },
 ];
 
 export default function ActionSettings() {
   const [actions, setActions] = useState<CustomAction[]>([
-    {
-      id: '1',
-      name: 'Назначить на',
-      description: 'Назначить инцидент на ответственного',
-      icon: 'UserPlus',
-      iconColor: 'blue',
-      targetType: 'user',
+    ...SYSTEM_INCIDENT_ACTIONS.slice(0, 2).map((action, index) => ({
+      id: String(index + 1),
+      name: action.name,
+      description: action.description,
+      icon: action.icon,
+      iconColor: action.iconColor,
+      targetType: action.targetType,
       activities: [
         { type: 'email', label: 'Отправить письмо' }
       ]
-    }
+    }))
   ]);
 
   const [expandedAction, setExpandedAction] = useState<string | null>(null);

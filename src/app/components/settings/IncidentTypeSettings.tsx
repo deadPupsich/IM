@@ -19,14 +19,15 @@ interface IncidentType {
 
 // Mock data for fields (в реальности будет из FieldSettings)
 const availableFields: CustomField[] = [
-  { id: 'f1', name: 'название', type: 'string', icon: 'FileText', iconColor: 'blue', required: true },
-  { id: 'f2', name: 'ответственный', type: 'string', icon: 'User', iconColor: 'green', required: true },
-  { id: 'f3', name: 'источник', type: 'string', icon: 'Database', iconColor: 'purple', required: true },
-  { id: 'f4', name: 'нарушитель', type: 'string', icon: 'AlertTriangle', iconColor: 'red', required: true },
-  { id: 'f5', name: 'статус', type: 'select', icon: 'Activity', iconColor: 'indigo', required: true },
-  { id: 'f6', name: 'дата', type: 'datetime', icon: 'Calendar', iconColor: 'pink', required: true },
-  { id: 'f7', name: 'описание', type: 'multiline', icon: 'FileText', iconColor: 'gray', required: false },
-  { id: 'f8', name: 'приоритет', type: 'select', icon: 'Flag', iconColor: 'orange', required: false },
+  { id: 'f1', name: 'название', slug: 'title', type: 'string', icon: 'FileText', iconColor: 'blue', required: true, slugLocked: true },
+  { id: 'f2', name: 'ответственный', slug: 'assignee', type: 'string', icon: 'User', iconColor: 'green', required: true, slugLocked: true },
+  { id: 'f3', name: 'источник', slug: 'source', type: 'string', icon: 'Database', iconColor: 'purple', required: true, slugLocked: true },
+  { id: 'f4', name: 'нарушитель', slug: 'login', type: 'string', icon: 'AlertTriangle', iconColor: 'red', required: true, description: 'Это должен быть логин пользователя из AD', slugLocked: true },
+  { id: 'f9', name: 'хост', slug: 'host', type: 'string', icon: 'Monitor', iconColor: 'gray', required: true, slugLocked: true },
+  { id: 'f5', name: 'статус', slug: 'status', type: 'select', icon: 'Activity', iconColor: 'indigo', required: true, selectOptions: ['Открыт', 'Закрыт', 'Расследование', 'Ложный'], slugLocked: true },
+  { id: 'f6', name: 'дата', slug: 'created_at', type: 'datetime', icon: 'Calendar', iconColor: 'pink', required: true, slugLocked: true },
+  { id: 'f7', name: 'описание', slug: 'description', type: 'multiline', icon: 'FileText', iconColor: 'gray', required: false, slugLocked: true },
+  { id: 'f8', name: 'приоритет', slug: 'priority', type: 'select', icon: 'Flag', iconColor: 'orange', required: false, selectOptions: ['Низкий', 'Средний', 'Высокий'], slugLocked: true },
 ];
 
 const availableActions = [
