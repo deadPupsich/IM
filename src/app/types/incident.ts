@@ -1,3 +1,18 @@
+export type IncidentTeam = 'SOC L1' | 'SOC L2' | 'DLP';
+
+export type IncidentTypeId = 'security' | 'dlp' | 'network' | 'malware';
+
+export type BaseColumnKey =
+  | 'название'
+  | 'ответственный'
+  | 'источник'
+  | 'списокФайлов'
+  | 'нарушитель'
+  | 'статус'
+  | 'дата';
+
+export type DynamicColumnKey = BaseColumnKey | `custom:${string}`;
+
 export interface Incident {
   id: string;
   название: string;
@@ -5,9 +20,11 @@ export interface Incident {
   источник: string;
   списокФайлов: string[];
   нарушитель: string;
-  команда: 'SOC L1' | 'SOC L2' | 'DLP';
+  команда: IncidentTeam;
   статус: string;
   дата: string;
+  типИнцидента: IncidentTypeId;
+  дополнительныеПоля?: Record<string, string>;
 }
 
 export interface User {
@@ -17,4 +34,4 @@ export interface User {
   teams: string[];
 }
 
-export type ColumnKey = keyof Omit<Incident, 'id' | 'команда'>;
+export type ColumnKey = DynamicColumnKey;

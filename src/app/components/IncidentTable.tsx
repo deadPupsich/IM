@@ -1,34 +1,93 @@
-import { useState, useCallback, useMemo } from 'react';
-import { Incident, ColumnKey } from '../types/incident';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import { Settings2 } from 'lucide-react';
+import { DynamicColumnKey, Incident, IncidentTypeId } from '../types/incident';
 import ResizableDraggableColumnHeader from './ResizableDraggableColumnHeader';
 import IncidentRow from './IncidentRow';
 import ColumnFilter from './ColumnFilter';
 import { useAppSettings } from '../store/settings';
+import {
+  DEFAULT_INCIDENT_COLUMNS,
+  getColumnDefinition,
+  getExtraColumnDefinitions,
+  getIncidentColumnValue,
+  getIncidentTypeDefinition,
+  INCIDENT_TYPE_DEFINITIONS,
+  IncidentColumnDefinition,
+} from '../config/incident-config';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
+import { Checkbox } from './ui/checkbox';
 
 interface IncidentTableProps {
   incidents: Incident[];
 }
 
-const defaultColumns: { key: ColumnKey; label: string; width: number }[] = [
-  { key: 'название', label: 'Название', width: 250 },
-  { key: 'ответственный', label: 'Ответственный', width: 180 },
-  { key: 'источник', label: 'Источник', width: 150 },
-  { key: 'списокФайлов', label: 'Список файлов', width: 150 },
-  { key: 'нарушитель', label: 'Нарушитель', width: 180 },
-  { key: 'статус', label: 'Статус', width: 120 },
-  { key: 'дата', label: 'Дата', width: 150 }
-];
-
 const itemsPerPageOptions = [10, 20, 50, 100];
 
 export default function IncidentTable({ incidents }: IncidentTableProps) {
-  const [columns, setColumns] = useState(defaultColumns);
-  const [filters, setFilters] = useState<Map<ColumnKey, Set<string>>>(new Map());
+  const [columns, setColumns] = useState<IncidentColumnDefinition[]>(DEFAULT_INCIDENT_COLUMNS);
+  const [filters, setFilters] = useState<Map<DynamicColumnKey, Set<string>>>(new Map());
   const [currentPage, setCurrentPage] = useState(1);
   const [customItemsPerPage, setCustomItemsPerPage] = useState('');
   const [showCustomInput, setShowCustomInput] = useState(false);
+  const [selectedIncidentType, setSelectedIncidentType] = useState<'all' | IncidentTypeId>('all');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { itemsPerPage, setItemsPerPage } = useAppSettings();
-  const [sortConfig, setSortConfig] = useState<{ columnKey: ColumnKey; direction: 'asc' | 'desc' } | null>(null);
+  const [sortConfig, setSortConfig] = useState<{ columnKey: DynamicColumnKey; direction: 'asc' | 'desc' } | null>(null);
+
+  const selectedTypeDefinition = selectedIncidentType === 'all'
+    ? null
+    : getIncidentTypeDefinition(selectedIncidentType);
+  const typeSpecificColumns = selectedIncidentType === 'all'
+    ? []
+    : getExtraColumnDefinitions(selectedIncidentType);
+
+  useEffect(() => {
+    setColumns((prevColumns) => {
+      const defaultVisibleKeys = prevColumns
+        .filter((column) => column.isDefault)
+        .map((column) => column.key);
+      const nextColumns = DEFAULT_INCIDENT_COLUMNS.filter((column) => defaultVisibleKeys.includes(column.key));
+
+      if (selectedIncidentType === 'all') {
+        return nextColumns;
+      }
+
+      const previousCustomKeys = prevColumns
+        .filter((column) => !column.isDefault)
+        .map((column) => column.key);
+      const availableCustomColumns = getExtraColumnDefinitions(selectedIncidentType);
+      const customColumns = availableCustomColumns.filter((column) => previousCustomKeys.includes(column.key));
+
+      return [...nextColumns, ...customColumns];
+    });
+
+    setFilters((prevFilters) => {
+      const nextFilters = new Map(prevFilters);
+      for (const key of Array.from(nextFilters.keys())) {
+        if (key.startsWith('custom:') && selectedIncidentType === 'all') {
+          nextFilters.delete(key);
+        }
+      }
+      return nextFilters;
+    });
+
+    setSortConfig((prevSort) => {
+      if (!prevSort) {
+        return prevSort;
+      }
+      if (selectedIncidentType === 'all' && prevSort.columnKey.startsWith('custom:')) {
+        return null;
+      }
+      return prevSort;
+    });
+    setCurrentPage(1);
+  }, [selectedIncidentType]);
 
   const moveColumn = useCallback((dragIndex: number, hoverIndex: number) => {
     setColumns((prevColumns) => {
@@ -40,7 +99,7 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
     });
   }, []);
 
-  const handleResize = useCallback((columnKey: ColumnKey, width: number) => {
+  const handleResize = useCallback((columnKey: DynamicColumnKey, width: number) => {
     setColumns((prevColumns) =>
         prevColumns.map((col) =>
             col.key === columnKey ? { ...col, width } : col
@@ -48,7 +107,7 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
     );
   }, []);
 
-  const handleSort = useCallback((columnKey: ColumnKey, direction: 'asc' | 'desc' | null) => {
+  const handleSort = useCallback((columnKey: DynamicColumnKey, direction: 'asc' | 'desc' | null) => {
     if (direction === null) {
       setSortConfig(null);
     } else {
@@ -56,7 +115,7 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
     }
   }, []);
 
-  const handleFilterChange = useCallback((columnKey: ColumnKey, selected: Set<string>) => {
+  const handleFilterChange = useCallback((columnKey: DynamicColumnKey, selected: Set<string>) => {
     setFilters((prev) => {
       const newFilters = new Map(prev);
       if (selected.size === 0) {
@@ -69,29 +128,27 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
     setCurrentPage(1);
   }, []);
 
-  const getColumnValues = useCallback((columnKey: ColumnKey) => {
-    return incidents.map((incident) => {
-      const value = incident[columnKey];
-      if (columnKey === 'списокФайлов' && Array.isArray(value)) {
-        return value.length > 0 ? `${value.length} файл(ов)` : 'Нет файлов';
-      }
-      return value as string;
-    });
-  }, [incidents]);
+  const incidentsByType = useMemo(() => {
+    if (selectedIncidentType === 'all') {
+      return incidents;
+    }
+    return incidents.filter((incident) => incident.типИнцидента === selectedIncidentType);
+  }, [incidents, selectedIncidentType]);
+
+  const getColumnValues = useCallback((columnKey: DynamicColumnKey) => {
+    return incidentsByType.map((incident) => getIncidentColumnValue(incident, columnKey));
+  }, [incidentsByType]);
 
   const filteredIncidents = useMemo(() => {
-    if (filters.size === 0) return incidents;
+    if (filters.size === 0) return incidentsByType;
 
-    return incidents.filter((incident) => {
+    return incidentsByType.filter((incident) => {
       return Array.from(filters.entries()).every(([key, selectedValues]) => {
-        let value = incident[key];
-        if (key === 'списокФайлов' && Array.isArray(value)) {
-          value = value.length > 0 ? `${value.length} файл(ов)` : 'Нет файлов';
-        }
-        return selectedValues.has(value as string);
+        const value = getIncidentColumnValue(incident, key);
+        return selectedValues.has(value);
       });
     });
-  }, [incidents, filters]);
+  }, [incidentsByType, filters]);
 
   const sortedIncidents = useMemo(() => {
     if (!sortConfig) return filteredIncidents;
@@ -99,16 +156,9 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
     const { columnKey, direction } = sortConfig;
     
     return [...filteredIncidents].sort((a, b) => {
-      let aValue = a[columnKey] as string;
-      let bValue = b[columnKey] as string;
+      const aValue = getIncidentColumnValue(a, columnKey);
+      const bValue = getIncidentColumnValue(b, columnKey);
       
-      // Обработка特殊 случаев для списка файлов
-      if (columnKey === 'списокФайлов') {
-        aValue = Array.isArray(aValue) ? (aValue.length > 0 ? `${aValue.length} файл(ов)` : 'Нет файлов') : aValue;
-        bValue = Array.isArray(bValue) ? (bValue.length > 0 ? `${bValue.length} файл(ов)` : 'Нет файлов') : bValue;
-      }
-      
-      // Попытка сравнить как числа (для дат и чисел)
       const aNum = Number(aValue);
       const bNum = Number(bValue);
       
@@ -116,11 +166,42 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
         return direction === 'asc' ? aNum - bNum : bNum - aNum;
       }
       
-      // Сравнение строк
       const comparison = aValue.localeCompare(bValue, 'ru');
       return direction === 'asc' ? comparison : -comparison;
     });
   }, [filteredIncidents, sortConfig]);
+
+  const toggleDefaultColumn = useCallback((column: IncidentColumnDefinition, checked: boolean) => {
+    setColumns((prevColumns) => {
+      if (checked) {
+        if (prevColumns.some((item) => item.key === column.key)) {
+          return prevColumns;
+        }
+
+        const visibleDefaultKeys = prevColumns.filter((item) => item.isDefault).map((item) => item.key);
+        const nextDefaultKeys = DEFAULT_INCIDENT_COLUMNS
+          .filter((item) => visibleDefaultKeys.includes(item.key) || item.key === column.key)
+          .map((item) => item.key);
+        const rebuiltDefaults = DEFAULT_INCIDENT_COLUMNS.filter((item) => nextDefaultKeys.includes(item.key));
+        const customColumns = prevColumns.filter((item) => !item.isDefault);
+        return [...rebuiltDefaults, ...customColumns];
+      }
+
+      return prevColumns.filter((item) => item.key !== column.key);
+    });
+  }, []);
+
+  const toggleTypeColumn = useCallback((column: IncidentColumnDefinition, checked: boolean) => {
+    setColumns((prevColumns) => {
+      if (checked) {
+        if (prevColumns.some((item) => item.key === column.key)) {
+          return prevColumns;
+        }
+        return [...prevColumns, column];
+      }
+      return prevColumns.filter((item) => item.key !== column.key);
+    });
+  }, []);
 
   const totalPages = Math.ceil(sortedIncidents.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -146,11 +227,27 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
     }
   };
 
+  const displayedRangeStart = sortedIncidents.length === 0 ? 0 : startIndex + 1;
+
   return (
       <div className="space-y-4">
-        {/* Items per page selector */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Тип инцидента:</span>
+              <select
+                  value={selectedIncidentType}
+                  onChange={(e) => setSelectedIncidentType(e.target.value as 'all' | IncidentTypeId)}
+                  className="min-w-48 px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">Все типы</option>
+                {INCIDENT_TYPE_DEFINITIONS.map((type) => (
+                    <option key={type.id} value={type.id}>
+                      {type.label}
+                    </option>
+                ))}
+              </select>
+            </div>
             <span className="text-sm text-gray-600 dark:text-gray-400">Показывать на странице:</span>
             <select
                 value={itemsPerPageOptions.includes(itemsPerPage) ? itemsPerPage.toString() : 'custom'}
@@ -185,7 +282,7 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
           </div>
 
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            Показано {startIndex + 1}-{Math.min(startIndex + itemsPerPage, sortedIncidents.length)} из {sortedIncidents.length}
+            Показано {displayedRangeStart}-{Math.min(startIndex + itemsPerPage, sortedIncidents.length)} из {sortedIncidents.length}
           </div>
         </div>
 
@@ -194,7 +291,14 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
             <div className="inline-block min-w-full align-middle">
               {/* Header */}
               <div className="flex border-b border-gray-200 dark:border-gray-700">
-                <div className="w-12 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex-shrink-0" />
+                <button
+                    type="button"
+                    onClick={() => setIsSettingsOpen(true)}
+                    className="w-12 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex-shrink-0 flex items-center justify-center text-gray-500 hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    title="Настройки отображения полей"
+                >
+                  <Settings2 className="w-4 h-4" />
+                </button>
                 <div className="flex flex-1 min-w-0">
                   {columns.map((col, index) => (
                       <div
@@ -291,6 +395,81 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
               </button>
             </div>
         )}
+
+        <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+          <DialogContent className="sm:max-w-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-2xl">
+            <DialogHeader>
+              <DialogTitle>Настройки таблицы</DialogTitle>
+              <DialogDescription>
+                {selectedTypeDefinition
+                  ? `Для типа "${selectedTypeDefinition.label}" можно скрывать базовые поля и добавлять поля этого типа.`
+                  : 'Без выбранного типа инцидента доступны только базовые поля таблицы.'}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <div>
+                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100">Базовые поля</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Их можно показывать или скрывать всегда.
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {DEFAULT_INCIDENT_COLUMNS.map((column) => {
+                    const checked = columns.some((item) => item.key === column.key);
+                    return (
+                      <label
+                          key={column.key}
+                        className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(value) => toggleDefaultColumn(column, value === true)}
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{column.label}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100">Поля типа инцидента</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    {selectedTypeDefinition
+                      ? 'Отметьте поля, которые нужно добавить в таблицу для выбранного типа.'
+                      : 'Сначала выберите тип инцидента вверху таблицы, после этого здесь появятся дополнительные поля.'}
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {selectedTypeDefinition ? (
+                    typeSpecificColumns.map((column) => {
+                      const checked = columns.some((item) => item.key === column.key);
+                      return (
+                        <label
+                          key={column.key}
+                          className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={(value) => toggleTypeColumn(column, value === true)}
+                          />
+                          <span className="text-sm text-gray-700 dark:text-gray-300">{column.label}</span>
+                        </label>
+                      );
+                    })
+                  ) : (
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      Дополнительные поля недоступны без выбранного типа.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
   );
 }

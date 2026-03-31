@@ -1,16 +1,16 @@
 import { useRef, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { GripVertical, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
-import { ColumnKey } from '../types/incident';
+import { DynamicColumnKey } from '../types/incident';
 
 interface ResizableDraggableColumnHeaderProps {
-  columnKey: ColumnKey;
+  columnKey: DynamicColumnKey;
   label: string;
   index: number;
   width: number;
   moveColumn: (dragIndex: number, hoverIndex: number) => void;
-  onResize: (columnKey: ColumnKey, width: number) => void;
-  onSort: (columnKey: ColumnKey, direction: 'asc' | 'desc' | null) => void;
+  onResize: (columnKey: DynamicColumnKey, width: number) => void;
+  onSort: (columnKey: DynamicColumnKey, direction: 'asc' | 'desc' | null) => void;
   sortDirection: 'asc' | 'desc' | null;
 }
 
@@ -41,7 +41,7 @@ export default function ResizableDraggableColumnHeader({
 
   const [, drop] = useDrop({
     accept: COLUMN_TYPE,
-    hover: (item: { index: number; columnKey: ColumnKey }) => {
+    hover: (item: { index: number; columnKey: DynamicColumnKey }) => {
       if (!ref.current) return;
 
       const dragIndex = item.index;

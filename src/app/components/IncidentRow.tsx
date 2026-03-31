@@ -1,25 +1,19 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronRight, ChevronDown, FileText, User, Database, FileStack, AlertTriangle } from 'lucide-react';
-import { Incident, ColumnKey } from '../types/incident';
+import { DynamicColumnKey, Incident } from '../types/incident';
 import ExportButtons from './ExportButtons';
+import { getIncidentColumnValue, getIncidentTypeDefinition } from '../config/incident-config';
 
 interface IncidentRowProps {
   incident: Incident;
-  columns: { key: ColumnKey; label: string; width: number }[];
+  columns: { key: DynamicColumnKey; label: string; width: number }[];
 }
 
 export default function IncidentRow({ incident, columns }: IncidentRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
-
-  const renderCellValue = (key: ColumnKey) => {
-    const value = incident[key];
-    if (key === 'списокФайлов' && Array.isArray(value)) {
-      return value.length > 0 ? `${value.length} файл(ов)` : 'Нет файлов';
-    }
-    return value as string;
-  };
+  const incidentType = getIncidentTypeDefinition(incident.типИнцидента);
 
   const handleRowClick = () => {
     navigate(`/incident/${incident.id}`);
@@ -54,7 +48,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
                     } truncate flex-shrink-0`}
                     style={{ width: `${col.width}px` }}
                 >
-                  {renderCellValue(col.key)}
+                  {getIncidentColumnValue(incident, col.key)}
                 </div>
             ))}
           </div>
@@ -77,6 +71,9 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
                     <div>
                       <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Название</div>
                       <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{incident.название}</div>
+                      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Тип: {incidentType?.label ?? incident.типИнцидента}
+                      </div>
                     </div>
                   </div>
 
@@ -148,6 +145,22 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
                       <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{incident.дата}</div>
                     </div>
                   </div>
+
+                  {incidentType && incidentType.extraFields.length > 0 && (
+                    <div className="col-span-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-3">Поля типа инцидента</div>
+                      <div className="grid grid-cols-2 gap-4">
+                        {incidentType.extraFields.map((field) => (
+                          <div key={field.id}>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{field.label}</div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {incident.дополнительныеПоля?.[field.id] ?? '—'}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
