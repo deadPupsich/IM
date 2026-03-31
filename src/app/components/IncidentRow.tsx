@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronRight, ChevronDown, FileText, User, Database, FileStack, AlertTriangle, Shield, Activity, Calendar, Workflow } from 'lucide-react';
+import { ChevronRight, ChevronDown, FileText, User, Database, AlertTriangle, Shield, Activity, Calendar, Workflow, Pencil } from 'lucide-react';
 import { DynamicColumnKey, Incident } from '../types/incident';
 import ExportButtons from './ExportButtons';
 import { getIncidentColumnValue, getIncidentTypeDefinition } from '../config/incident-config';
 import { useIncidentCollaboration } from '../store/incidentCollaboration';
 import DraggableIncidentAction from './DraggableIncidentAction';
+import IncidentFieldEditDialog from './IncidentFieldEditDialog';
+import { useIncidentsStore } from '../store/incidents';
+
+const incidentStatusOptions = ['Открыт', 'В работе', 'Расследование', 'Закрыт', 'Ложный'];
 
 interface IncidentRowProps {
   incident: Incident;
@@ -14,10 +18,19 @@ interface IncidentRowProps {
 
 export default function IncidentRow({ incident, columns }: IncidentRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [editingField, setEditingField] = useState<{
+    key: string;
+    label: string;
+    inputType: 'text' | 'select';
+    value: string;
+    options?: string[];
+    isAdditional?: boolean;
+  } | null>(null);
   const navigate = useNavigate();
   const incidentType = getIncidentTypeDefinition(incident.типИнцидента);
   const actionsByIncident = useIncidentCollaboration((state) => state.actionsByIncident);
   const initializeIncidentActions = useIncidentCollaboration((state) => state.initializeIncidentActions);
+  const updateIncident = useIncidentsStore((state) => state.updateIncident);
 
   useEffect(() => {
     initializeIncidentActions(incident.id, incident.типИнцидента);
@@ -86,6 +99,28 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
 
   const handleRowClick = () => {
     navigate(`/incident/${incident.id}`);
+  };
+
+  const openFieldEditor = (fieldKey: string, label: string, value: string, inputType: 'text' | 'select' = 'text', options?: string[], isAdditional = false) => {
+    setEditingField({ key: fieldKey, label, value, inputType, options, isAdditional });
+  };
+
+  const handleSaveField = (value: string) => {
+    if (!editingField) return;
+
+    if (editingField.isAdditional) {
+      updateIncident(incident.id, {
+        дополнительныеПоля: {
+          ...(incident.дополнительныеПоля ?? {}),
+          [editingField.key]: value.trim(),
+        },
+      });
+      return;
+    }
+
+    updateIncident(incident.id, {
+      [editingField.key]: value.trim(),
+    } as Partial<Incident>);
   };
 
   return (
@@ -166,7 +201,15 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
                         {detail.icon}
                       </div>
                       <div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{detail.label}</div>
+                        <div className="mb-1 flex items-center gap-2">
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{detail.label}</div>
+                          <button
+                            onClick={() => openFieldEditor(detail.key, detail.label, String(detail.value), detail.key === 'статус' ? 'select' : detail.key === 'команда' ? 'select' : 'text', detail.key === 'статус' ? incidentStatusOptions : detail.key === 'команда' ? ['SOC L1', 'SOC L2', 'DLP'] : undefined)}
+                            className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </button>
+                        </div>
                         <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{detail.value}</div>
                         {detail.key === 'название' && (
                           <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -180,32 +223,48 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
 
                 <div className="mt-5 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Дополнительные поля</div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <FileStack className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Список файлов</div>
-                      {incident.списокФайлов.length > 0 ? (
-                          <div className="flex flex-wrap gap-2">
-                            {incident.списокФайлов.map((file, idx) => (
-                                <span
-                                    key={idx}
-                                    className="inline-flex items-center gap-1 px-3 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs text-gray-700 dark:text-gray-300"
-                                >
-                          <FileText className="w-3 h-3" />
-                                  {file}
-                        </span>
-                            ))}
+                  {incidentType?.extraFields.length ? (
+                    <div className="grid grid-cols-2 gap-4">
+                      {incidentType.extraFields.map((field) => (
+                        <div key={field.id} className="flex items-start gap-3">
+                          <div className="w-10 h-10 bg-slate-100 dark:bg-slate-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <FileText className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                           </div>
-                      ) : (
-                          <div className="text-sm text-gray-500 dark:text-gray-400">Нет прикрепленных файлов</div>
-                      )}
+                          <div>
+                            <div className="mb-1 flex items-center gap-2">
+                              <div className="text-xs text-gray-500 dark:text-gray-400">{field.label}</div>
+                              <button
+                                onClick={() => openFieldEditor(field.id, field.label, incident.дополнительныеПоля?.[field.id] ?? '', 'text', undefined, true)}
+                                className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                              >
+                                <Pencil className="w-3 h-3" />
+                              </button>
+                            </div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {incident.дополнительныеПоля?.[field.id] ?? '—'}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
+                  ) : null}
                 </div>
               </div>
             </div>
+        )}
+
+        {editingField && (
+          <IncidentFieldEditDialog
+            open={Boolean(editingField)}
+            onOpenChange={(open) => {
+              if (!open) setEditingField(null);
+            }}
+            label={editingField.label}
+            value={editingField.value}
+            inputType={editingField.inputType}
+            options={editingField.options}
+            onSave={handleSaveField}
+          />
         )}
       </>
   );

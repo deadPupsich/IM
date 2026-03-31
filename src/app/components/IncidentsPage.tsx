@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useOutletContext } from 'react-router';
-import { mockIncidents } from '../data/mockData';
 import IncidentTable from './IncidentTable';
+import { useIncidentsStore } from '../store/incidents';
 
 interface OutletContext {
   activeTeam: string;
@@ -9,10 +9,11 @@ interface OutletContext {
 
 export default function IncidentsPage() {
   const { activeTeam } = useOutletContext<OutletContext>();
+  const incidents = useIncidentsStore((state) => state.incidents);
 
   const filteredIncidents = useMemo(() => {
-    return mockIncidents.filter((incident) => incident.команда === activeTeam);
-  }, [activeTeam]);
+    return incidents.filter((incident) => incident.команда === activeTeam);
+  }, [activeTeam, incidents]);
 
   return (
     <div className="p-6">

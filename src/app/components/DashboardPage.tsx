@@ -1,31 +1,32 @@
 import { useMemo, useState, useRef } from 'react';
-import { mockIncidents } from '../data/mockData';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Calendar, Download, TrendingUp, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import { useIncidentsStore } from '../store/incidents';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
 export default function DashboardPage() {
   const [dateFilter, setDateFilter] = useState('all');
   const dashboardRef = useRef<HTMLDivElement>(null);
+  const incidents = useIncidentsStore((state) => state.incidents);
 
   const filteredIncidents = useMemo(() => {
     const now = new Date();
     if (dateFilter === 'today') {
-      return mockIncidents.filter(inc => {
+      return incidents.filter(inc => {
         const incDate = new Date(inc.дата);
         return incDate.toDateString() === now.toDateString();
       });
     } else if (dateFilter === 'week') {
       const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      return mockIncidents.filter(inc => new Date(inc.дата) >= weekAgo);
+      return incidents.filter(inc => new Date(inc.дата) >= weekAgo);
     } else if (dateFilter === 'month') {
       const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      return mockIncidents.filter(inc => new Date(inc.дата) >= monthAgo);
+      return incidents.filter(inc => new Date(inc.дата) >= monthAgo);
     }
-    return mockIncidents;
-  }, [dateFilter]);
+    return incidents;
+  }, [dateFilter, incidents]);
 
   const stats = useMemo(() => {
     const total = filteredIncidents.length;

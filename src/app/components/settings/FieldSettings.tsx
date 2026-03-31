@@ -208,7 +208,7 @@ export default function FieldSettings() {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
           />
         </div>
 
@@ -246,7 +246,7 @@ export default function FieldSettings() {
                         onChange={(e) => updateField(field.id, { name: e.target.value })}
                         placeholder="название_поля"
                         disabled={isSystemField}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 dark:disabled:bg-gray-700"
+                        className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:disabled:bg-gray-700"
                       />
                       {isSystemField && (
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -265,7 +265,7 @@ export default function FieldSettings() {
                         onChange={(e) => updateField(field.id, { slug: e.target.value })}
                         placeholder="db_slug"
                         disabled={field.slugLocked}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 dark:disabled:bg-gray-700"
+                        className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:disabled:bg-gray-700"
                       />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         {field.slugLocked
@@ -281,7 +281,7 @@ export default function FieldSettings() {
                       <select
                         value={field.type}
                         onChange={(e) => updateField(field.id, { type: e.target.value as any })}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                       >
                         <option value="string">Строка</option>
                         <option value="multiline">Многострочное</option>
@@ -304,7 +304,7 @@ export default function FieldSettings() {
                             value={newSelectOption[field.id] || ''}
                             onChange={(e) => setNewSelectOption((prev) => ({ ...prev, [field.id]: e.target.value }))}
                             placeholder="Новое значение"
-                            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                           />
                           <button
                             type="button"
@@ -346,7 +346,7 @@ export default function FieldSettings() {
                           placeholder="Поиск иконок..."
                           value={iconSearchTerm}
                           onChange={(e) => setIconSearchTerm(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                         />
                         <div className="grid grid-cols-8 gap-2 max-h-48 overflow-y-auto p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900">
                           {filteredIcons.map((iconName) => {
@@ -405,7 +405,7 @@ export default function FieldSettings() {
                         onChange={(e) => updateField(field.id, { description: e.target.value })}
                         placeholder="Описание поля"
                         disabled={isSystemField}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 dark:disabled:bg-gray-700"
+                        className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:disabled:bg-gray-700"
                       />
                       {isSystemField && (
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">

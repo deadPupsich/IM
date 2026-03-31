@@ -8,33 +8,54 @@ interface User {
   groups: string[];
 }
 
+type DirectoryConnectionType = 'LDAP' | 'LDAPS' | 'GlobalLDAP' | 'GlobalLDAPS';
+
+const directoryConnectionOptions = [
+  { value: 'LDAP', label: 'LDAP (389)' },
+  { value: 'LDAPS', label: 'LDAPS (636)' },
+  { value: 'GlobalLDAP', label: 'GlobalLDAP (3268)' },
+  { value: 'GlobalLDAPS', label: 'GlobalLDAPS (3269)' },
+] as const;
+
+interface UserSyncConfig {
+  domainName: string;
+  controllerIp: string;
+  username: string;
+  password: string;
+  connectionType: DirectoryConnectionType;
+  distinguishedName: string;
+}
+
 export default function UsersSettings() {
-  const [selectedADGroup, setSelectedADGroup] = useState('');
+  const [syncConfig, setSyncConfig] = useState<UserSyncConfig>({
+    domainName: 'corp.local',
+    controllerIp: '10.10.10.10',
+    username: 'svc_im_sync@corp.local',
+    password: '',
+    connectionType: 'LDAPS',
+    distinguishedName: 'CN=SOC Team,OU=Groups,DC=corp,DC=local',
+  });
   const [users, setUsers] = useState<User[]>([
     { id: '1', name: 'Иван Петров', email: 'ivan@company.com', groups: ['Domain Users', 'SOC Team'] },
     { id: '2', name: 'Алексей Смирнов', email: 'alexey@company.com', groups: ['Domain Users'] },
     { id: '3', name: 'Мария Иванова', email: 'maria@company.com', groups: ['Domain Users', 'DLP Team'] },
   ]);
 
-  const [adGroups] = useState([
-    'Domain Users',
-    'SOC Team',
-    'DLP Team',
-    'Administrators',
-    'Security Team'
-  ]);
-
   const handleSyncUsers = () => {
-    if (!selectedADGroup) {
-      alert('Выберите группу AD');
+    if (!syncConfig.domainName || !syncConfig.controllerIp || !syncConfig.username || !syncConfig.distinguishedName) {
+      alert('Заполните параметры подключения к AD и Distinguished Name группы');
       return;
     }
-    console.log('Синхронизация пользователей из группы:', selectedADGroup);
-    alert(`Синхронизация пользователей из группы "${selectedADGroup}"`);
+    console.log('Синхронизация пользователей из AD:', syncConfig);
+    alert(`Синхронизация пользователей из ${syncConfig.domainName} по группе ${syncConfig.distinguishedName}`);
   };
 
   const removeUser = (id: string) => {
     setUsers(users.filter(u => u.id !== id));
+  };
+
+  const updateSyncConfig = (field: keyof UserSyncConfig, value: string) => {
+    setSyncConfig((prev) => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -55,23 +76,91 @@ export default function UsersSettings() {
               Синхронизация с Active Directory
             </h4>
             <p className="text-xs text-blue-800 dark:text-blue-400">
-              Выберите группу AD для импорта пользователей
+              Укажите параметры подключения и Distinguished Name группы, из которой нужно забирать пользователей
             </p>
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <select
-            value={selectedADGroup}
-            onChange={(e) => setSelectedADGroup(e.target.value)}
-            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Выберите группу AD</option>
-            {adGroups.map(group => (
-              <option key={group} value={group}>{group}</option>
-            ))}
-          </select>
-          
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
+              Имя домена
+            </label>
+            <input
+              type="text"
+              value={syncConfig.domainName}
+              onChange={(e) => updateSyncConfig('domainName', e.target.value)}
+              placeholder="corp.local"
+              className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
+              IP контроллера
+            </label>
+            <input
+              type="text"
+              value={syncConfig.controllerIp}
+              onChange={(e) => updateSyncConfig('controllerIp', e.target.value)}
+              placeholder="10.10.10.10"
+              className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
+              Пользователь
+            </label>
+            <input
+              type="text"
+              value={syncConfig.username}
+              onChange={(e) => updateSyncConfig('username', e.target.value)}
+              placeholder="svc_im_sync@corp.local"
+              className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
+              Пароль
+            </label>
+            <input
+              type="password"
+              value={syncConfig.password}
+              onChange={(e) => updateSyncConfig('password', e.target.value)}
+              placeholder="••••••••"
+              className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
+              Тип подключения
+            </label>
+            <select
+              value={syncConfig.connectionType}
+              onChange={(e) => updateSyncConfig('connectionType', e.target.value)}
+              className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
+            >
+              {directoryConnectionOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
+              Distinguished Name группы
+            </label>
+            <input
+              type="text"
+              value={syncConfig.distinguishedName}
+              onChange={(e) => updateSyncConfig('distinguishedName', e.target.value)}
+              placeholder="CN=SOC Team,OU=Groups,DC=corp,DC=local"
+              className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
+            />
+          </div>
+        </div>
+
+        <div className="mt-4 flex justify-end">
           <button
             onClick={handleSyncUsers}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"

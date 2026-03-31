@@ -5,7 +5,6 @@ import {
   FileText,
   User,
   Database,
-  FileStack,
   AlertTriangle,
   Calendar,
   Shield,
@@ -19,19 +18,24 @@ import {
   Workflow,
   Paperclip,
   X,
+  Pencil,
+  Reply,
 } from 'lucide-react';
-import { mockIncidents, mockUser, mockUsersDirectory } from '../data/mockData';
+import { mockUser, mockUsersDirectory } from '../data/mockData';
 import DraggableField from './DraggableField';
 import ExportButtons from './ExportButtons';
 import DraggableIncidentAction from './DraggableIncidentAction';
-import { InvestigationAttachment, useIncidentCollaboration } from '../store/incidentCollaboration';
+import { InvestigationAttachment, InvestigationEntry, useIncidentCollaboration } from '../store/incidentCollaboration';
 import { getIncidentTypeDefinition } from '../config/incident-config';
 import { SYSTEM_INCIDENT_ACTIONS } from '../config/incident-actions';
+import { useIncidentsStore } from '../store/incidents';
+import { Incident } from '../types/incident';
+import IncidentFieldEditDialog from './IncidentFieldEditDialog';
 
 interface Field {
   id: string;
   label: string;
-  getValue: (incident: (typeof mockIncidents)[number]) => React.ReactNode;
+  getValue: (incident: Incident) => React.ReactNode;
   icon: React.ReactNode;
 }
 
@@ -92,30 +96,10 @@ const defaultFields: Field[] = [
     label: 'Дата создания',
     getValue: (incident) => incident.дата,
     icon: <Calendar className="w-5 h-5 text-pink-600 dark:text-pink-400" />
-  },
-  {
-    id: 'файлы',
-    label: 'Список файлов',
-    getValue: (incident) => (
-      <div className="space-y-2">
-        {incident.списокФайлов.length > 0 ? (
-          incident.списокФайлов.map((file: string, idx: number) => (
-            <div
-              key={idx}
-              className="inline-flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-xs mr-2 mb-2"
-            >
-              <FileText className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-              <span className="text-gray-700 dark:text-gray-300">{file}</span>
-            </div>
-          ))
-        ) : (
-          <span className="text-gray-500 dark:text-gray-400 text-sm">Нет прикрепленных файлов</span>
-        )}
-      </div>
-    ),
-    icon: <FileStack className="w-5 h-5 text-orange-600 dark:text-orange-400" />
   }
 ];
+
+const incidentStatusOptions = ['Открыт', 'В работе', 'Расследование', 'Закрыт', 'Ложный'];
 
 const emailTemplates = [
   {
@@ -162,6 +146,36 @@ function highlightMentions(content: string) {
   });
 }
 
+interface InvestigationThreadNode extends InvestigationEntry {
+  children: InvestigationThreadNode[];
+}
+
+function buildInvestigationThreads(entries: InvestigationEntry[]): InvestigationThreadNode[] {
+  const byParent = new Map<string, InvestigationEntry[]>();
+  const roots: InvestigationEntry[] = [];
+
+  for (const entry of entries) {
+    if (entry.parentId) {
+      const current = byParent.get(entry.parentId) ?? [];
+      current.push(entry);
+      byParent.set(entry.parentId, current);
+    } else {
+      roots.push(entry);
+    }
+  }
+
+  const sortByCreatedAt = (a: InvestigationEntry, b: InvestigationEntry) => a.createdAt.localeCompare(b.createdAt);
+  roots.sort(sortByCreatedAt);
+  byParent.forEach((children) => children.sort(sortByCreatedAt));
+
+  const attachChildren = (entry: InvestigationEntry): InvestigationThreadNode => ({
+    ...entry,
+    children: (byParent.get(entry.id) ?? []).map(attachChildren),
+  });
+
+  return roots.map(attachChildren);
+}
+
 export default function IncidentDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -173,10 +187,22 @@ export default function IncidentDetailPage() {
   const [emailRecipient, setEmailRecipient] = useState('');
   const [showActionPicker, setShowActionPicker] = useState(false);
   const [commentAttachments, setCommentAttachments] = useState<InvestigationAttachment[]>([]);
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [editingField, setEditingField] = useState<{
+    key: string;
+    label: string;
+    inputType: 'text' | 'textarea' | 'select';
+    value: string;
+    options?: string[];
+    isAdditional?: boolean;
+  } | null>(null);
+
+  const incidents = useIncidentsStore((state) => state.incidents);
+  const updateIncident = useIncidentsStore((state) => state.updateIncident);
 
   const incident = useMemo(() => {
-    return mockIncidents.find((inc) => inc.id === id);
-  }, [id]);
+    return incidents.find((inc) => inc.id === id);
+  }, [id, incidents]);
 
   const actionsByIncident = useIncidentCollaboration((state) => state.actionsByIncident);
   const investigationByIncident = useIncidentCollaboration((state) => state.investigationByIncident);
@@ -186,6 +212,7 @@ export default function IncidentDetailPage() {
   const removeAction = useIncidentCollaboration((state) => state.removeAction);
   const addComment = useIncidentCollaboration((state) => state.addComment);
   const sendSystemEmail = useIncidentCollaboration((state) => state.sendSystemEmail);
+  const replyToEmailThread = useIncidentCollaboration((state) => state.replyToEmailThread);
 
   const moveField = useCallback((dragIndex: number, hoverIndex: number) => {
     setFields((prevFields) => {
@@ -258,10 +285,38 @@ export default function IncidentDetailPage() {
     setEmailRecipient(recipient);
   };
 
+  const handleSaveField = (value: string) => {
+    if (!incident || !editingField) return;
+
+    if (editingField.isAdditional) {
+      updateIncident(incident.id, {
+        дополнительныеПоля: {
+          ...(incident.дополнительныеПоля ?? {}),
+          [editingField.key]: value.trim(),
+        },
+      });
+      return;
+    }
+
+    updateIncident(incident.id, {
+      [editingField.key]: value.trim(),
+    } as Partial<Incident>);
+  };
+
   useEffect(() => {
     if (!incident) return;
     initializeIncidentActions(incident.id, incident.типИнцидента);
   }, [incident, initializeIncidentActions]);
+
+  const actions = incident ? (actionsByIncident[incident.id] ?? []) : [];
+  const investigationEntries = incident ? (investigationByIncident[incident.id] ?? []) : [];
+  const investigationThreads = useMemo(() => buildInvestigationThreads(investigationEntries), [investigationEntries]);
+  const availableActions = SYSTEM_INCIDENT_ACTIONS.filter((systemAction) => !actions.some((action) => action.label === systemAction.name));
+  const incidentType = incident ? getIncidentTypeDefinition(incident.типИнцидента) : undefined;
+  const suggestedRecipient = incident ? (emailRecipient || resolveViolatorEmail(incident.login, incident.id)) : emailRecipient;
+  const requiredFieldIds = new Set(['название', 'ответственный', 'источник', 'login', 'хост', 'статус', 'команда', 'дата']);
+  const requiredFields = fields.filter((field) => requiredFieldIds.has(field.id));
+  const optionalFields = fields.filter((field) => !requiredFieldIds.has(field.id));
 
   if (!incident) {
     return (
@@ -279,14 +334,157 @@ export default function IncidentDetailPage() {
     );
   }
 
-  const actions = actionsByIncident[incident.id] ?? [];
-  const investigationEntries = investigationByIncident[incident.id] ?? [];
-  const availableActions = SYSTEM_INCIDENT_ACTIONS.filter((systemAction) => !actions.some((action) => action.label === systemAction.name));
-  const incidentType = getIncidentTypeDefinition(incident.типИнцидента);
-  const suggestedRecipient = emailRecipient || resolveViolatorEmail(incident.login, incident.id);
-  const requiredFieldIds = new Set(['название', 'ответственный', 'источник', 'login', 'хост', 'статус', 'команда', 'дата']);
-  const requiredFields = fields.filter((field) => requiredFieldIds.has(field.id));
-  const optionalFields = fields.filter((field) => !requiredFieldIds.has(field.id));
+  const openFieldEditor = (fieldId: string, label: string) => {
+    if (fieldId === 'статус') {
+      setEditingField({ key: fieldId, label, inputType: 'select', value: incident.статус, options: incidentStatusOptions });
+      return;
+    }
+    if (fieldId === 'команда') {
+      setEditingField({ key: fieldId, label, inputType: 'select', value: incident.команда, options: ['SOC L1', 'SOC L2', 'DLP'] });
+      return;
+    }
+    setEditingField({ key: fieldId, label, inputType: 'text', value: String(incident[fieldId as keyof Incident] ?? '') });
+  };
+
+  const openAdditionalFieldEditor = (fieldId: string, label: string) => {
+    setEditingField({
+      key: fieldId,
+      label,
+      inputType: 'text',
+      value: incident.дополнительныеПоля?.[fieldId] ?? '',
+      isAdditional: true,
+    });
+  };
+
+  const handleReplyChange = (entryId: string, value: string) => {
+    setReplyDrafts((prev) => ({ ...prev, [entryId]: value }));
+  };
+
+  const handleReplySubmit = (entry: InvestigationEntry) => {
+    const value = (replyDrafts[entry.id] ?? '').trim();
+    if (!value) return;
+
+    if (entry.type === 'comment') {
+      addComment(incident.id, value, [], entry.id);
+    } else {
+      replyToEmailThread(incident.id, entry.id, value);
+    }
+
+    setReplyDrafts((prev) => ({ ...prev, [entry.id]: '' }));
+  };
+
+  const renderInvestigationThread = (entry: InvestigationThreadNode, depth = 0): React.ReactNode => {
+    const isOutgoing = entry.type === 'email_out';
+    const isIncomingMail = entry.type === 'email_in';
+    const accentClass = isOutgoing
+      ? 'border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30'
+      : isIncomingMail
+        ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/20'
+        : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900';
+
+    return (
+      <div key={entry.id} className={depth > 0 ? 'ml-6 mt-3 border-l border-gray-200 dark:border-gray-700 pl-4' : ''}>
+        <div className={`rounded-2xl border p-4 ${accentClass}`}>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{entry.authorName}</span>
+                <span className="rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-[11px] text-gray-600 dark:text-gray-300">
+                  {entry.authorRole}
+                </span>
+                {entry.type !== 'comment' && (
+                  <span className="rounded-full bg-white/80 dark:bg-black/20 px-2 py-0.5 text-[11px] text-gray-600 dark:text-gray-300">
+                    {entry.type === 'email_out' ? 'Исходящее письмо' : 'Входящий ответ'}
+                  </span>
+                )}
+              </div>
+              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">{entry.createdAt}</div>
+            </div>
+          </div>
+
+          {(entry.subject || entry.recipient) && (
+            <div className="mt-3 rounded-xl bg-white/70 dark:bg-black/10 p-3 text-xs text-gray-600 dark:text-gray-300 space-y-1">
+              {entry.subject && <div><span className="font-medium">Тема:</span> {entry.subject}</div>}
+              {entry.recipient && <div><span className="font-medium">Адресат:</span> {entry.recipient}</div>}
+              {entry.templateName && <div><span className="font-medium">Шаблон:</span> {entry.templateName}</div>}
+            </div>
+          )}
+
+          <div className="mt-3 text-sm leading-6 text-gray-800 dark:text-gray-200">
+            {highlightMentions(entry.content)}
+          </div>
+
+          {entry.attachments && entry.attachments.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {entry.attachments.map((attachment: InvestigationAttachment) => (
+                <div
+                  key={attachment.id}
+                  className="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900 px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300"
+                >
+                  <Paperclip className="w-3.5 h-3.5" />
+                  <span>{attachment.name}</span>
+                  <span className="text-gray-400 dark:text-gray-500">{attachment.sizeLabel}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-3">
+            <button
+              onClick={() => {
+                if (replyDrafts[entry.id] !== undefined) {
+                  setReplyDrafts((prev) => {
+                    const next = { ...prev };
+                    delete next[entry.id];
+                    return next;
+                  });
+                  return;
+                }
+                handleReplyChange(entry.id, '');
+              }}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <Reply className="w-3.5 h-3.5" />
+              {replyDrafts[entry.id] !== undefined ? 'Скрыть ответ' : 'Ответить'}
+            </button>
+          </div>
+
+          {replyDrafts[entry.id] !== undefined && (
+            <div className="mt-3 space-y-2">
+              <textarea
+                value={replyDrafts[entry.id]}
+                onChange={(e) => handleReplyChange(entry.id, e.target.value)}
+                rows={3}
+                placeholder={entry.type === 'comment' ? 'Ответ на комментарий...' : 'Ответ в ветке письма...'}
+                className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-950 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleReplySubmit(entry)}
+                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                >
+                  <Send className="w-4 h-4" />
+                  Отправить ответ
+                </button>
+                <button
+                  onClick={() => setReplyDrafts((prev) => {
+                    const next = { ...prev };
+                    delete next[entry.id];
+                    return next;
+                  })}
+                  className="rounded-lg px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
+                  Отмена
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {entry.children?.map((child: any) => renderInvestigationThread(child, depth + 1))}
+      </div>
+    );
+  };
 
   return (
     <div className="p-6 space-y-8">
@@ -328,9 +526,6 @@ export default function IncidentDetailPage() {
             />
           ))}
           <ExportButtons incident={incident} />
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
-            Редактировать
-          </button>
           <div className="relative">
             <button
               onClick={() => setShowActionPicker((prev) => !prev)}
@@ -376,11 +571,20 @@ export default function IncidentDetailPage() {
               icon={field.icon}
               index={index}
               moveField={moveField}
+              action={
+                <button
+                  onClick={() => openFieldEditor(field.id, field.label)}
+                  className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                  Изменить
+                </button>
+              }
             />
           ))}
         </div>
 
-        {optionalFields.length > 0 && (
+        {(optionalFields.length > 0 || (incidentType?.extraFields.length ?? 0) > 0) && (
           <div className="mt-6">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Дополнительные поля</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -393,12 +597,57 @@ export default function IncidentDetailPage() {
                   icon={field.icon}
                   index={requiredFields.length + index}
                   moveField={moveField}
+                  action={
+                    <button
+                      onClick={() => openFieldEditor(field.id, field.label)}
+                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      Изменить
+                    </button>
+                  }
+                />
+              ))}
+              {incidentType?.extraFields.map((field, index) => (
+                <DraggableField
+                  key={`extra-${field.id}`}
+                  id={`extra-${field.id}`}
+                  label={field.label}
+                  value={incident.дополнительныеПоля?.[field.id] ?? '—'}
+                  icon={<FileText className="w-5 h-5 text-slate-600 dark:text-slate-400" />}
+                  index={requiredFields.length + optionalFields.length + index}
+                  moveField={moveField}
+                  action={
+                    <button
+                      onClick={() => openAdditionalFieldEditor(field.id, field.label)}
+                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      Изменить
+                    </button>
+                  }
                 />
               ))}
             </div>
           </div>
         )}
       </div>
+
+      {editingField && (
+        <IncidentFieldEditDialog
+          open={Boolean(editingField)}
+          onOpenChange={(open) => {
+            if (!open) {
+              setEditingField(null);
+            }
+          }}
+          label={editingField.label}
+          value={editingField.value}
+          inputType={editingField.inputType}
+          options={editingField.options}
+          onSave={handleSaveField}
+        />
+      )}
 
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm">
         <div className="border-b border-gray-200 dark:border-gray-800 px-6 py-5">
@@ -411,67 +660,11 @@ export default function IncidentDetailPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr]">
-          <div className="border-r-0 xl:border-r border-gray-200 dark:border-gray-800">
-            <div className="max-h-[760px] overflow-y-auto px-6 py-5 space-y-4 bg-gray-50/70 dark:bg-gray-950/40">
-              {investigationEntries.length > 0 ? (
-                investigationEntries.map((entry) => {
-                  const isOutgoing = entry.type === 'email_out';
-                  const isIncomingMail = entry.type === 'email_in';
-                  const accentClass = isOutgoing
-                    ? 'border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30'
-                    : isIncomingMail
-                      ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/20'
-                      : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900';
-
-                  return (
-                    <div key={entry.id} className={`rounded-2xl border p-4 ${accentClass}`}>
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{entry.authorName}</span>
-                            <span className="rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-[11px] text-gray-600 dark:text-gray-300">
-                              {entry.authorRole}
-                            </span>
-                            {entry.type !== 'comment' && (
-                              <span className="rounded-full bg-white/80 dark:bg-black/20 px-2 py-0.5 text-[11px] text-gray-600 dark:text-gray-300">
-                                {entry.type === 'email_out' ? 'Исходящее письмо' : 'Входящий ответ'}
-                              </span>
-                            )}
-                          </div>
-                          <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">{entry.createdAt}</div>
-                        </div>
-                      </div>
-
-                      {(entry.subject || entry.recipient) && (
-                        <div className="mt-3 rounded-xl bg-white/70 dark:bg-black/10 p-3 text-xs text-gray-600 dark:text-gray-300 space-y-1">
-                          {entry.subject && <div><span className="font-medium">Тема:</span> {entry.subject}</div>}
-                          {entry.recipient && <div><span className="font-medium">Адресат:</span> {entry.recipient}</div>}
-                          {entry.templateName && <div><span className="font-medium">Шаблон:</span> {entry.templateName}</div>}
-                        </div>
-                      )}
-
-                      <div className="mt-3 text-sm leading-6 text-gray-800 dark:text-gray-200">
-                        {highlightMentions(entry.content)}
-                      </div>
-
-                      {entry.attachments && entry.attachments.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {entry.attachments.map((attachment) => (
-                            <div
-                              key={attachment.id}
-                              className="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900 px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300"
-                            >
-                              <Paperclip className="w-3.5 h-3.5" />
-                              <span>{attachment.name}</span>
-                              <span className="text-gray-400 dark:text-gray-500">{attachment.sizeLabel}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })
+        <div className="grid min-h-[calc(100vh-14rem)] grid-cols-1 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.85fr)]">
+          <div className="min-w-0 border-r-0 xl:border-r border-gray-200 dark:border-gray-800">
+            <div className="h-full min-h-[560px] px-6 py-5 space-y-4 bg-gray-50/70 dark:bg-gray-950/40">
+              {investigationThreads.length > 0 ? (
+                investigationThreads.map((entry) => renderInvestigationThread(entry))
               ) : (
                 <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 p-6 text-sm text-gray-500 dark:text-gray-400">
                   Лента расследования пока пуста.
@@ -480,7 +673,7 @@ export default function IncidentDetailPage() {
             </div>
           </div>
 
-          <div className="px-6 py-5 space-y-6 bg-white dark:bg-gray-900">
+          <div className="min-w-0 px-6 py-5 space-y-6 bg-white dark:bg-gray-900">
             <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
                 <AtSign className="w-4 h-4 text-blue-600 dark:text-blue-400" />

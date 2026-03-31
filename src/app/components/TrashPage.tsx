@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Trash2, X, Filter } from 'lucide-react';
-import { mockIncidents } from '../data/mockData';
 import IncidentTable from './IncidentTable';
+import { useIncidentsStore } from '../store/incidents';
 
 export default function TrashPage() {
   const [showClearDialog, setShowClearDialog] = useState(false);
@@ -11,9 +11,9 @@ export default function TrashPage() {
     ответственный: '',
     источник: ''
   });
+  const incidents = useIncidentsStore((state) => state.incidents);
 
-  // Mock deleted incidents
-  const deletedIncidents = mockIncidents.slice(0, 2);
+  const deletedIncidents = incidents.slice(0, 2);
 
   const handleClearTrash = () => {
     console.log('Clearing trash with filters:', clearFilters);
@@ -21,9 +21,9 @@ export default function TrashPage() {
     setShowClearDialog(false);
   };
 
-  const teams = Array.from(new Set(mockIncidents.map(i => i.команда)));
-  const responsibles = Array.from(new Set(mockIncidents.map(i => i.ответственный)));
-  const sources = Array.from(new Set(mockIncidents.map(i => i.источник)));
+  const teams = Array.from(new Set(incidents.map(i => i.команда)));
+  const responsibles = Array.from(new Set(incidents.map(i => i.ответственный)));
+  const sources = Array.from(new Set(incidents.map(i => i.источник)));
 
   return (
     <div className="p-6">

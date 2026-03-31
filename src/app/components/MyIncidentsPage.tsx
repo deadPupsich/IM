@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback } from 'react';
-import { mockIncidents, mockUser } from '../data/mockData';
+import { mockUser } from '../data/mockData';
 import CollapsibleIncidentTable from './CollapsibleIncidentTable';
+import { useIncidentsStore } from '../store/incidents';
 
 export default function MyIncidentsPage() {
   const [tables, setTables] = useState([
@@ -8,25 +9,25 @@ export default function MyIncidentsPage() {
     { id: 'assigned-by-me', title: 'Назначенные мной' },
     { id: 'closed-by-me', title: 'Закрытые мной' }
   ]);
+  const incidents = useIncidentsStore((state) => state.incidents);
 
   const assignedToMe = useMemo(() => {
-    return mockIncidents.filter((incident) => 
+    return incidents.filter((incident) => 
       incident.ответственный === mockUser.name && incident.статус !== 'Закрыт'
     );
-  }, []);
+  }, [incidents]);
   
   const closedByMe = useMemo(() => {
-    return mockIncidents.filter((incident) => 
+    return incidents.filter((incident) => 
       incident.ответственный === mockUser.name && incident.статус === 'Закрыт'
     );
-  }, []);
+  }, [incidents]);
 
   const assignedByMe = useMemo(() => {
-    // Инциденты, назначенные мной (в реальном приложении нужно отслеживать кто назначил)
-    return mockIncidents.filter((incident) => 
+    return incidents.filter((incident) => 
       incident.статус !== 'Закрыт' && incident.команда === 'SOC L1'
     );
-  }, []);
+  }, [incidents]);
 
   const moveTable = useCallback((dragIndex: number, hoverIndex: number) => {
     setTables((prevTables) => {

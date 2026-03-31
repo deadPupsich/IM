@@ -9,6 +9,7 @@ interface DraggableFieldProps {
   icon: React.ReactNode;
   index: number;
   moveField: (dragIndex: number, hoverIndex: number) => void;
+  action?: React.ReactNode;
 }
 
 const FIELD_TYPE = 'FIELD';
@@ -19,7 +20,8 @@ export default function DraggableField({
   value,
   icon,
   index,
-  moveField
+  moveField,
+  action
 }: DraggableFieldProps) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -90,7 +92,10 @@ export default function DraggableField({
         </div>
         
         <div className="flex-1 min-w-0">
-          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</div>
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <div className="text-xs text-gray-500 dark:text-gray-400">{label}</div>
+            {action}
+          </div>
           <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{value}</div>
         </div>
       </div>

@@ -13,6 +13,8 @@ export interface InvestigationEntry {
   id: string;
   incidentId: string;
   type: 'comment' | 'email_out' | 'email_in';
+  parentId?: string;
+  threadRootId?: string;
   authorId: string;
   authorName: string;
   authorRole: string;
@@ -49,8 +51,9 @@ interface IncidentCollaborationState {
   moveAction: (incidentId: string, dragIndex: number, hoverIndex: number) => void;
   addAction: (incidentId: string, actionName: string) => void;
   removeAction: (incidentId: string, actionId: string) => void;
-  addComment: (incidentId: string, content: string, attachments?: InvestigationAttachment[]) => void;
+  addComment: (incidentId: string, content: string, attachments?: InvestigationAttachment[], parentId?: string) => void;
   sendSystemEmail: (incidentId: string, recipient: string, subject: string, content: string, templateName: string) => void;
+  replyToEmailThread: (incidentId: string, parentId: string, content: string) => void;
   markNotificationRead: (notificationId: string) => void;
   markAllNotificationsRead: (userId: string) => void;
 }
@@ -84,9 +87,37 @@ const initialInvestigation: Record<string, InvestigationEntry[]> = {
       ],
     },
     {
+      id: 'm-1-r1',
+      incidentId: '1',
+      type: 'comment',
+      parentId: 'm-1',
+      threadRootId: 'm-1',
+      authorId: 'u1',
+      authorName: 'Иван Петров',
+      authorRole: 'Текущий пользователь',
+      content: 'Подключился к разбору. Запрашиваю выгрузку по хосту и проверю смежные события.',
+      createdAt: '2026-03-31 09:28',
+    },
+    {
       id: 'm-2',
       incidentId: '1',
+      type: 'email_out',
+      authorId: 'system',
+      authorName: 'Система IM',
+      authorRole: 'Системное письмо',
+      content: 'Добрый день. Просим уточнить обстоятельства подключения и подтвердить, выполняли ли вы это действие.',
+      createdAt: '2026-03-31 09:35',
+      recipient: 'abuse@company.com',
+      subject: 'Уточнение по сетевой активности',
+      templateName: 'Запросить пояснение',
+      threadRootId: 'm-2',
+    },
+    {
+      id: 'm-3',
+      incidentId: '1',
       type: 'email_in',
+      parentId: 'm-2',
+      threadRootId: 'm-2',
       authorId: 'violator',
       authorName: 'Подозреваемый пользователь',
       authorRole: 'Внешний ответ',
@@ -208,14 +239,18 @@ export const useIncidentCollaboration = create<IncidentCollaborationState>()((se
         [incidentId]: (state.actionsByIncident[incidentId] ?? []).filter((action) => action.id !== actionId),
       },
     })),
-  addComment: (incidentId, content, attachments = []) =>
+  addComment: (incidentId, content, attachments = [], parentId) =>
     set((state) => {
       const entries = state.investigationByIncident[incidentId] ?? [];
       const mentionedUserIds = extractMentionedUserIds(content);
+      const parentEntry = parentId ? entries.find((entry) => entry.id === parentId) : undefined;
+      const nextId = `comment-${Date.now()}`;
       const nextEntry: InvestigationEntry = {
-        id: `comment-${Date.now()}`,
+        id: nextId,
         incidentId,
         type: 'comment',
+        parentId,
+        threadRootId: parentEntry?.threadRootId ?? parentEntry?.id ?? nextId,
         authorId: mockUser.id,
         authorName: mockUser.name,
         authorRole: 'Текущий пользователь',
@@ -247,10 +282,12 @@ export const useIncidentCollaboration = create<IncidentCollaborationState>()((se
       };
     }),
   sendSystemEmail: (incidentId, recipient, subject, content, templateName) => {
+    const rootId = `email-out-${Date.now()}`;
     const outEntry: InvestigationEntry = {
-      id: `email-out-${Date.now()}`,
+      id: rootId,
       incidentId,
       type: 'email_out',
+      threadRootId: rootId,
       authorId: 'system',
       authorName: 'Система IM',
       authorRole: 'Системное письмо',
@@ -278,6 +315,8 @@ export const useIncidentCollaboration = create<IncidentCollaborationState>()((se
           id: `email-in-${Date.now()}`,
           incidentId,
           type: 'email_in',
+          parentId: rootId,
+          threadRootId: rootId,
           authorId: 'violator',
           authorName: 'Нарушитель',
           authorRole: 'Ответ на письмо',
@@ -296,6 +335,37 @@ export const useIncidentCollaboration = create<IncidentCollaborationState>()((se
       });
     }, 1500);
   },
+  replyToEmailThread: (incidentId, parentId, content) =>
+    set((state) => {
+      const entries = state.investigationByIncident[incidentId] ?? [];
+      const parentEntry = entries.find((entry) => entry.id === parentId);
+      if (!parentEntry) {
+        return state;
+      }
+
+      const nextEntry: InvestigationEntry = {
+        id: `email-reply-${Date.now()}`,
+        incidentId,
+        type: 'email_out',
+        parentId,
+        threadRootId: parentEntry.threadRootId ?? parentEntry.id,
+        authorId: 'system',
+        authorName: 'Система IM',
+        authorRole: 'Ответ системы',
+        content,
+        createdAt: getNowString(),
+        recipient: parentEntry.recipient,
+        subject: parentEntry.subject?.startsWith('Re:') ? parentEntry.subject : `Re: ${parentEntry.subject ?? 'Переписка по инциденту'}`,
+        templateName: 'Ответ в ветке',
+      };
+
+      return {
+        investigationByIncident: {
+          ...state.investigationByIncident,
+          [incidentId]: [...entries, nextEntry],
+        },
+      };
+    }),
   markNotificationRead: (notificationId) =>
     set((state) => ({
       notifications: state.notifications.map((notification) =>

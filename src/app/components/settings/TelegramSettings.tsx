@@ -104,7 +104,7 @@ export default function TelegramSettings() {
                   value={bot.botToken}
                   onChange={(e) => updateBot(bot.id, 'botToken', e.target.value)}
                   placeholder="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-mono text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                 />
               </div>
 
@@ -117,7 +117,7 @@ export default function TelegramSettings() {
                   value={bot.botName}
                   onChange={(e) => updateBot(bot.id, 'botName', e.target.value)}
                   placeholder="MyIncidentBot"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                 />
               </div>
 
@@ -130,7 +130,7 @@ export default function TelegramSettings() {
                   value={bot.chatId}
                   onChange={(e) => updateBot(bot.id, 'chatId', e.target.value)}
                   placeholder="-1001234567890"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-mono text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                 />
               </div>
             </div>
