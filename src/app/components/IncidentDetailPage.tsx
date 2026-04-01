@@ -47,7 +47,7 @@ interface FieldTypeDefinition {
   allowMultiple?: boolean;
   selectOptions?: { label: string; value: string }[];
   icon: React.ReactNode;
-  getValue: (incident: Incident, field?: FieldTypeDefinition) => React.ReactNode;
+  getValue: (incident: Incident) => React.ReactNode;
   prefix?: string;
   postfix?: string;
 }
@@ -149,10 +149,10 @@ const fieldTypes: FieldTypeDefinition[] = [
     type: 'number',
     postfix: 'мин',
     icon: <Clock className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
-    getValue: (incident, field) => {
+    getValue: (incident) => {
       const value = incident.дополнительныеПоля?.response_time;
       if (!value) return '—';
-      return field.postfix ? `${value} ${field.postfix}` : String(value);
+      return `${value} мин`;
     }
   },
   {

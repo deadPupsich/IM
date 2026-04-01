@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Plus, Trash2, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { CustomAction } from '../../types/settings';
