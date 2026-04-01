@@ -37,7 +37,28 @@ export const mockUsersDirectory: User[] = [
     email: 'olga.morozova@company.com',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Olga',
     teams: ['SOC L1']
-  }
+  },
+  {
+    id: 'u6',
+    name: 'Сергей Волков',
+    email: 'sergey.volkov@company.com',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sergey',
+    teams: ['SOC L2']
+  },
+  {
+    id: 'u7',
+    name: 'Елена Новикова',
+    email: 'elena.novikova@company.com',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Elena',
+    teams: ['DLP']
+  },
+  {
+    id: 'u8',
+    name: 'Иван Петров',
+    email: 'ivan.petrov@company.com',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=IvanP',
+    teams: ['SOC L1']
+  },
 ];
 
 export const mockIncidents: Incident[] = [
@@ -54,8 +75,14 @@ export const mockIncidents: Incident[] = [
     дата: '2026-03-26 10:30',
     типИнцидента: 'network',
     дополнительныеПоля: {
-      targetHost: 'srv-edge-01',
+      targetHost: 'SRV-EDGE-01',
       trafficProfile: 'Исходящий всплеск',
+      sourceIP: '192.168.1.105',
+      destinationIP: '45.33.32.156',
+      port: '443',
+      protocol: 'HTTPS',
+      bytesTransferred: '15728640',
+      isOutbound: 'true',
     }
   },
   {
@@ -73,6 +100,12 @@ export const mockIncidents: Incident[] = [
     дополнительныеПоля: {
       severity: 'Высокая',
       attackVector: 'Brute Force',
+      affectedSystems: 'AD Controller, VPN Gateway',
+      detectionTime: '2026-03-26 09:10',
+      threatActor: 'Unknown',
+      isBlocked: 'true',
+      riskScore: '85',
+      investigationNotes: 'Обнаружена серия неудачных попыток входа. IP заблокирован.',
     }
   },
   {
@@ -90,6 +123,12 @@ export const mockIncidents: Incident[] = [
     дополнительныеПоля: {
       dataCategory: 'Персональные данные',
       channel: 'Email',
+      dataVolume: '2.5 ГБ',
+      recipient: 'personal.email@gmail.com',
+      transferDate: '2026-03-26 07:45',
+      isEncrypted: 'false',
+      confidenceLevel: '95%',
+      evidenceFiles: 'email_export.msg, attachment_list.xlsx',
     }
   },
   {
@@ -107,6 +146,12 @@ export const mockIncidents: Incident[] = [
     дополнительныеПоля: {
       malwareFamily: 'Trojan.Generic',
       quarantineStatus: 'Изолирован',
+      infectionVector: 'Email вложение',
+      detectionDate: '2026-03-25 16:40',
+      affectedUsers: 'p.sidorov, a.petrova',
+      isRemoved: 'true',
+      threatLevel: '7',
+      scanResults: 'Обнаружено 3 угрозы, все удалены',
     }
   },
   {
@@ -122,8 +167,14 @@ export const mockIncidents: Incident[] = [
     дата: '2026-03-26 11:20',
     типИнцидента: 'network',
     дополнительныеПоля: {
-      targetHost: 'fw-core-02',
+      targetHost: 'FW-CORE-02',
       trafficProfile: 'Подключение к внешнему IP',
+      sourceIP: '10.0.0.50',
+      destinationIP: '185.220.101.45',
+      port: '8080',
+      protocol: 'HTTP',
+      bytesTransferred: '524288000',
+      isOutbound: 'true',
     }
   },
   {
@@ -141,6 +192,150 @@ export const mockIncidents: Incident[] = [
     дополнительныеПоля: {
       dataCategory: 'Коммерческая тайна',
       channel: 'Личная почта',
+      dataVolume: '150 МБ',
+      recipient: 'my.backup@protonmail.com',
+      transferDate: '2026-03-26 07:25',
+      isEncrypted: 'false',
+      confidenceLevel: '99%',
+      evidenceFiles: 'full_email.eml, headers.txt',
     }
-  }
+  },
+  {
+    id: '7',
+    название: 'Подозрительная активность учетной записи',
+    ответственный: 'Иван Петров',
+    источник: 'UEBA',
+    хост: 'DC-PRIMARY',
+    списокФайлов: ['ad_logs.evtx'],
+    login: 'admin.backup',
+    команда: 'SOC L1',
+    статус: 'Открыт',
+    дата: '2026-03-26 14:00',
+    типИнцидента: 'security',
+    дополнительныеПоля: {
+      severity: 'Средняя',
+      attackVector: 'Credential Abuse',
+      affectedSystems: 'Active Directory',
+      detectionTime: '2026-03-26 13:55',
+      threatActor: 'Insider',
+      isBlocked: 'false',
+      riskScore: '65',
+      investigationNotes: 'Аномальное время входа, необычные ресурсы',
+    }
+  },
+  {
+    id: '8',
+    название: 'Обнаружен шифровальщик',
+    ответственный: 'Алексей Смирнов',
+    источник: 'EDR',
+    хост: 'WKS-USER-089',
+    списокФайлов: ['ransomware.exe', 'decrypt_instructions.txt'],
+    login: 'k.fedorov',
+    команда: 'SOC L2',
+    статус: 'Расследование',
+    дата: '2026-03-26 12:30',
+    типИнцидента: 'malware',
+    дополнительныеПоля: {
+      malwareFamily: 'Ransomware.LockBit',
+      quarantineStatus: 'В процессе',
+      infectionVector: 'Drive-by download',
+      detectionDate: '2026-03-26 12:25',
+      affectedUsers: 'k.fedorov',
+      isRemoved: 'false',
+      threatLevel: '10',
+      scanResults: 'Обнаружено шифрование файлов, процесс остановлен',
+    }
+  },
+  {
+    id: '9',
+    название: 'Массовая рассылка фишинга',
+    ответственный: 'Мария Иванова',
+    источник: 'Email Security',
+    хост: 'MAIL-SEC-01',
+    списокФайлов: ['phishing_sample.eml', 'url_list.txt'],
+    login: 'external',
+    команда: 'SOC L1',
+    статус: 'Закрыт',
+    дата: '2026-03-25 09:00',
+    типИнцидента: 'security',
+    дополнительныеПоля: {
+      severity: 'Высокая',
+      attackVector: 'Phishing',
+      affectedSystems: 'Exchange Server',
+      detectionTime: '2026-03-25 08:55',
+      threatActor: 'TA572',
+      isBlocked: 'true',
+      riskScore: '90',
+      investigationNotes: 'Заблокированы все письма, пользователи уведомлены',
+    }
+  },
+  {
+    id: '10',
+    название: 'Копирование на съёмный носитель',
+    ответственный: 'Дмитрий Козлов',
+    источник: 'Device Control',
+    хост: 'WKS-HR-003',
+    списокФайлов: ['device_log.txt', 'file_manifest.csv'],
+    login: 'hr.manager',
+    команда: 'DLP',
+    статус: 'Открыт',
+    дата: '2026-03-26 15:45',
+    типИнцидента: 'dlp',
+    дополнительныеПоля: {
+      dataCategory: 'Документы HR',
+      channel: 'USB накопитель',
+      dataVolume: '1.2 ГБ',
+      recipient: 'USB\\VID_0781&PID_5583',
+      transferDate: '2026-03-26 15:40',
+      isEncrypted: 'false',
+      confidenceLevel: '100%',
+      evidenceFiles: 'device_id.txt, copied_files.log',
+    }
+  },
+  {
+    id: '11',
+    название: 'DDoS атака на веб-сервис',
+    ответственный: 'Сергей Волков',
+    источник: 'WAF',
+    хост: 'WEB-FRONT-01',
+    списокФайлов: ['waf_logs.txt', 'attack_pattern.json'],
+    login: 'web.service',
+    команда: 'SOC L2',
+    статус: 'В работе',
+    дата: '2026-03-26 13:00',
+    типИнцидента: 'network',
+    дополнительныеПоля: {
+      targetHost: 'WEB-FRONT-01',
+      trafficProfile: 'HTTP Flood',
+      sourceIP: 'Multiple',
+      destinationIP: '10.0.1.100',
+      port: '80',
+      protocol: 'HTTP',
+      bytesTransferred: '2147483648',
+      isOutbound: 'false',
+    }
+  },
+  {
+    id: '12',
+    название: 'Криптомайнер на сервере',
+    ответственный: 'Ольга Морозова',
+    источник: 'Resource Monitor',
+    хост: 'SRV-DEV-05',
+    списокФайлов: ['process_dump.txt', 'network_connections.log'],
+    login: 'dev.user',
+    команда: 'SOC L1',
+    статус: 'Открыт',
+    дата: '2026-03-26 16:20',
+    типИнцидента: 'malware',
+    дополнительныеПоля: {
+      malwareFamily: 'Miner.XMRig',
+      quarantineStatus: 'Обнаружен',
+      infectionVector: 'Compromised package',
+      detectionDate: '2026-03-26 16:15',
+      affectedUsers: 'dev.user',
+      isRemoved: 'false',
+      threatLevel: '5',
+      scanResults: 'Высокая загрузка CPU, подозрительные сетевые подключения',
+    }
+  },
 ];
