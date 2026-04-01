@@ -26,6 +26,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
     options?: string[];
     isAdditional?: boolean;
   } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; incidentId: string } | null>(null);
   const navigate = useNavigate();
   const incidentType = getIncidentTypeDefinition(incident.типИнцидента);
   const actionsByIncident = useIncidentCollaboration((state) => state.actionsByIncident);
@@ -97,9 +98,27 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
     },
   ]), [incident]);
 
-  const handleRowClick = () => {
+  const handleRowDoubleClick = () => {
     navigate(`/incident/${incident.id}`);
   };
+
+  const handleRowAuxClick = (e: React.MouseEvent) => {
+    if (e.button === 1) {
+      e.preventDefault();
+      window.open(`/incident/${incident.id}`, '_blank');
+    }
+  };
+
+  const handleRowContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY, incidentId: incident.id });
+  };
+
+  useEffect(() => {
+    const handleClick = () => setContextMenu(null);
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, []);
 
   const openFieldEditor = (fieldKey: string, label: string, value: string, inputType: 'text' | 'select' = 'text', options?: string[], isAdditional = false) => {
     setEditingField({ key: fieldKey, label, value, inputType, options, isAdditional });
@@ -127,7 +146,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
       <>
         <div className="flex border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
           <div
-              className="w-12 flex items-center justify-center border-r border-gray-200 dark:border-gray-700 flex-shrink-0 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="w-12 flex items-center justify-center border-r border-gray-200 dark:border-gray-700 flex-shrink-0 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsExpanded(!isExpanded);
@@ -142,7 +161,10 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
 
           <div
               className="flex flex-1 min-w-0 cursor-pointer"
-              onClick={handleRowClick}
+              onDoubleClick={handleRowDoubleClick}
+              onAuxClick={handleRowAuxClick}
+              onContextMenu={handleRowContextMenu}
+              style={{ userSelect: 'text' }}
           >
             {columns.map((col, index) => (
                 <div
@@ -150,13 +172,61 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
                     className={`px-4 py-3 text-sm text-gray-900 dark:text-gray-100 border-r border-gray-200 dark:border-gray-700 ${
                         index === columns.length - 1 ? 'border-r-0' : ''
                     } truncate flex-shrink-0`}
-                    style={{ width: `${col.width}px` }}
+                    style={{ width: `${col.width}px`, userSelect: 'text' }}
                 >
                   {getIncidentColumnValue(incident, col.key)}
                 </div>
             ))}
           </div>
         </div>
+
+        {contextMenu && contextMenu.incidentId === incident.id && (
+          <div 
+            className="fixed bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-50 py-1 min-w-[200px]"
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+          >
+            <button
+              onClick={() => {
+                navigate(`/incident/${incident.id}`);
+                setContextMenu(null);
+              }}
+              className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+            >
+              <FileText className="w-4 h-4" />
+              Открыть инцидент
+            </button>
+            <button
+              onClick={() => {
+                window.open(`/incident/${incident.id}`, '_blank');
+                setContextMenu(null);
+              }}
+              className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+            >
+              <Workflow className="w-4 h-4" />
+              Открыть в новой вкладке
+            </button>
+            <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+            <button
+              onClick={() => {
+                setIsExpanded(!isExpanded);
+                setContextMenu(null);
+              }}
+              className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronDown className="w-4 h-4" />
+                  Свернуть
+                </>
+              ) : (
+                <>
+                  <ChevronRight className="w-4 h-4" />
+                  Развернуть
+                </>
+              )}
+            </button>
+          </div>
+        )}
 
         {isExpanded && (
             <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6">
