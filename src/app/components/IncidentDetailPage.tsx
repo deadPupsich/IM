@@ -20,6 +20,8 @@ import {
   X,
   Pencil,
   Reply,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react';
 import { mockUser, mockUsersDirectory } from '../data/mockData';
 import DraggableField from './DraggableField';
@@ -176,6 +178,31 @@ function buildInvestigationThreads(entries: InvestigationEntry[]): Investigation
   return roots.map(attachChildren);
 }
 
+function countTotalEntries(nodes: InvestigationThreadNode[]): number {
+  return nodes.reduce((count, node) => count + 1 + countTotalEntries(node.children), 0);
+}
+
+function getFirstNEntries(nodes: InvestigationThreadNode[], n: number): InvestigationThreadNode[] {
+  const result: InvestigationThreadNode[] = [];
+  let count = 0;
+
+  const traverse = (node: InvestigationThreadNode) => {
+    if (count >= n) return;
+    result.push(node);
+    count++;
+    for (const child of node.children) {
+      traverse(child);
+    }
+  };
+
+  for (const node of nodes) {
+    traverse(node);
+    if (count >= n) break;
+  }
+
+  return result;
+}
+
 export default function IncidentDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -196,6 +223,7 @@ export default function IncidentDetailPage() {
     options?: string[];
     isAdditional?: boolean;
   } | null>(null);
+  const [investigationCollapsed, setInvestigationCollapsed] = useState(false);
 
   const incidents = useIncidentsStore((state) => state.incidents);
   const updateIncident = useIncidentsStore((state) => state.updateIncident);
@@ -311,6 +339,7 @@ export default function IncidentDetailPage() {
   const actions = incident ? (actionsByIncident[incident.id] ?? []) : [];
   const investigationEntries = incident ? (investigationByIncident[incident.id] ?? []) : [];
   const investigationThreads = useMemo(() => buildInvestigationThreads(investigationEntries), [investigationEntries]);
+  const totalInvestigationCount = useMemo(() => countTotalEntries(investigationThreads), [investigationThreads]);
   const availableActions = SYSTEM_INCIDENT_ACTIONS.filter((systemAction) => !actions.some((action) => action.label === systemAction.name));
   const incidentType = incident ? getIncidentTypeDefinition(incident.типИнцидента) : undefined;
   const suggestedRecipient = incident ? (emailRecipient || resolveViolatorEmail(incident.login, incident.id)) : emailRecipient;
@@ -559,8 +588,14 @@ export default function IncidentDetailPage() {
         </div>
       </div>
 
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Поля инцидента</h2>
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+            <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            Поля инцидента
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {requiredFields.map((field, index) => (
             <DraggableField
@@ -660,20 +695,36 @@ export default function IncidentDetailPage() {
           </p>
         </div>
 
-        <div className="grid min-h-[calc(100vh-14rem)] grid-cols-1 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.85fr)]">
-          <div className="min-w-0 border-r-0 xl:border-r border-gray-200 dark:border-gray-800">
-            <div className="h-full min-h-[560px] px-6 py-5 space-y-4 bg-gray-50/70 dark:bg-gray-950/40">
-              {investigationThreads.length > 0 ? (
-                investigationThreads.map((entry) => renderInvestigationThread(entry))
-              ) : (
-                <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 p-6 text-sm text-gray-500 dark:text-gray-400">
-                  Лента расследования пока пуста.
-                </div>
-              )}
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.85fr)] gap-6">
+          {/* Лента расследования - левая часть с прокруткой */}
+          <div className={`min-w-0 border border-gray-200 dark:border-gray-800 rounded-2xl bg-gray-50/70 dark:bg-gray-950/40 overflow-hidden flex flex-col ${!investigationCollapsed ? 'xl:row-span-2' : ''}`}>
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center gap-2">
+              <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Лента событий</h3>
+            </div>
+            <div className={`flex-1 overflow-y-auto p-6 space-y-4 ${investigationCollapsed ? 'min-h-[800px] max-h-[1000px]' : 'max-h-none'}`}>
+              {investigationThreads.map((entry) => renderInvestigationThread(entry))}
+            </div>
+            <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-800 bg-gray-100/50 dark:bg-gray-900/50 flex items-center justify-center">
+              <button
+                onClick={() => setInvestigationCollapsed(!investigationCollapsed)}
+                className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+              >
+                {investigationCollapsed ? (
+                  <>
+                    <ChevronDown className="w-5 h-5" />
+                  </>
+                ) : (
+                  <>
+                    <ChevronUp className="w-5 h-5" />
+                  </>
+                )}
+              </button>
             </div>
           </div>
 
-          <div className="min-w-0 px-6 py-5 space-y-6 bg-white dark:bg-gray-900">
+          {/* Правая часть - формы комментария и письма */}
+          <div className="min-w-0 space-y-6">
             <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
                 <AtSign className="w-4 h-4 text-blue-600 dark:text-blue-400" />

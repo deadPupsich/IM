@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronRight, ChevronDown, FileText, User, Database, AlertTriangle, Shield, Activity, Calendar, Workflow, Pencil } from 'lucide-react';
+import { ChevronRight, ChevronDown, ChevronUp, FileText, User, Database, AlertTriangle, Shield, Activity, Calendar, Workflow, Pencil } from 'lucide-react';
 import { DynamicColumnKey, Incident } from '../types/incident';
 import ExportButtons from './ExportButtons';
 import { getIncidentColumnValue, getIncidentTypeDefinition } from '../config/incident-config';
@@ -18,6 +18,7 @@ interface IncidentRowProps {
 
 export default function IncidentRow({ incident, columns }: IncidentRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [actionsCollapsed, setActionsCollapsed] = useState(false);
   const [editingField, setEditingField] = useState<{
     key: string;
     label: string;
@@ -228,68 +229,88 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
 
         {isExpanded && (
             <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6">
-              <div className="max-w-6xl">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Детали инцидента</h3>
-
-                {actions.length > 0 && (
-                  <div className="mb-5">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              <div className="max-w-6xl space-y-4">
+                
+                {/* Actions Section */}
+                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
                       <Workflow className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       Действия
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      {actions.map((action, index) => (
-                        <DraggableIncidentAction
-                          key={action.id}
-                          action={action}
-                          index={index}
-                          moveAction={() => {}}
-                          onRemove={() => {}}
-                          readonly
-                        />
-                      ))}
-                      <ExportButtons incident={incident} />
-                    </div>
+                    {actions.length > 3 && (
+                      <button
+                        onClick={() => setActionsCollapsed(!actionsCollapsed)}
+                        className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                      >
+                        {actionsCollapsed ? (
+                          <>
+                            <ChevronDown className="w-3 h-3" />
+                            Показать все ({actions.length})
+                          </>
+                        ) : (
+                          <>
+                            <ChevronUp className="w-3 h-3" />
+                            Свернуть
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
-                )}
-
-                {actions.length === 0 && (
-                  <div className="mb-5 flex items-center gap-4">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Действия не настроены</div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {(actionsCollapsed ? actions.slice(0, 3) : actions).map((action, index) => (
+                      <DraggableIncidentAction
+                        key={action.id}
+                        action={action}
+                        index={index}
+                        moveAction={() => {}}
+                        onRemove={() => {}}
+                        readonly
+                      />
+                    ))}
                     <ExportButtons incident={incident} />
                   </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                  {requiredDetails.map((detail) => (
-                    <div key={detail.key} className="flex items-start gap-3 min-w-0">
-                      <div className={`w-10 h-10 ${detail.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                        {detail.icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-baseline gap-2 mb-1">
-                          <div className="text-xs text-gray-500 dark:text-gray-400 w-28 flex-shrink-0">{detail.label}</div>
-                          <button
-                            onClick={() => openFieldEditor(detail.key, detail.label, String(detail.value), detail.key === 'статус' ? 'select' : detail.key === 'команда' ? 'select' : 'text', detail.key === 'статус' ? incidentStatusOptions : detail.key === 'команда' ? ['SOC L1', 'SOC L2', 'DLP'] : undefined)}
-                            className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 flex-shrink-0"
-                          >
-                            <Pencil className="w-3 h-3" />
-                          </button>
-                        </div>
-                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words">{detail.value}</div>
-                        {detail.key === 'название' && (
-                          <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            Тип: {incidentType?.label ?? incident.типИнцидента}
-                          </div>
-                        )}
-                      </div>
+                  {actionsCollapsed && actions.length > 3 && (
+                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      Показано 3 из {actions.length} действий
                     </div>
-                  ))}
+                  )}
                 </div>
 
-                <div className="mt-5 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Дополнительные поля</div>
-                  {incidentType?.extraFields.length ? (
+                {/* Fields Section */}
+                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                    {requiredDetails.map((detail) => (
+                      <div key={detail.key} className="flex items-start gap-3 min-w-0">
+                        <div className={`w-10 h-10 ${detail.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                          {detail.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-baseline gap-2 mb-1">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 w-28 flex-shrink-0">{detail.label}</div>
+                            <button
+                              onClick={() => openFieldEditor(detail.key, detail.label, String(detail.value), detail.key === 'статус' ? 'select' : detail.key === 'команда' ? 'select' : 'text', detail.key === 'статус' ? incidentStatusOptions : detail.key === 'команда' ? ['SOC L1', 'SOC L2', 'DLP'] : undefined)}
+                              className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 flex-shrink-0"
+                            >
+                              <Pencil className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words">{detail.value}</div>
+                          {detail.key === 'название' && (
+                            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                              Тип: {incidentType?.label ?? incident.типИнцидента}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Additional Fields Section */}
+                {incidentType?.extraFields.length ? (
+                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
+                    <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Дополнительные поля</div>
                     <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                       {incidentType.extraFields.map((field) => (
                         <div key={field.id} className="flex items-start gap-3 min-w-0">
@@ -313,8 +334,8 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
                         </div>
                       ))}
                     </div>
-                  ) : null}
-                </div>
+                  </div>
+                ) : null}
               </div>
             </div>
         )}
