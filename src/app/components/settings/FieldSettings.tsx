@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Trash2, Search, ChevronLeft, ChevronRight, Palette } from 'lucide-react';
+import { Plus, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { CustomField, SelectOptionValue } from '../../types/settings';
 import { HexColorPicker } from 'react-colorful';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Trash2, ChevronDown, ChevronRight, Search } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, Search } from 'lucide-react';
 import { CustomField } from '../../types/settings';
 
 interface IncidentField {
@@ -102,14 +102,6 @@ export default function IncidentTypeSettings() {
   const removeFieldFromType = (typeId: string, fieldId: string) => {
     setIncidentTypes(incidentTypes.map(t => 
       t.id === typeId ? { ...t, fields: t.fields.filter(f => f.id !== fieldId) } : t
-    ));
-  };
-
-  const updateFieldInType = (typeId: string, fieldId: string, required: boolean) => {
-    setIncidentTypes(incidentTypes.map(t => 
-      t.id === typeId 
-        ? { ...t, fields: t.fields.map(f => f.id === fieldId ? { ...f, required } : f) }
-        : t
     ));
   };
 

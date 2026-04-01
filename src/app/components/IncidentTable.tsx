@@ -7,7 +7,6 @@ import ColumnFilter from './ColumnFilter';
 import { useAppSettings } from '../store/settings';
 import {
   DEFAULT_INCIDENT_COLUMNS,
-  getColumnDefinition,
   getExtraColumnDefinitions,
   getIncidentColumnValue,
   getIncidentTypeDefinition,

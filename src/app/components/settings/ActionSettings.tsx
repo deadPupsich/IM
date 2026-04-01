@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { Plus, Trash2, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import * as Icons from 'lucide-react';
-import { CustomAction, ActionActivity } from '../../types/settings';
+import { CustomAction } from '../../types/settings';
 import { CustomField } from '../../types/settings';
 import { SYSTEM_INCIDENT_ACTIONS } from '../../config/incident-actions';
-import { HexColorPicker } from 'react-colorful';
 
 const iconsList = [
   'UserPlus', 'UserCheck', 'Mail', 'MessageSquare', 'Send', 'CheckCircle',

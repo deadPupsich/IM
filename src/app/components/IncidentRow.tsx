@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronRight, ChevronDown, ChevronUp, FileText, User, Users, Database, AlertTriangle, Monitor, Shield, Activity, Calendar, Workflow, Pencil } from 'lucide-react';
+import { ChevronRight, ChevronDown, ChevronUp, FileText, User, Users, Database, AlertTriangle, Monitor, Activity, Calendar, Workflow, Pencil } from 'lucide-react';
 import { DynamicColumnKey, Incident } from '../types/incident';
 import ExportButtons from './ExportButtons';
 import { getIncidentColumnValue, getIncidentTypeDefinition } from '../config/incident-config';

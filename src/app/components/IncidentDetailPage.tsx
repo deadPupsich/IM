@@ -10,7 +10,6 @@ import {
   AlertCircle,
   Monitor,
   Calendar,
-  Shield,
   Activity,
   History,
   Plus,
@@ -48,7 +47,7 @@ interface FieldTypeDefinition {
   allowMultiple?: boolean;
   selectOptions?: { label: string; value: string }[];
   icon: React.ReactNode;
-  getValue: (incident: Incident, field: FieldTypeDefinition) => React.ReactNode;
+  getValue: (incident: Incident, field?: FieldTypeDefinition) => React.ReactNode;
   prefix?: string;
   postfix?: string;
 }
@@ -66,7 +65,7 @@ const fieldTypes: FieldTypeDefinition[] = [
       { label: 'Ложный', value: 'Ложный' },
     ],
     icon: <Activity className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />,
-    getValue: (incident, field) => {
+    getValue: (incident) => {
       const status = incident.статус;
       const colors: Record<string, string> = {
         'Закрыт': 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300',
@@ -91,7 +90,7 @@ const fieldTypes: FieldTypeDefinition[] = [
       { label: 'DLP', value: 'DLP' },
     ],
     icon: <Users className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />,
-    getValue: (incident, field) => incident.команда
+    getValue: (incident) => incident.команда
   },
   {
     id: 'priority',
@@ -104,7 +103,7 @@ const fieldTypes: FieldTypeDefinition[] = [
       { label: 'Критический', value: 'Критический' },
     ],
     icon: <Flag className="w-5 h-5 text-orange-600 dark:text-orange-400" />,
-    getValue: (incident, field) => {
+    getValue: (incident) => {
       const priority = incident.дополнительныеПоля?.priority || '—';
       const colors: Record<string, string> = {
         'Низкий': 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
@@ -124,7 +123,7 @@ const fieldTypes: FieldTypeDefinition[] = [
     label: 'Дата обнаружения',
     type: 'datetime',
     icon: <Calendar className="w-5 h-5 text-rose-600 dark:text-rose-400" />,
-    getValue: (incident, field) => {
+    getValue: (incident) => {
       const value = incident.дополнительныеПоля?.detected_at;
       return value ? value : '—';
     }
@@ -134,7 +133,7 @@ const fieldTypes: FieldTypeDefinition[] = [
     label: 'Описание',
     type: 'multiline',
     icon: <FileText className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />,
-    getValue: (incident, field) => {
+    getValue: (incident) => {
       const value = incident.дополнительныеПоля?.description || incident.описание || '—';
       if (value === '—') return value;
       return (
@@ -161,7 +160,7 @@ const fieldTypes: FieldTypeDefinition[] = [
     label: 'Требуется эскалация',
     type: 'boolean',
     icon: <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />,
-    getValue: (incident, field) => {
+    getValue: (incident) => {
       const value = incident.дополнительныеПоля?.needs_escalation;
       if (!value || value === '—' || value === '') return '—';
       const isTrue = value === 'true' || value === true || value === '1' || value === 1;
@@ -189,7 +188,7 @@ const fieldTypes: FieldTypeDefinition[] = [
       { label: 'Web Server', value: 'Web Server' },
     ],
     icon: <Server className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
-    getValue: (incident, field) => {
+    getValue: (incident) => {
       const value = incident.дополнительныеПоля?.affected_systems;
       if (!value || value === '—' || value === '') return '—';
       const systems = value.split(',').map(s => s.trim()).filter(s => s);
@@ -207,16 +206,14 @@ const fieldTypes: FieldTypeDefinition[] = [
   },
 ];
 
-const incidentStatusOptions = ['Открыт', 'В работе', 'Расследование', 'Закрыт', 'Ложный'];
-
 // Basic fields without special types
 const basicFields: Omit<FieldTypeDefinition, 'type' | 'selectOptions' | 'allowMultiple' | 'prefix' | 'postfix'>[] = [
-  { id: 'название', label: 'Название', icon: <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />, getValue: (incident: Incident, field: FieldTypeDefinition) => incident.название },
-  { id: 'ответственный', label: 'Ответственный', icon: <User className="w-5 h-5 text-green-600 dark:text-green-400" />, getValue: (incident: Incident, field: FieldTypeDefinition) => incident.ответственный },
-  { id: 'источник', label: 'Источник', icon: <Database className="w-5 h-5 text-purple-600 dark:text-purple-400" />, getValue: (incident: Incident, field: FieldTypeDefinition) => incident.источник },
-  { id: 'login', label: 'Нарушитель', icon: <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />, getValue: (incident: Incident, field: FieldTypeDefinition) => incident.login },
-  { id: 'хост', label: 'Хост', icon: <Monitor className="w-5 h-5 text-slate-600 dark:text-slate-400" />, getValue: (incident: Incident, field: FieldTypeDefinition) => incident.хост },
-  { id: 'дата', label: 'Дата создания', icon: <Calendar className="w-5 h-5 text-pink-600 dark:text-pink-400" />, getValue: (incident: Incident, field: FieldTypeDefinition) => incident.дата },
+  { id: 'название', label: 'Название', icon: <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />, getValue: (incident: Incident) => incident.название },
+  { id: 'ответственный', label: 'Ответственный', icon: <User className="w-5 h-5 text-green-600 dark:text-green-400" />, getValue: (incident: Incident) => incident.ответственный },
+  { id: 'источник', label: 'Источник', icon: <Database className="w-5 h-5 text-purple-600 dark:text-purple-400" />, getValue: (incident: Incident) => incident.источник },
+  { id: 'login', label: 'Нарушитель', icon: <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />, getValue: (incident: Incident) => incident.login },
+  { id: 'хост', label: 'Хост', icon: <Monitor className="w-5 h-5 text-slate-600 dark:text-slate-400" />, getValue: (incident: Incident) => incident.хост },
+  { id: 'дата', label: 'Дата создания', icon: <Calendar className="w-5 h-5 text-pink-600 dark:text-pink-400" />, getValue: (incident: Incident) => incident.дата },
 ];
 
 // All fields combined - add default type 'string' to basic fields
@@ -304,31 +301,9 @@ function countTotalEntries(nodes: InvestigationThreadNode[]): number {
   return nodes.reduce((count, node) => count + 1 + countTotalEntries(node.children), 0);
 }
 
-function getFirstNEntries(nodes: InvestigationThreadNode[], n: number): InvestigationThreadNode[] {
-  const result: InvestigationThreadNode[] = [];
-  let count = 0;
-
-  const traverse = (node: InvestigationThreadNode) => {
-    if (count >= n) return;
-    result.push(node);
-    count++;
-    for (const child of node.children) {
-      traverse(child);
-    }
-  };
-
-  for (const node of nodes) {
-    traverse(node);
-    if (count >= n) break;
-  }
-
-  return result;
-}
-
 export default function IncidentDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [fields, setFields] = useState(allFields);
   const [commentText, setCommentText] = useState('');
   const [selectedTemplateId, setSelectedTemplateId] = useState(emailTemplates[0].id);
   const [emailSubject, setEmailSubject] = useState(emailTemplates[0].subject);
@@ -463,7 +438,6 @@ export default function IncidentDetailPage() {
   const actions = incident ? (actionsByIncident[incident.id] ?? []) : [];
   const investigationEntries = incident ? (investigationByIncident[incident.id] ?? []) : [];
   const investigationThreads = useMemo(() => buildInvestigationThreads(investigationEntries), [investigationEntries]);
-  const totalInvestigationCount = useMemo(() => countTotalEntries(investigationThreads), [investigationThreads]);
   const availableActions = SYSTEM_INCIDENT_ACTIONS.filter((systemAction) => !actions.some((action) => action.label === systemAction.name));
   const incidentType = incident ? getIncidentTypeDefinition(incident.типИнцидента) : undefined;
   const suggestedRecipient = incident ? (emailRecipient || resolveViolatorEmail(incident.login, incident.id)) : emailRecipient;
@@ -473,7 +447,7 @@ export default function IncidentDetailPage() {
   
   // Filter out fields that have no value for this incident
   const displayedOptionalFields = optionalFields.filter((field) => {
-    const value = field.getValue(incident, field);
+    const value = field.getValue(incident);
     // Check if value is empty or just a dash
     if (value === '—' || value === '' || value === null || value === undefined) return false;
     // For React elements, check if they have children
@@ -768,7 +742,7 @@ export default function IncidentDetailPage() {
               key={field.id}
               id={field.id}
               label={field.label}
-              value={field.getValue(incident, field)}
+              value={field.getValue(incident)}
               icon={field.icon}
               index={index}
               moveField={moveField}
@@ -794,7 +768,7 @@ export default function IncidentDetailPage() {
                   key={field.id}
                   id={field.id}
                   label={field.label}
-                  value={field.getValue(incident, field)}
+                  value={field.getValue(incident)}
                   icon={field.icon}
                   index={requiredFields.length + index}
                   moveField={moveField}
