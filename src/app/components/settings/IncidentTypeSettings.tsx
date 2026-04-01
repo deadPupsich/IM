@@ -136,26 +136,24 @@ export default function IncidentTypeSettings() {
 
       <div className="space-y-4">
         {incidentTypes.map((type) => (
-          <div key={type.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-              <button
-                onClick={() => toggleIncidentType(type.id)}
-                className="flex items-center gap-2 flex-1 text-left"
-              >
-                {type.isExpanded ? (
-                  <ChevronDown className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                ) : (
-                  <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                )}
+          <div key={type.id} className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-start gap-3">
+                <button
+                  onClick={() => toggleIncidentType(type.id)}
+                  className="flex-shrink-0 mt-0.5"
+                >
+                  <ChevronDown className={`w-5 h-5 text-blue-600 dark:text-blue-400 transition-transform ${type.isExpanded ? '' : '-rotate-90'}`} />
+                </button>
                 <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                  <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-300">
                     {type.name || 'Новый тип инцидента'}
                   </h4>
                   {type.description && (
-                    <p className="text-xs text-gray-600 mt-0.5">{type.description}</p>
+                    <p className="text-xs text-blue-800 dark:text-blue-400 mt-0.5">{type.description}</p>
                   )}
                 </div>
-              </button>
+              </div>
               <button
                 onClick={() => removeIncidentType(type.id)}
                 className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
@@ -165,10 +163,10 @@ export default function IncidentTypeSettings() {
             </div>
 
             {type.isExpanded && (
-              <div className="p-4 space-y-4">
+              <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
                       Название типа
                     </label>
                     <input
@@ -176,12 +174,12 @@ export default function IncidentTypeSettings() {
                       value={type.name}
                       onChange={(e) => updateIncidentType(type.id, 'name', e.target.value)}
                       placeholder="Безопасность"
-                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                      className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
                       Описание
                     </label>
                     <textarea
@@ -189,15 +187,15 @@ export default function IncidentTypeSettings() {
                       onChange={(e) => updateIncidentType(type.id, 'description', e.target.value)}
                       placeholder="Описание типа инцидента"
                       rows={2}
-                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                      className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
                     />
                   </div>
                 </div>
 
                 {/* Fields Section */}
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Поля инцидента</h5>
-                  
+                <div className="pt-4 border-t border-blue-200 dark:border-blue-800">
+                  <h5 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-3">Поля инцидента</h5>
+
                   <div className="mb-3">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -206,13 +204,13 @@ export default function IncidentTypeSettings() {
                         placeholder="Поиск полей..."
                         value={fieldSearch[type.id] || ''}
                         onChange={(e) => setFieldSearch({ ...fieldSearch, [type.id]: e.target.value })}
-                        className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                        className="w-full rounded-lg border border-blue-200 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
                       />
                     </div>
-                    
-                    <div className="mt-2 max-h-40 overflow-y-auto bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+
+                    <div className="mt-2 max-h-40 overflow-y-auto bg-blue-100/50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
                       {availableFields
-                        .filter(f => 
+                        .filter(f =>
                           f.name.toLowerCase().includes((fieldSearch[type.id] || '').toLowerCase()) &&
                           !type.fields.some(tf => tf.fieldId === f.id)
                         )
@@ -220,9 +218,9 @@ export default function IncidentTypeSettings() {
                           <button
                             key={field.id}
                             onClick={() => addFieldToType(type.id, field.id)}
-                            className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-between"
+                            className="w-full px-3 py-2 text-left text-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors flex items-center justify-between"
                           >
-                            <span>{field.name}</span>
+                            <span className="text-gray-900 dark:text-gray-100">{field.name}</span>
                             <Plus className="w-4 h-4 text-gray-400" />
                           </button>
                         ))}
@@ -237,11 +235,11 @@ export default function IncidentTypeSettings() {
                       return (
                         <div
                           key={field.id}
-                          className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg"
+                          className="flex items-center gap-2 bg-blue-100/50 dark:bg-blue-900/30 p-3 rounded-lg"
                         >
-                          <span className="flex-1 text-sm text-gray-700 dark:text-gray-300">{fieldData.name}</span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-2 py-1 rounded">{fieldData.type}</span>
-                          
+                          <span className="flex-1 text-sm text-gray-900 dark:text-gray-100">{fieldData.name}</span>
+                          <span className="text-xs text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 px-2 py-1 rounded">{fieldData.type}</span>
+
                           <button
                             onClick={() => removeFieldFromType(type.id, field.id)}
                             className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
@@ -255,9 +253,9 @@ export default function IncidentTypeSettings() {
                 </div>
 
                 {/* Actions Section */}
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Доступные действия</h5>
-                  
+                <div className="pt-4 border-t border-blue-200 dark:border-blue-800">
+                  <h5 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-3">Доступные действия</h5>
+
                   <div className="mb-3">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -266,13 +264,13 @@ export default function IncidentTypeSettings() {
                         placeholder="Поиск действий..."
                         value={actionSearch[type.id] || ''}
                         onChange={(e) => setActionSearch({ ...actionSearch, [type.id]: e.target.value })}
-                        className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                        className="w-full rounded-lg border border-blue-200 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
                       />
                     </div>
-                    
-                    <div className="mt-2 max-h-40 overflow-y-auto bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+
+                    <div className="mt-2 max-h-40 overflow-y-auto bg-blue-100/50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
                       {availableActions
-                        .filter(a => 
+                        .filter(a =>
                           a.name.toLowerCase().includes((actionSearch[type.id] || '').toLowerCase()) &&
                           !type.actions.includes(a.id)
                         )
@@ -280,9 +278,9 @@ export default function IncidentTypeSettings() {
                           <button
                             key={action.id}
                             onClick={() => toggleAction(type.id, action.id)}
-                            className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-between"
+                            className="w-full px-3 py-2 text-left text-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors flex items-center justify-between"
                           >
-                            <span>{action.name}</span>
+                            <span className="text-gray-900 dark:text-gray-100">{action.name}</span>
                             <Plus className="w-4 h-4 text-gray-400" />
                           </button>
                         ))}
@@ -297,10 +295,10 @@ export default function IncidentTypeSettings() {
                       return (
                         <div
                           key={actionId}
-                          className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg"
+                          className="flex items-center gap-2 bg-blue-100/50 dark:bg-blue-900/30 p-3 rounded-lg"
                         >
-                          <span className="flex-1 text-sm text-gray-700 dark:text-gray-300">{actionData.name}</span>
-                          
+                          <span className="flex-1 text-sm text-gray-900 dark:text-gray-100">{actionData.name}</span>
+
                           <button
                             onClick={() => toggleAction(type.id, actionId)}
                             className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
@@ -326,7 +324,7 @@ export default function IncidentTypeSettings() {
         Добавить тип инцидента
       </button>
 
-      <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+      <div className="pt-6 border-t border-blue-200 dark:border-blue-800">
         <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
           Сохранить настройки
         </button>

@@ -53,12 +53,12 @@ export default function TelegramSettings() {
         </p>
       </div>
 
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 rounded-lg p-4">
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
         <div className="flex gap-3">
           <MessageSquare className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
           <div>
-            <h4 className="text-sm font-semibold text-blue-900 mb-1">Как создать бота?</h4>
-            <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+            <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-1">Как создать бота?</h4>
+            <ol className="text-sm text-blue-800 dark:text-blue-400 space-y-1 list-decimal list-inside">
               <li>Откройте Telegram и найдите @BotFather</li>
               <li>Отправьте команду /newbot и следуйте инструкциям</li>
               <li>Скопируйте токен бота и вставьте его ниже</li>
@@ -70,18 +70,18 @@ export default function TelegramSettings() {
 
       <div className="space-y-4">
         {bots.map((bot, index) => (
-          <div key={bot.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          <div key={bot.id} className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div className="flex items-center justify-between mb-4">
-              <h4 className="font-semibold text-gray-900 dark:text-gray-100">Бот {index + 1}</h4>
+              <h4 className="font-semibold text-blue-900 dark:text-blue-300">Бот {index + 1}</h4>
               <div className="flex items-center gap-2">
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={bot.enabled}
                     onChange={(e) => updateBot(bot.id, 'enabled', e.target.checked)}
-                    className="rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500"
+                    className="rounded border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-400 focus:ring-blue-500"
                   />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Активен</span>
+                  <span className="text-sm text-blue-900 dark:text-blue-300">Активен</span>
                 </label>
                 {bots.length > 1 && (
                   <button
@@ -96,7 +96,7 @@ export default function TelegramSettings() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
                   Bot Token
                 </label>
                 <input
@@ -104,12 +104,12 @@ export default function TelegramSettings() {
                   value={bot.botToken}
                   onChange={(e) => updateBot(bot.id, 'botToken', e.target.value)}
                   placeholder="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-mono text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                  className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 font-mono text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
                   Имя бота
                 </label>
                 <input
@@ -117,12 +117,12 @@ export default function TelegramSettings() {
                   value={bot.botName}
                   onChange={(e) => updateBot(bot.id, 'botName', e.target.value)}
                   placeholder="MyIncidentBot"
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                  className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
                   Chat ID
                 </label>
                 <input
@@ -130,15 +130,15 @@ export default function TelegramSettings() {
                   value={bot.chatId}
                   onChange={(e) => updateBot(bot.id, 'chatId', e.target.value)}
                   placeholder="-1001234567890"
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-mono text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                  className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 font-mono text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
                 />
               </div>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-800">
               <button
                 onClick={() => testBot(bot.botToken)}
-                className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                className="px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-900 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/40 transition-colors text-sm"
                 disabled={!bot.botToken || !bot.chatId}
               >
                 Отправить тестовое сообщение
@@ -150,13 +150,13 @@ export default function TelegramSettings() {
 
       <button
         onClick={addBot}
-        className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
+        className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
       >
         <Plus className="w-4 h-4" />
         Добавить бота
       </button>
 
-      <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+      <div className="pt-6 border-t border-blue-200 dark:border-blue-800">
         <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
           Сохранить настройки
         </button>

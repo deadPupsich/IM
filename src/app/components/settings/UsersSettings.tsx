@@ -174,36 +174,36 @@ export default function UsersSettings() {
       {/* Users List */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+          <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-300">
             Список пользователей ({users.length})
           </h4>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+            <thead className="bg-blue-100/50 dark:bg-blue-900/30 border-b border-blue-200 dark:border-blue-800">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-blue-900 dark:text-blue-300 uppercase">
                   Имя
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-blue-900 dark:text-blue-300 uppercase">
                   Email
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium text-blue-900 dark:text-blue-300 uppercase">
                   Группы AD
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <th className="px-4 py-3 text-right text-xs font-medium text-blue-900 dark:text-blue-300 uppercase">
                   Действия
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="divide-y divide-blue-200 dark:divide-blue-800">
               {users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <tr key={user.id} className="hover:bg-blue-100/30 dark:hover:bg-blue-900/40">
                   <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                     {user.name}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                  <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
                     {user.email}
                   </td>
                   <td className="px-4 py-3">
@@ -211,7 +211,7 @@ export default function UsersSettings() {
                       {user.groups.map((group) => (
                         <span
                           key={group}
-                          className="inline-flex px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded"
+                          className="inline-flex px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-900 dark:text-blue-300 text-xs rounded"
                         >
                           {group}
                         </span>
@@ -221,7 +221,7 @@ export default function UsersSettings() {
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => removeUser(user.id)}
-                      className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                      className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
                       title="Удалить пользователя"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -234,7 +234,7 @@ export default function UsersSettings() {
         </div>
       </div>
 
-      <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+      <div className="pt-6 border-t border-blue-200 dark:border-blue-800">
         <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
           Сохранить настройки
         </button>

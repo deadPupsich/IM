@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Settings, Eye, Server, Link2, FileType, Hash, MessageSquare, Zap, Users, UserCog } from 'lucide-react';
-import ViewSettings from './settings/ViewSettings';
+import { Server, Link2, FileType, Hash, MessageSquare, Zap, Users, UserCog } from 'lucide-react';
 import ActiveDirectorySettings from './settings/ActiveDirectorySettings';
 import IntegrationSettings from './settings/IntegrationSettings';
 import IncidentTypeSettings from './settings/IncidentTypeSettings';
@@ -11,10 +10,9 @@ import TeamsSettings from './settings/TeamsSettings';
 import UsersSettings from './settings/UsersSettings';
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('view');
+  const [activeTab, setActiveTab] = useState('fields');
 
   const tabs = [
-    { id: 'view', label: 'Настройка представления', icon: Eye },
     { id: 'fields', label: 'Поля', icon: Hash },
     { id: 'incident-types', label: 'Настройка инцидентов', icon: FileType },
     { id: 'actions', label: 'Действия', icon: Zap },
@@ -56,7 +54,6 @@ export default function SettingsPage() {
         </div>
 
         <div className="p-6">
-          {activeTab === 'view' && <ViewSettings />}
           {activeTab === 'fields' && <FieldSettings />}
           {activeTab === 'incident-types' && <IncidentTypeSettings />}
           {activeTab === 'actions' && <ActionSettings />}

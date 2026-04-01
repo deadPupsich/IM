@@ -239,7 +239,7 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
               <select
                   value={selectedIncidentType}
                   onChange={(e) => setSelectedIncidentType(e.target.value as 'all' | IncidentTypeId)}
-                  className="min-w-48 px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="min-w-48 px-3 py-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">Все типы</option>
                 {INCIDENT_TYPE_DEFINITIONS.map((type) => (
@@ -253,7 +253,7 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
             <select
                 value={itemsPerPageOptions.includes(itemsPerPage) ? itemsPerPage.toString() : 'custom'}
                 onChange={(e) => handleItemsPerPageChange(e.target.value)}
-                className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {itemsPerPageOptions.map(option => (
                   <option key={option} value={option}>{option}</option>
@@ -270,7 +270,7 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
                       placeholder="Введите число"
                       min="1"
                       max="1000"
-                      className="w-32 px-3 py-1.5 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-32 px-3 py-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <button
                       onClick={handleCustomItemsPerPage}
@@ -428,7 +428,7 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
                           checked={checked}
                           onCheckedChange={(value) => toggleDefaultColumn(column, value === true)}
                         />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{column.label}</span>
+                        <span className="text-sm text-gray-900 dark:text-gray-300">{column.label}</span>
                       </label>
                     );
                   })}
@@ -457,7 +457,7 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
                             checked={checked}
                             onCheckedChange={(value) => toggleTypeColumn(column, value === true)}
                           />
-                          <span className="text-sm text-gray-700 dark:text-gray-300">{column.label}</span>
+                          <span className="text-sm text-gray-900 dark:text-gray-300">{column.label}</span>
                         </label>
                       );
                     })

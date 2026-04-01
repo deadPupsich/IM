@@ -12,7 +12,6 @@ interface Integration {
   id: string;
   name: string;
   incidentType: string;
-  endpoint: string;
   fields: FieldMapping[];
   isExpanded: boolean;
 }
@@ -26,7 +25,6 @@ export default function IntegrationSettings() {
       id: '1',
       name: 'SIEM Integration',
       incidentType: 'Безопасность',
-      endpoint: '/api/incidents/siem',
       fields: [
         { id: 'f1', externalField: 'alert_title', internalField: 'название', fieldType: 'string' },
         { id: 'f2', externalField: 'timestamp', internalField: 'дата', fieldType: 'datetime' }
@@ -40,7 +38,6 @@ export default function IntegrationSettings() {
       id: Date.now().toString(),
       name: '',
       incidentType: incidentTypes[0],
-      endpoint: '',
       fields: [],
       isExpanded: true
     };
@@ -95,30 +92,30 @@ export default function IntegrationSettings() {
       <div>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Настройка интеграций</h3>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-          Настройте API endpoints для приема инцидентов из внешних систем
+          Настройте интеграции для приема инцидентов из внешних систем
         </p>
       </div>
 
       <div className="space-y-4">
         {integrations.map((integration) => (
-          <div key={integration.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-              <button
-                onClick={() => toggleIntegration(integration.id)}
-                className="flex items-center gap-2 flex-1 text-left"
-              >
-                {integration.isExpanded ? (
-                  <ChevronDown className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                ) : (
-                  <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                )}
-                <h4 className="font-semibold text-gray-900 dark:text-gray-100">
-                  {integration.name || 'Новая интеграция'}
-                </h4>
-                <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-1 rounded">
-                  {integration.incidentType}
-                </span>
-              </button>
+          <div key={integration.id} className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-start gap-3">
+                <button
+                  onClick={() => toggleIntegration(integration.id)}
+                  className="flex-shrink-0 mt-0.5"
+                >
+                  <ChevronDown className={`w-5 h-5 text-blue-600 dark:text-blue-400 transition-transform ${integration.isExpanded ? '' : '-rotate-90'}`} />
+                </button>
+                <div>
+                  <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-300">
+                    {integration.name || 'Новая интеграция'}
+                  </h4>
+                  <p className="text-xs text-blue-800 dark:text-blue-400 mt-0.5">
+                    Укажите параметры интеграции
+                  </p>
+                </div>
+              </div>
               <button
                 onClick={() => removeIntegration(integration.id)}
                 className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
@@ -131,7 +128,7 @@ export default function IntegrationSettings() {
               <div className="p-4 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
                       Название интеграции
                     </label>
                     <input
@@ -139,42 +136,29 @@ export default function IntegrationSettings() {
                       value={integration.name}
                       onChange={(e) => updateIntegration(integration.id, 'name', e.target.value)}
                       placeholder="SIEM Integration"
-                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                      className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
                       Тип инцидента
                     </label>
                     <select
                       value={integration.incidentType}
                       onChange={(e) => updateIntegration(integration.id, 'incidentType', e.target.value)}
-                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                      className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
                     >
                       {incidentTypes.map((type) => (
                         <option key={type} value={type}>{type}</option>
                       ))}
                     </select>
                   </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      API Endpoint
-                    </label>
-                    <input
-                      type="text"
-                      value={integration.endpoint}
-                      onChange={(e) => updateIntegration(integration.id, 'endpoint', e.target.value)}
-                      placeholder="/api/incidents/siem"
-                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                    />
-                  </div>
                 </div>
 
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="pt-4 border-t border-blue-200 dark:border-blue-800">
                   <div className="flex items-center justify-between mb-3">
-                    <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Маппинг полей</h5>
+                    <h5 className="text-sm font-semibold text-blue-900 dark:text-blue-300">Маппинг полей</h5>
                     <button
                       onClick={() => addField(integration.id)}
                       className="flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-400"
@@ -192,13 +176,13 @@ export default function IntegrationSettings() {
                           value={field.externalField}
                           onChange={(e) => updateField(integration.id, field.id, 'externalField', e.target.value)}
                           placeholder="Внешнее поле"
-                          className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                          className="flex-1 rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
                         />
                         <span className="text-gray-400">→</span>
                         <select
                           value={field.internalField}
                           onChange={(e) => updateField(integration.id, field.id, 'internalField', e.target.value)}
-                          className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                          className="flex-1 rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
                         >
                           {internalFields.map((f) => (
                             <option key={f} value={f}>{f}</option>
@@ -207,7 +191,7 @@ export default function IntegrationSettings() {
                         <select
                           value={field.fieldType}
                           onChange={(e) => updateField(integration.id, field.id, 'fieldType', e.target.value)}
-                          className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                          className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
                         >
                           <option value="string">Строка</option>
                           <option value="multiline">Многострочное</option>
@@ -232,13 +216,13 @@ export default function IntegrationSettings() {
 
       <button
         onClick={addIntegration}
-        className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
+        className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
       >
         <Plus className="w-4 h-4" />
         Добавить интеграцию
       </button>
 
-      <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+      <div className="pt-6 border-t border-blue-200 dark:border-blue-800">
         <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
           Сохранить настройки
         </button>

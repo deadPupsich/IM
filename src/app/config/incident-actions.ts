@@ -15,7 +15,7 @@ export const SYSTEM_INCIDENT_ACTIONS: SystemIncidentAction[] = [
     name: 'Назначить на аналитика',
     description: 'Назначить инцидент на ответственного аналитика',
     icon: 'UserPlus',
-    iconColor: 'blue',
+    iconColor: '#3b82f6',
     targetType: 'user',
   },
   {
@@ -23,7 +23,7 @@ export const SYSTEM_INCIDENT_ACTIONS: SystemIncidentAction[] = [
     name: 'Запросить артефакты',
     description: 'Собрать недостающие материалы расследования',
     icon: 'Archive',
-    iconColor: 'orange',
+    iconColor: '#f97316',
     targetType: 'custom',
   },
   {
@@ -31,7 +31,7 @@ export const SYSTEM_INCIDENT_ACTIONS: SystemIncidentAction[] = [
     name: 'Эскалировать в SOC L2',
     description: 'Передать инцидент на следующую линию',
     icon: 'ShieldAlert',
-    iconColor: 'green',
+    iconColor: '#22c55e',
     targetType: 'team',
   },
   {
@@ -39,7 +39,7 @@ export const SYSTEM_INCIDENT_ACTIONS: SystemIncidentAction[] = [
     name: 'Уведомить владельца системы',
     description: 'Отправить уведомление владельцу затронутой системы',
     icon: 'Mail',
-    iconColor: 'purple',
+    iconColor: '#a855f7',
     targetType: 'user',
   },
   {
@@ -47,7 +47,7 @@ export const SYSTEM_INCIDENT_ACTIONS: SystemIncidentAction[] = [
     name: 'Сменить статус',
     description: 'Перевести инцидент в другой статус',
     icon: 'CheckCircle',
-    iconColor: 'blue',
+    iconColor: '#3b82f6',
     targetType: 'status',
   },
   {
@@ -55,7 +55,7 @@ export const SYSTEM_INCIDENT_ACTIONS: SystemIncidentAction[] = [
     name: 'Связаться с нарушителем',
     description: 'Отправить системное письмо подозреваемому пользователю',
     icon: 'Send',
-    iconColor: 'red',
+    iconColor: '#ef4444',
     targetType: 'custom',
   },
 ];

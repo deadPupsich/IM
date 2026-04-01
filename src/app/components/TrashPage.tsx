@@ -78,13 +78,13 @@ export default function TrashPage() {
               {!clearFilters.all && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
                       Команда
                     </label>
                     <select
                       value={clearFilters.команда}
                       onChange={(e) => setClearFilters({ ...clearFilters, команда: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 bg-white text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">Все команды</option>
                       {teams.map(team => (
@@ -94,13 +94,13 @@ export default function TrashPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
                       Ответственный
                     </label>
                     <select
                       value={clearFilters.ответственный}
                       onChange={(e) => setClearFilters({ ...clearFilters, ответственный: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 bg-white text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">Все ответственные</option>
                       {responsibles.map(resp => (
@@ -110,13 +110,13 @@ export default function TrashPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
                       Источник
                     </label>
                     <select
                       value={clearFilters.источник}
                       onChange={(e) => setClearFilters({ ...clearFilters, источник: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 bg-white text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">Все источники</option>
                       {sources.map(src => (
@@ -128,7 +128,7 @@ export default function TrashPage() {
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-end gap-2 p-4 border-t border-blue-200 dark:border-blue-800">
               <button
                 onClick={() => setShowClearDialog(false)}
                 className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
