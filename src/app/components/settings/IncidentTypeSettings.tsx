@@ -24,10 +24,10 @@ const availableFields: CustomField[] = [
   { id: 'f3', name: 'источник', slug: 'source', type: 'string', icon: 'Database', iconColor: 'purple', required: true, slugLocked: true },
   { id: 'f4', name: 'нарушитель', slug: 'login', type: 'string', icon: 'AlertTriangle', iconColor: 'red', required: true, description: 'Это должен быть логин пользователя из AD', slugLocked: true },
   { id: 'f9', name: 'хост', slug: 'host', type: 'string', icon: 'Monitor', iconColor: 'gray', required: true, slugLocked: true },
-  { id: 'f5', name: 'статус', slug: 'status', type: 'select', icon: 'Activity', iconColor: 'indigo', required: true, selectOptions: ['Открыт', 'Закрыт', 'Расследование', 'Ложный'], slugLocked: true },
+  { id: 'f5', name: 'статус', slug: 'status', type: 'select', icon: 'Activity', iconColor: 'indigo', required: true, selectOptions: [{ label: 'Открыт', borderColor: '#3b82f6', textColor: '#1d4ed8', bgColor: '#dbeafe' }, { label: 'Закрыт', borderColor: '#6b7280', textColor: '#374151', bgColor: '#f3f4f6' }, { label: 'Расследование', borderColor: '#8b5cf6', textColor: '#6d28d9', bgColor: '#ede9fe' }, { label: 'Ложный', borderColor: '#ef4444', textColor: '#b91c1c', bgColor: '#fee2e2' }], slugLocked: true },
   { id: 'f6', name: 'дата', slug: 'created_at', type: 'datetime', icon: 'Calendar', iconColor: 'pink', required: true, slugLocked: true },
   { id: 'f7', name: 'описание', slug: 'description', type: 'multiline', icon: 'FileText', iconColor: 'gray', required: false, slugLocked: true },
-  { id: 'f8', name: 'приоритет', slug: 'priority', type: 'select', icon: 'Flag', iconColor: 'orange', required: false, selectOptions: ['Низкий', 'Средний', 'Высокий'], slugLocked: true },
+  { id: 'f8', name: 'приоритет', slug: 'priority', type: 'select', icon: 'Flag', iconColor: 'orange', required: false, selectOptions: [{ label: 'Низкий', borderColor: '#22c55e', textColor: '#15803d', bgColor: '#dcfce7' }, { label: 'Средний', borderColor: '#f59e0b', textColor: '#b45309', bgColor: '#fef3c7' }, { label: 'Высокий', borderColor: '#ef4444', textColor: '#b91c1c', bgColor: '#fee2e2' }], slugLocked: true },
 ];
 
 const availableActions = [

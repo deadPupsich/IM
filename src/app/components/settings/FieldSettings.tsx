@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, Search, ChevronLeft, ChevronRight, Palette } from 'lucide-react';
 import * as Icons from 'lucide-react';
-import { CustomField } from '../../types/settings';
+import { CustomField, SelectOptionValue } from '../../types/settings';
 import { HexColorPicker } from 'react-colorful';
 
 const iconsList = [
@@ -88,7 +88,13 @@ export default function FieldSettings() {
       iconColor: '#6366f1',
       required: true,
       description: 'Статус инцидента',
-      selectOptions: ['Открыт', 'Закрыт', 'Расследование', 'Ложный'],
+      selectOptions: [
+        { label: 'Открыт', borderColor: '#3b82f6', textColor: '#1d4ed8', bgColor: '#dbeafe' },
+        { label: 'В работе', borderColor: '#f59e0b', textColor: '#b45309', bgColor: '#fef3c7' },
+        { label: 'Расследование', borderColor: '#8b5cf6', textColor: '#6d28d9', bgColor: '#ede9fe' },
+        { label: 'Закрыт', borderColor: '#6b7280', textColor: '#374151', bgColor: '#f3f4f6' },
+        { label: 'Ложный', borderColor: '#ef4444', textColor: '#b91c1c', bgColor: '#fee2e2' },
+      ],
       slugLocked: true,
     },
     {
@@ -109,6 +115,8 @@ export default function FieldSettings() {
   const [currentPage, setCurrentPage] = useState(1);
   const [iconSearchTerm, setIconSearchTerm] = useState('');
   const [newSelectOption, setNewSelectOption] = useState<Record<string, string>>({});
+  const [iconColorPickerOpen, setIconColorPickerOpen] = useState<{ [key: string]: boolean }>({});
+  const [optionColorPicker, setOptionColorPicker] = useState<{ fieldId: string; optionIndex: number; pickerType: 'border' | 'text' | 'bg' } | null>(null);
 
   const addField = () => {
     const newField: CustomField = {
@@ -143,19 +151,32 @@ export default function FieldSettings() {
       field.id === fieldId
         ? {
             ...field,
-            selectOptions: [...(field.selectOptions || []), value]
+            selectOptions: [...(field.selectOptions || []), { label: value, borderColor: '#3b82f6', textColor: '#1d4ed8', bgColor: '#dbeafe' }]
           }
         : field
     ));
     setNewSelectOption((prev) => ({ ...prev, [fieldId]: '' }));
   };
 
-  const removeSelectOption = (fieldId: string, option: string) => {
+  const removeSelectOption = (fieldId: string, optionIndex: number) => {
     setFields(fields.map(field =>
       field.id === fieldId
         ? {
             ...field,
-            selectOptions: (field.selectOptions || []).filter((value) => value !== option)
+            selectOptions: (field.selectOptions || []).filter((_, i) => i !== optionIndex)
+          }
+        : field
+    ));
+  };
+
+  const updateSelectOption = (fieldId: string, optionIndex: number, updates: Partial<SelectOptionValue>) => {
+    setFields(fields.map(field =>
+      field.id === fieldId
+        ? {
+            ...field,
+            selectOptions: (field.selectOptions || []).map((opt, i) =>
+              i === optionIndex ? { ...opt, ...updates } : opt
+            )
           }
         : field
     ));
@@ -174,11 +195,10 @@ export default function FieldSettings() {
     return IconComponent || Icons.FileText;
   };
 
-  const [colorPickerOpen, setColorPickerOpen] = useState<{ [key: string]: boolean }>({});
   const colorPickerRef = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
-  const toggleColorPicker = (fieldId: string) => {
-    setColorPickerOpen(prev => ({ ...prev, [fieldId]: !prev[fieldId] }));
+  const toggleIconColorPicker = (fieldId: string) => {
+    setIconColorPickerOpen(prev => ({ ...prev, [fieldId]: !prev[fieldId] }));
   };
 
   const hexToRgb = (hex: string) => {
@@ -200,15 +220,20 @@ export default function FieldSettings() {
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      const openPickerId = Object.keys(colorPickerOpen).find(key => colorPickerOpen[key]);
+      // Close icon color picker
+      const openPickerId = Object.keys(iconColorPickerOpen).find(key => iconColorPickerOpen[key]);
       if (openPickerId && colorPickerRef.current[openPickerId] && !colorPickerRef.current[openPickerId]?.contains(target)) {
-        setColorPickerOpen({});
+        setIconColorPickerOpen({});
+      }
+      // Close option color picker
+      if (optionColorPicker && !target.closest('[data-option-color-picker]')) {
+        setOptionColorPicker(null);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [colorPickerOpen]);
+  }, [iconColorPickerOpen, optionColorPicker]);
 
   const filteredIcons = iconsList.filter(icon =>
     icon.toLowerCase().includes(iconSearchTerm.toLowerCase())
@@ -321,7 +346,8 @@ export default function FieldSettings() {
                       <select
                         value={field.type}
                         onChange={(e) => updateField(field.id, { type: e.target.value as any })}
-                        className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
+                        disabled={isSystemField}
+                        className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100 disabled:bg-gray-100 disabled:text-gray-500 dark:disabled:bg-gray-700"
                       >
                         <option value="string">Строка</option>
                         <option value="multiline">Многострочное</option>
@@ -331,45 +357,144 @@ export default function FieldSettings() {
                         <option value="number">Число</option>
                         <option value="boolean">Да/Нет</option>
                       </select>
+                      {isSystemField && (
+                        <p className="mt-1 text-xs text-blue-800 dark:text-blue-400">
+                          Для системного поля тип менять нельзя.
+                        </p>
+                      )}
                     </div>
 
                     {field.type === 'select' && (
-                      <div className="col-span-2">
-                        <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
-                          Значения списка
-                        </label>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={newSelectOption[field.id] || ''}
-                            onChange={(e) => setNewSelectOption((prev) => ({ ...prev, [field.id]: e.target.value }))}
-                            placeholder="Новое значение"
-                            className="flex-1 rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => addSelectOption(field.id)}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                          >
-                            <Plus className="w-4 h-4" />
-                            Добавить
-                          </button>
+                      <div className="col-span-2 space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
+                            Значения списка
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={newSelectOption[field.id] || ''}
+                              onChange={(e) => setNewSelectOption((prev) => ({ ...prev, [field.id]: e.target.value }))}
+                              placeholder="Новое значение"
+                              className="flex-1 rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => addSelectOption(field.id)}
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                              <Plus className="w-4 h-4" />
+                              Добавить
+                            </button>
+                          </div>
                         </div>
 
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {(field.selectOptions || []).map((option) => (
+                        <div>
+                          <label className="flex items-center gap-2 text-sm font-medium text-blue-900 dark:text-blue-300 mb-3">
+                            <input
+                              type="checkbox"
+                              checked={field.allowMultiple || false}
+                              onChange={(e) => updateField(field.id, { allowMultiple: e.target.checked })}
+                              className="rounded border-blue-200 dark:border-blue-700 text-blue-600 focus:ring-blue-500"
+                            />
+                            Разрешить несколько значений
+                          </label>
+                        </div>
+
+                        <div className="space-y-2">
+                          {(field.selectOptions || []).map((option, index) => (
                             <div
-                              key={option}
-                              className="inline-flex items-center gap-2 rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-200"
+                              key={index}
+                              className="flex items-center gap-3 bg-blue-100/50 dark:bg-blue-900/30 p-3 rounded-lg"
                             >
-                              <span>{option}</span>
-                              <button
-                                type="button"
-                                onClick={() => removeSelectOption(field.id, option)}
-                                className="text-red-600 hover:text-red-700"
+                              <div
+                                className="px-3 py-1.5 text-sm rounded-full border-2 font-medium"
+                                style={{
+                                  borderColor: option.borderColor,
+                                  color: option.textColor,
+                                  backgroundColor: option.bgColor,
+                                }}
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                                {option.label}
+                              </div>
+                              <div className="flex items-center gap-1 ml-auto">
+                                <div className="relative">
+                                  <button
+                                    type="button"
+                                    onClick={() => setOptionColorPicker(optionColorPicker?.fieldId === field.id && optionColorPicker?.optionIndex === index && optionColorPicker?.pickerType === 'border' ? null : { fieldId: field.id, optionIndex: index, pickerType: 'border' })}
+                                    className="w-6 h-6 rounded border-2 flex items-center justify-center hover:scale-110 transition-transform"
+                                    style={{ backgroundColor: option.borderColor, borderColor: option.borderColor }}
+                                    title="Цвет обводки"
+                                  >
+                                    {optionColorPicker?.fieldId === field.id && optionColorPicker?.optionIndex === index && optionColorPicker?.pickerType === 'border' && (
+                                      <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="w-1 h-1 bg-white rounded-full"></div>
+                                      </div>
+                                    )}
+                                  </button>
+                                  {optionColorPicker?.fieldId === field.id && optionColorPicker?.optionIndex === index && optionColorPicker?.pickerType === 'border' && (
+                                    <div className="absolute bottom-full right-0 mb-2 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50" data-option-color-picker>
+                                      <HexColorPicker
+                                        color={option.borderColor}
+                                        onChange={(color) => updateSelectOption(field.id, index, { borderColor: color })}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="relative">
+                                  <button
+                                    type="button"
+                                    onClick={() => setOptionColorPicker(optionColorPicker?.fieldId === field.id && optionColorPicker?.optionIndex === index && optionColorPicker?.pickerType === 'text' ? null : { fieldId: field.id, optionIndex: index, pickerType: 'text' })}
+                                    className="w-6 h-6 rounded border-2 flex items-center justify-center hover:scale-110 transition-transform"
+                                    style={{ backgroundColor: option.textColor, borderColor: option.textColor }}
+                                    title="Цвет текста"
+                                  >
+                                    {optionColorPicker?.fieldId === field.id && optionColorPicker?.optionIndex === index && optionColorPicker?.pickerType === 'text' && (
+                                      <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="w-1 h-1 bg-white rounded-full"></div>
+                                      </div>
+                                    )}
+                                  </button>
+                                  {optionColorPicker?.fieldId === field.id && optionColorPicker?.optionIndex === index && optionColorPicker?.pickerType === 'text' && (
+                                    <div className="absolute bottom-full right-0 mb-2 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50" data-option-color-picker>
+                                      <HexColorPicker
+                                        color={option.textColor}
+                                        onChange={(color) => updateSelectOption(field.id, index, { textColor: color })}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="relative">
+                                  <button
+                                    type="button"
+                                    onClick={() => setOptionColorPicker(optionColorPicker?.fieldId === field.id && optionColorPicker?.optionIndex === index && optionColorPicker?.pickerType === 'bg' ? null : { fieldId: field.id, optionIndex: index, pickerType: 'bg' })}
+                                    className="w-6 h-6 rounded border-2 flex items-center justify-center hover:scale-110 transition-transform"
+                                    style={{ backgroundColor: option.bgColor, borderColor: option.bgColor }}
+                                    title="Цвет фона"
+                                  >
+                                    {optionColorPicker?.fieldId === field.id && optionColorPicker?.optionIndex === index && optionColorPicker?.pickerType === 'bg' && (
+                                      <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="w-1 h-1 bg-white rounded-full"></div>
+                                      </div>
+                                    )}
+                                  </button>
+                                  {optionColorPicker?.fieldId === field.id && optionColorPicker?.optionIndex === index && optionColorPicker?.pickerType === 'bg' && (
+                                    <div className="absolute bottom-full right-0 mb-2 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50" data-option-color-picker>
+                                      <HexColorPicker
+                                        color={option.bgColor}
+                                        onChange={(color) => updateSelectOption(field.id, index, { bgColor: color })}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => removeSelectOption(field.id, index)}
+                                  className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -420,14 +545,14 @@ export default function FieldSettings() {
                         <div className="relative inline-block">
                           <button
                             type="button"
-                            onClick={() => toggleColorPicker(field.id)}
+                            onClick={() => toggleIconColorPicker(field.id)}
                             className="w-12 h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-blue-500 transition-colors shadow-sm"
                             style={{ backgroundColor: field.iconColor || '#3b82f6' }}
                           />
-                          {colorPickerOpen[field.id] && (
-                            <div 
+                          {iconColorPickerOpen[field.id] && (
+                            <div
                               ref={(el) => { colorPickerRef.current[field.id] = el; }}
-                              className="absolute top-full left-0 mt-2 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-[100] w-[260px] overflow-visible" 
+                              className="absolute top-full left-0 mt-2 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50"
                               data-color-picker
                             >
                               <HexColorPicker
@@ -567,7 +692,24 @@ export default function FieldSettings() {
                       <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         Slug: {field.slug}
                         {field.type === 'select' && field.selectOptions && field.selectOptions.length > 0 && (
-                          <span> • Значений: {field.selectOptions.length}</span>
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {field.selectOptions.map((opt, i) => (
+                              <span
+                                key={i}
+                                className="px-2 py-0.5 rounded-full border text-xs font-medium"
+                                style={{
+                                  borderColor: opt.borderColor,
+                                  color: opt.textColor,
+                                  backgroundColor: opt.bgColor,
+                                }}
+                              >
+                                {opt.label}
+                              </span>
+                            ))}
+                            {field.allowMultiple && (
+                              <span className="ml-2 text-blue-600 dark:text-blue-400">• Мультивыбор</span>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>

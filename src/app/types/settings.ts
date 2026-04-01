@@ -1,3 +1,10 @@
+export interface SelectOptionValue {
+  label: string;
+  borderColor: string;
+  textColor: string;
+  bgColor: string;
+}
+
 export interface CustomField {
   id: string;
   name: string;
@@ -7,7 +14,8 @@ export interface CustomField {
   iconColor: string;
   required: boolean;
   description?: string;
-  selectOptions?: string[];
+  selectOptions?: SelectOptionValue[];
+  allowMultiple?: boolean;
   slugLocked?: boolean;
 }
 
