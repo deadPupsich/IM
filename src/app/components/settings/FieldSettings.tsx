@@ -5,14 +5,15 @@ import { CustomField, SelectOptionValue } from '../../types/settings';
 import { HexColorPicker } from 'react-colorful';
 
 const iconsList = [
-  'FileText', 'User', 'Users', 'Database', 'FileStack', 'AlertTriangle', 
+  'FileText', 'User', 'Users', 'Database', 'FileStack', 'AlertTriangle', 'AlertCircle',
   'Calendar', 'Shield', 'Activity', 'Clock', 'Mail', 'Phone', 'MapPin',
   'Building', 'Briefcase', 'Tag', 'Hash', 'Link', 'Image', 'File',
   'Folder', 'Archive', 'Paperclip', 'BookOpen', 'Bookmark', 'Flag',
   'Star', 'Heart', 'MessageSquare', 'Send', 'Globe', 'Wifi',
   'Lock', 'Unlock', 'Key', 'Eye', 'EyeOff', 'Search',
   'Settings', 'Tool', 'Wrench', 'Package', 'Box', 'Layers',
-  'Grid', 'List', 'CheckSquare', 'Square', 'Circle', 'Triangle'
+  'Grid', 'List', 'CheckSquare', 'Square', 'Circle', 'Triangle',
+  'Server', 'Monitor', 'TriangleAlert'
 ];
 
 const ITEMS_PER_PAGE = 10;
@@ -108,6 +109,114 @@ export default function FieldSettings() {
       description: 'Хост, на котором зафиксирован инцидент',
       slugLocked: true,
     },
+    {
+      id: '7',
+      name: 'описание',
+      slug: 'description',
+      type: 'multiline',
+      icon: 'FileText',
+      iconColor: '#06b6d4',
+      required: false,
+      description: 'Подробное описание инцидента',
+      slugLocked: true,
+    },
+    {
+      id: '8',
+      name: 'дата обнаружения',
+      slug: 'detected_at',
+      type: 'datetime',
+      icon: 'Calendar',
+      iconColor: '#ec4899',
+      required: false,
+      description: 'Дата и время обнаружения инцидента',
+      slugLocked: true,
+    },
+    {
+      id: '9',
+      name: 'приоритет',
+      slug: 'priority',
+      type: 'select',
+      icon: 'Flag',
+      iconColor: '#f97316',
+      required: false,
+      description: 'Приоритет инцидента',
+      selectOptions: [
+        { label: 'Низкий', borderColor: '#22c55e', textColor: '#15803d', bgColor: '#dcfce7' },
+        { label: 'Средний', borderColor: '#f59e0b', textColor: '#b45309', bgColor: '#fef3c7' },
+        { label: 'Высокий', borderColor: '#ef4444', textColor: '#b91c1c', bgColor: '#fee2e2' },
+        { label: 'Критический', borderColor: '#7c3aed', textColor: '#5b21b6', bgColor: '#ddd6fe' },
+      ],
+      allowMultiple: false,
+      slugLocked: true,
+    },
+    {
+      id: '10',
+      name: 'время реакции (мин)',
+      slug: 'response_time',
+      type: 'number',
+      icon: 'Clock',
+      iconColor: '#14b8a6',
+      required: false,
+      description: 'Время реакции на инцидент в минутах',
+    },
+    {
+      id: '11',
+      name: 'требуется эскалация',
+      slug: 'needs_escalation',
+      type: 'boolean',
+      icon: 'AlertCircle',
+      iconColor: '#dc2626',
+      required: false,
+      description: 'Требуется ли эскалация инцидента',
+    },
+    {
+      id: '12',
+      name: 'файлы доказательств',
+      slug: 'evidence_files',
+      type: 'file',
+      icon: 'Paperclip',
+      iconColor: '#64748b',
+      required: false,
+      description: 'Прикреплённые файлы доказательств',
+    },
+    {
+      id: '13',
+      name: 'комментарий',
+      slug: 'comment',
+      type: 'multiline',
+      icon: 'MessageSquare',
+      iconColor: '#8b5cf6',
+      required: false,
+      description: 'Дополнительный комментарий аналитика',
+    },
+    {
+      id: '14',
+      name: 'затронутые системы',
+      slug: 'affected_systems',
+      type: 'select',
+      icon: 'Server',
+      iconColor: '#3b82f6',
+      required: false,
+      description: 'Системы, затронутые инцидентом',
+      selectOptions: [
+        { label: 'Active Directory', borderColor: '#2563eb', textColor: '#1e40af', bgColor: '#dbeafe' },
+        { label: 'Exchange', borderColor: '#059669', textColor: '#065f46', bgColor: '#d1fae5' },
+        { label: 'File Server', borderColor: '#d97706', textColor: '#92400e', bgColor: '#fef3c7' },
+        { label: 'VPN', borderColor: '#7c3aed', textColor: '#5b21b6', bgColor: '#ede9fe' },
+        { label: 'Web Server', borderColor: '#dc2626', textColor: '#b91c1c', bgColor: '#fee2e2' },
+      ],
+      allowMultiple: true,
+    },
+    {
+      id: '15',
+      name: 'риск реализован',
+      slug: 'risk_realized',
+      type: 'boolean',
+      icon: 'TriangleAlert',
+      iconColor: '#f59e0b',
+      required: false,
+      description: 'Был ли реализован риск безопасности',
+    },
   ]);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -125,7 +234,7 @@ export default function FieldSettings() {
       slug: '',
       type: 'string',
       icon: 'FileText',
-      iconColor: 'blue',
+      iconColor: '#3b82f6',
       required: false,
       selectOptions: [],
       slugLocked: false,
@@ -363,6 +472,43 @@ export default function FieldSettings() {
                         </p>
                       )}
                     </div>
+
+                    {field.type === 'number' && (
+                      <div className="col-span-2 space-y-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
+                              Префикс
+                            </label>
+                            <input
+                              type="text"
+                              value={field.prefix || ''}
+                              onChange={(e) => updateField(field.id, { prefix: e.target.value })}
+                              placeholder="Например: ₽"
+                              className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
+                            />
+                            <p className="mt-1 text-xs text-blue-800 dark:text-blue-400">
+                              Отображается перед числом
+                            </p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
+                              Постфикс
+                            </label>
+                            <input
+                              type="text"
+                              value={field.postfix || ''}
+                              onChange={(e) => updateField(field.id, { postfix: e.target.value })}
+                              placeholder="Например: мин, кг, шт"
+                              className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
+                            />
+                            <p className="mt-1 text-xs text-blue-800 dark:text-blue-400">
+                              Отображается после числа
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {field.type === 'select' && (
                       <div className="col-span-2 space-y-4">
@@ -722,12 +868,14 @@ export default function FieldSettings() {
                     >
                       Изменить
                     </button>
-                    <button
-                      onClick={() => removeField(field.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {!isSystemField && (
+                      <button
+                        onClick={() => removeField(field.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
@@ -747,11 +895,11 @@ export default function FieldSettings() {
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            
+
             <div className="flex items-center gap-1">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                 <button
@@ -760,18 +908,18 @@ export default function FieldSettings() {
                   className={`w-8 h-8 rounded-lg transition-colors ${
                     currentPage === page
                       ? 'bg-blue-600 text-white'
-                      : 'hover:bg-gray-100 text-gray-700'
+                      : 'hover:bg-gray-100 text-gray-700 dark:text-gray-300'
                   }`}
                 >
                   {page}
                 </button>
               ))}
             </div>
-            
+
             <button
               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

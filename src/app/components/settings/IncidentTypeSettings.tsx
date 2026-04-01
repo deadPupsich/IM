@@ -19,15 +19,19 @@ interface IncidentType {
 
 // Mock data for fields (в реальности будет из FieldSettings)
 const availableFields: CustomField[] = [
-  { id: 'f1', name: 'название', slug: 'title', type: 'string', icon: 'FileText', iconColor: 'blue', required: true, slugLocked: true },
-  { id: 'f2', name: 'ответственный', slug: 'assignee', type: 'string', icon: 'User', iconColor: 'green', required: true, slugLocked: true },
-  { id: 'f3', name: 'источник', slug: 'source', type: 'string', icon: 'Database', iconColor: 'purple', required: true, slugLocked: true },
-  { id: 'f4', name: 'нарушитель', slug: 'login', type: 'string', icon: 'AlertTriangle', iconColor: 'red', required: true, description: 'Это должен быть логин пользователя из AD', slugLocked: true },
-  { id: 'f9', name: 'хост', slug: 'host', type: 'string', icon: 'Monitor', iconColor: 'gray', required: true, slugLocked: true },
-  { id: 'f5', name: 'статус', slug: 'status', type: 'select', icon: 'Activity', iconColor: 'indigo', required: true, selectOptions: [{ label: 'Открыт', borderColor: '#3b82f6', textColor: '#1d4ed8', bgColor: '#dbeafe' }, { label: 'Закрыт', borderColor: '#6b7280', textColor: '#374151', bgColor: '#f3f4f6' }, { label: 'Расследование', borderColor: '#8b5cf6', textColor: '#6d28d9', bgColor: '#ede9fe' }, { label: 'Ложный', borderColor: '#ef4444', textColor: '#b91c1c', bgColor: '#fee2e2' }], slugLocked: true },
-  { id: 'f6', name: 'дата', slug: 'created_at', type: 'datetime', icon: 'Calendar', iconColor: 'pink', required: true, slugLocked: true },
-  { id: 'f7', name: 'описание', slug: 'description', type: 'multiline', icon: 'FileText', iconColor: 'gray', required: false, slugLocked: true },
-  { id: 'f8', name: 'приоритет', slug: 'priority', type: 'select', icon: 'Flag', iconColor: 'orange', required: false, selectOptions: [{ label: 'Низкий', borderColor: '#22c55e', textColor: '#15803d', bgColor: '#dcfce7' }, { label: 'Средний', borderColor: '#f59e0b', textColor: '#b45309', bgColor: '#fef3c7' }, { label: 'Высокий', borderColor: '#ef4444', textColor: '#b91c1c', bgColor: '#fee2e2' }], slugLocked: true },
+  { id: 'f1', name: 'Название', slug: 'title', type: 'string', icon: 'FileText', iconColor: 'blue', required: true, slugLocked: true },
+  { id: 'f2', name: 'Ответственный', slug: 'assignee', type: 'string', icon: 'User', iconColor: 'green', required: true, slugLocked: true },
+  { id: 'f3', name: 'Источник', slug: 'source', type: 'string', icon: 'Database', iconColor: 'purple', required: true, slugLocked: true },
+  { id: 'f4', name: 'Нарушитель', slug: 'login', type: 'string', icon: 'AlertTriangle', iconColor: 'red', required: true, description: 'Это должен быть логин пользователя из AD', slugLocked: true },
+  { id: 'f9', name: 'Хост', slug: 'host', type: 'string', icon: 'Monitor', iconColor: 'gray', required: true, slugLocked: true },
+  { id: 'f5', name: 'Статус', slug: 'status', type: 'select', icon: 'Activity', iconColor: 'indigo', required: true, selectOptions: [{ label: 'Открыт', borderColor: '#3b82f6', textColor: '#1d4ed8', bgColor: '#dbeafe' }, { label: 'Закрыт', borderColor: '#6b7280', textColor: '#374151', bgColor: '#f3f4f6' }, { label: 'Расследование', borderColor: '#8b5cf6', textColor: '#6d28d9', bgColor: '#ede9fe' }, { label: 'Ложный', borderColor: '#ef4444', textColor: '#b91c1c', bgColor: '#fee2e2' }], slugLocked: true },
+  { id: 'f6', name: 'Дата обнаружения', slug: 'detected_at', type: 'datetime', icon: 'Calendar', iconColor: 'pink', required: true, slugLocked: true },
+  { id: 'f7', name: 'Описание', slug: 'description', type: 'multiline', icon: 'FileText', iconColor: 'gray', required: false, slugLocked: true },
+  { id: 'f8', name: 'Приоритет', slug: 'priority', type: 'select', icon: 'Flag', iconColor: 'orange', required: false, selectOptions: [{ label: 'Низкий', borderColor: '#22c55e', textColor: '#15803d', bgColor: '#dcfce7' }, { label: 'Средний', borderColor: '#f59e0b', textColor: '#b45309', bgColor: '#fef3c7' }, { label: 'Высокий', borderColor: '#ef4444', textColor: '#b91c1c', bgColor: '#fee2e2' }], slugLocked: true },
+  { id: 'f10', name: 'Время реакции (мин)', slug: 'response_time', type: 'number', icon: 'Clock', iconColor: 'cyan', required: false },
+  { id: 'f11', name: 'Требуется эскалация', slug: 'needs_escalation', type: 'boolean', icon: 'AlertCircle', iconColor: 'red', required: false },
+  { id: 'f12', name: 'Файлы доказательств', slug: 'evidence_files', type: 'file', icon: 'Paperclip', iconColor: 'slate', required: false },
+  { id: 'f14', name: 'Затронутые системы', slug: 'affected_systems', type: 'select', icon: 'Server', iconColor: 'blue', required: false, selectOptions: [{ label: 'Active Directory', borderColor: '#2563eb', textColor: '#1e40af', bgColor: '#dbeafe' }, { label: 'Exchange', borderColor: '#059669', textColor: '#065f46', bgColor: '#d1fae5' }, { label: 'File Server', borderColor: '#d97706', textColor: '#92400e', bgColor: '#fef3c7' }], allowMultiple: true },
 ];
 
 const availableActions = [

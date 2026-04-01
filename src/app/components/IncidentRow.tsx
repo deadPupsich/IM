@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronRight, ChevronDown, ChevronUp, FileText, User, Database, AlertTriangle, Shield, Activity, Calendar, Workflow, Pencil } from 'lucide-react';
+import { ChevronRight, ChevronDown, ChevronUp, FileText, User, Users, Database, AlertTriangle, Monitor, Shield, Activity, Calendar, Workflow, Pencil } from 'lucide-react';
 import { DynamicColumnKey, Incident } from '../types/incident';
 import ExportButtons from './ExportButtons';
 import { getIncidentColumnValue, getIncidentTypeDefinition } from '../config/incident-config';
@@ -73,7 +73,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
       key: 'хост',
       label: 'Хост',
       value: incident.хост,
-      icon: <Shield className="w-5 h-5 text-slate-600 dark:text-slate-400" />,
+      icon: <Monitor className="w-5 h-5 text-slate-600 dark:text-slate-400" />,
       iconBg: 'bg-slate-100 dark:bg-slate-900',
     },
     {
@@ -87,7 +87,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
       key: 'команда',
       label: 'Команда',
       value: incident.команда,
-      icon: <Shield className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />,
+      icon: <Users className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />,
       iconBg: 'bg-cyan-100 dark:bg-cyan-900',
     },
     {

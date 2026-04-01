@@ -4,8 +4,11 @@ import {
   ArrowLeft,
   FileText,
   User,
+  Users,
   Database,
   AlertTriangle,
+  AlertCircle,
+  Monitor,
   Calendar,
   Shield,
   Activity,
@@ -22,6 +25,9 @@ import {
   Reply,
   ChevronUp,
   ChevronDown,
+  Flag,
+  Clock,
+  Server,
 } from 'lucide-react';
 import { mockUser, mockUsersDirectory } from '../data/mockData';
 import DraggableField from './DraggableField';
@@ -34,74 +40,190 @@ import { useIncidentsStore } from '../store/incidents';
 import { Incident } from '../types/incident';
 import IncidentFieldEditDialog from './IncidentFieldEditDialog';
 
-interface Field {
+// Field type definitions for editor and display
+interface FieldTypeDefinition {
   id: string;
   label: string;
-  getValue: (incident: Incident) => React.ReactNode;
+  type: 'string' | 'select' | 'boolean' | 'datetime' | 'multiline' | 'file' | 'number';
+  allowMultiple?: boolean;
+  selectOptions?: { label: string; value: string }[];
   icon: React.ReactNode;
+  getValue: (incident: Incident, field: FieldTypeDefinition) => React.ReactNode;
+  prefix?: string;
+  postfix?: string;
 }
 
-const defaultFields: Field[] = [
-  {
-    id: 'название',
-    label: 'Название',
-    getValue: (incident) => incident.название,
-    icon: <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-  },
-  {
-    id: 'ответственный',
-    label: 'Ответственный',
-    getValue: (incident) => incident.ответственный,
-    icon: <User className="w-5 h-5 text-green-600 dark:text-green-400" />
-  },
-  {
-    id: 'источник',
-    label: 'Источник',
-    getValue: (incident) => incident.источник,
-    icon: <Database className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-  },
-  {
-    id: 'login',
-    label: 'Login',
-    getValue: (incident) => incident.login,
-    icon: <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
-  },
-  {
-    id: 'хост',
-    label: 'Хост',
-    getValue: (incident) => incident.хост,
-    icon: <Shield className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-  },
+const fieldTypes: FieldTypeDefinition[] = [
   {
     id: 'статус',
     label: 'Статус',
-    getValue: (incident) => (
-      <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-        incident.статус === 'Закрыт' ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' :
-        incident.статус === 'Открыт' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' :
-        incident.статус === 'В работе' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
-        'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
-      }`}>
-        {incident.статус}
-      </span>
-    ),
-    icon: <Activity className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+    type: 'select',
+    selectOptions: [
+      { label: 'Открыт', value: 'Открыт' },
+      { label: 'В работе', value: 'В работе' },
+      { label: 'Расследование', value: 'Расследование' },
+      { label: 'Закрыт', value: 'Закрыт' },
+      { label: 'Ложный', value: 'Ложный' },
+    ],
+    icon: <Activity className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />,
+    getValue: (incident, field) => {
+      const status = incident.статус;
+      const colors: Record<string, string> = {
+        'Закрыт': 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300',
+        'Открыт': 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
+        'В работе': 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400',
+        'Расследование': 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400',
+      };
+      return (
+        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${colors[status] || 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}>
+          {status}
+        </span>
+      );
+    }
   },
   {
     id: 'команда',
     label: 'Команда',
-    getValue: (incident) => incident.команда,
-    icon: <Shield className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+    type: 'select',
+    selectOptions: [
+      { label: 'SOC L1', value: 'SOC L1' },
+      { label: 'SOC L2', value: 'SOC L2' },
+      { label: 'DLP', value: 'DLP' },
+    ],
+    icon: <Users className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />,
+    getValue: (incident, field) => incident.команда
   },
   {
-    id: 'дата',
-    label: 'Дата создания',
-    getValue: (incident) => incident.дата,
-    icon: <Calendar className="w-5 h-5 text-pink-600 dark:text-pink-400" />
-  }
+    id: 'priority',
+    label: 'Приоритет',
+    type: 'select',
+    selectOptions: [
+      { label: 'Низкий', value: 'Низкий' },
+      { label: 'Средний', value: 'Средний' },
+      { label: 'Высокий', value: 'Высокий' },
+      { label: 'Критический', value: 'Критический' },
+    ],
+    icon: <Flag className="w-5 h-5 text-orange-600 dark:text-orange-400" />,
+    getValue: (incident, field) => {
+      const priority = incident.дополнительныеПоля?.priority || '—';
+      const colors: Record<string, string> = {
+        'Низкий': 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
+        'Средний': 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400',
+        'Высокий': 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400',
+        'Критический': 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400',
+      };
+      return priority !== '—' ? (
+        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${colors[priority] || 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}>
+          {priority}
+        </span>
+      ) : '—';
+    }
+  },
+  {
+    id: 'detected_at',
+    label: 'Дата обнаружения',
+    type: 'datetime',
+    icon: <Calendar className="w-5 h-5 text-rose-600 dark:text-rose-400" />,
+    getValue: (incident, field) => {
+      const value = incident.дополнительныеПоля?.detected_at;
+      return value ? value : '—';
+    }
+  },
+  {
+    id: 'description',
+    label: 'Описание',
+    type: 'multiline',
+    icon: <FileText className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />,
+    getValue: (incident, field) => {
+      const value = incident.дополнительныеПоля?.description || incident.описание || '—';
+      if (value === '—') return value;
+      return (
+        <div className="whitespace-pre-wrap text-sm text-gray-900 dark:text-gray-100">
+          {value}
+        </div>
+      );
+    }
+  },
+  {
+    id: 'response_time',
+    label: 'Время реакции (мин)',
+    type: 'number',
+    postfix: 'мин',
+    icon: <Clock className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
+    getValue: (incident, field) => {
+      const value = incident.дополнительныеПоля?.response_time;
+      if (!value) return '—';
+      return field.postfix ? `${value} ${field.postfix}` : String(value);
+    }
+  },
+  {
+    id: 'needs_escalation',
+    label: 'Требуется эскалация',
+    type: 'boolean',
+    icon: <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />,
+    getValue: (incident, field) => {
+      const value = incident.дополнительныеПоля?.needs_escalation;
+      if (!value || value === '—' || value === '') return '—';
+      const isTrue = value === 'true' || value === true || value === '1' || value === 1;
+      return isTrue ? (
+        <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+          Да
+        </span>
+      ) : (
+        <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+          Нет
+        </span>
+      );
+    }
+  },
+  {
+    id: 'affected_systems',
+    label: 'Затронутые системы',
+    type: 'select',
+    allowMultiple: true,
+    selectOptions: [
+      { label: 'Active Directory', value: 'Active Directory' },
+      { label: 'Exchange', value: 'Exchange' },
+      { label: 'File Server', value: 'File Server' },
+      { label: 'VPN', value: 'VPN' },
+      { label: 'Web Server', value: 'Web Server' },
+    ],
+    icon: <Server className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
+    getValue: (incident, field) => {
+      const value = incident.дополнительныеПоля?.affected_systems;
+      if (!value || value === '—' || value === '') return '—';
+      const systems = value.split(',').map(s => s.trim()).filter(s => s);
+      if (systems.length === 0) return '—';
+      return (
+        <div className="flex flex-wrap gap-1">
+          {systems.map((system, i) => (
+            <span key={i} className="inline-flex px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded text-xs font-medium">
+              {system}
+            </span>
+          ))}
+        </div>
+      );
+    }
+  },
 ];
 
 const incidentStatusOptions = ['Открыт', 'В работе', 'Расследование', 'Закрыт', 'Ложный'];
+
+// Basic fields without special types
+const basicFields: Omit<FieldTypeDefinition, 'type' | 'selectOptions' | 'allowMultiple' | 'prefix' | 'postfix'>[] = [
+  { id: 'название', label: 'Название', icon: <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />, getValue: (incident: Incident, field: FieldTypeDefinition) => incident.название },
+  { id: 'ответственный', label: 'Ответственный', icon: <User className="w-5 h-5 text-green-600 dark:text-green-400" />, getValue: (incident: Incident, field: FieldTypeDefinition) => incident.ответственный },
+  { id: 'источник', label: 'Источник', icon: <Database className="w-5 h-5 text-purple-600 dark:text-purple-400" />, getValue: (incident: Incident, field: FieldTypeDefinition) => incident.источник },
+  { id: 'login', label: 'Нарушитель', icon: <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />, getValue: (incident: Incident, field: FieldTypeDefinition) => incident.login },
+  { id: 'хост', label: 'Хост', icon: <Monitor className="w-5 h-5 text-slate-600 dark:text-slate-400" />, getValue: (incident: Incident, field: FieldTypeDefinition) => incident.хост },
+  { id: 'дата', label: 'Дата создания', icon: <Calendar className="w-5 h-5 text-pink-600 dark:text-pink-400" />, getValue: (incident: Incident, field: FieldTypeDefinition) => incident.дата },
+];
+
+// All fields combined - add default type 'string' to basic fields
+const allFields: FieldTypeDefinition[] = [
+  ...basicFields.map(f => ({ ...f, type: 'string' as const })),
+  ...fieldTypes,
+];
 
 const emailTemplates = [
   {
@@ -206,7 +328,7 @@ function getFirstNEntries(nodes: InvestigationThreadNode[], n: number): Investig
 export default function IncidentDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [fields, setFields] = useState(defaultFields);
+  const [fields, setFields] = useState(allFields);
   const [commentText, setCommentText] = useState('');
   const [selectedTemplateId, setSelectedTemplateId] = useState(emailTemplates[0].id);
   const [emailSubject, setEmailSubject] = useState(emailTemplates[0].subject);
@@ -218,10 +340,12 @@ export default function IncidentDetailPage() {
   const [editingField, setEditingField] = useState<{
     key: string;
     label: string;
-    inputType: 'text' | 'textarea' | 'select';
+    inputType: 'text' | 'textarea' | 'select' | 'boolean' | 'datetime' | 'file' | 'number' | 'multiselect';
     value: string;
-    options?: string[];
+    options?: { label: string; value: string }[];
     isAdditional?: boolean;
+    prefix?: string;
+    postfix?: string;
   } | null>(null);
   const [investigationCollapsed, setInvestigationCollapsed] = useState(false);
 
@@ -344,8 +468,18 @@ export default function IncidentDetailPage() {
   const incidentType = incident ? getIncidentTypeDefinition(incident.типИнцидента) : undefined;
   const suggestedRecipient = incident ? (emailRecipient || resolveViolatorEmail(incident.login, incident.id)) : emailRecipient;
   const requiredFieldIds = new Set(['название', 'ответственный', 'источник', 'login', 'хост', 'статус', 'команда', 'дата']);
-  const requiredFields = fields.filter((field) => requiredFieldIds.has(field.id));
-  const optionalFields = fields.filter((field) => !requiredFieldIds.has(field.id));
+  const requiredFields = allFields.filter((field) => requiredFieldIds.has(field.id));
+  const optionalFields = allFields.filter((field) => !requiredFieldIds.has(field.id));
+  
+  // Filter out fields that have no value for this incident
+  const displayedOptionalFields = optionalFields.filter((field) => {
+    const value = field.getValue(incident, field);
+    // Check if value is empty or just a dash
+    if (value === '—' || value === '' || value === null || value === undefined) return false;
+    // For React elements, check if they have children
+    if (typeof value === 'object') return true;
+    return true;
+  });
 
   if (!incident) {
     return (
@@ -364,24 +498,56 @@ export default function IncidentDetailPage() {
   }
 
   const openFieldEditor = (fieldId: string, label: string) => {
-    if (fieldId === 'статус') {
-      setEditingField({ key: fieldId, label, inputType: 'select', value: incident.статус, options: incidentStatusOptions });
-      return;
-    }
-    if (fieldId === 'команда') {
-      setEditingField({ key: fieldId, label, inputType: 'select', value: incident.команда, options: ['SOC L1', 'SOC L2', 'DLP'] });
-      return;
-    }
-    setEditingField({ key: fieldId, label, inputType: 'text', value: String(incident[fieldId as keyof Incident] ?? '') });
-  };
+    // Find field type definition from fieldTypes (has type info)
+    const fieldDef = fieldTypes.find(f => f.id === fieldId);
+    
+    let inputType: 'text' | 'textarea' | 'select' | 'boolean' | 'datetime' | 'file' | 'number' | 'multiselect' = 'text';
+    let value = String(incident[fieldId as keyof Incident] ?? incident.дополнительныеПоля?.[fieldId] ?? '');
+    let options: { label: string; value: string }[] = [];
 
-  const openAdditionalFieldEditor = (fieldId: string, label: string) => {
-    setEditingField({
-      key: fieldId,
-      label,
-      inputType: 'text',
-      value: incident.дополнительныеПоля?.[fieldId] ?? '',
-      isAdditional: true,
+    if (fieldDef) {
+      // Map field type to input type
+      switch (fieldDef.type) {
+        case 'select':
+          inputType = fieldDef.allowMultiple ? 'multiselect' : 'select';
+          options = fieldDef.selectOptions || [];
+          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+          break;
+        case 'boolean':
+          inputType = 'boolean';
+          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || 'false';
+          break;
+        case 'datetime':
+          inputType = 'datetime';
+          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+          break;
+        case 'multiline':
+          inputType = 'textarea';
+          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+          break;
+        case 'file':
+          inputType = 'file';
+          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+          break;
+        case 'number':
+          inputType = 'number';
+          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '0';
+          break;
+        default:
+          inputType = 'text';
+          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+      }
+    }
+
+    setEditingField({ 
+      key: fieldId, 
+      label, 
+      inputType, 
+      value, 
+      options, 
+      isAdditional: !!incident.дополнительныеПоля?.[fieldId],
+      prefix: fieldDef?.prefix,
+      postfix: fieldDef?.postfix
     });
   };
 
@@ -602,7 +768,7 @@ export default function IncidentDetailPage() {
               key={field.id}
               id={field.id}
               label={field.label}
-              value={field.getValue(incident)}
+              value={field.getValue(incident, field)}
               icon={field.icon}
               index={index}
               moveField={moveField}
@@ -619,42 +785,22 @@ export default function IncidentDetailPage() {
           ))}
         </div>
 
-        {(optionalFields.length > 0 || (incidentType?.extraFields.length ?? 0) > 0) && (
+        {displayedOptionalFields.length > 0 && (
           <div className="mt-6">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Дополнительные поля</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {optionalFields.map((field, index) => (
+              {displayedOptionalFields.map((field, index) => (
                 <DraggableField
                   key={field.id}
                   id={field.id}
                   label={field.label}
-                  value={field.getValue(incident)}
+                  value={field.getValue(incident, field)}
                   icon={field.icon}
                   index={requiredFields.length + index}
                   moveField={moveField}
                   action={
                     <button
                       onClick={() => openFieldEditor(field.id, field.label)}
-                      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                      Изменить
-                    </button>
-                  }
-                />
-              ))}
-              {incidentType?.extraFields.map((field, index) => (
-                <DraggableField
-                  key={`extra-${field.id}`}
-                  id={`extra-${field.id}`}
-                  label={field.label}
-                  value={incident.дополнительныеПоля?.[field.id] ?? '—'}
-                  icon={<FileText className="w-5 h-5 text-slate-600 dark:text-slate-400" />}
-                  index={requiredFields.length + optionalFields.length + index}
-                  moveField={moveField}
-                  action={
-                    <button
-                      onClick={() => openAdditionalFieldEditor(field.id, field.label)}
                       className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
                     >
                       <Pencil className="w-3.5 h-3.5" />

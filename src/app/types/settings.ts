@@ -17,6 +17,8 @@ export interface CustomField {
   selectOptions?: SelectOptionValue[];
   allowMultiple?: boolean;
   slugLocked?: boolean;
+  prefix?: string;
+  postfix?: string;
 }
 
 export interface ActionActivity {
