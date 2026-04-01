@@ -232,7 +232,7 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
 
   return (
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600 dark:text-gray-400">Тип инцидента:</span>
@@ -291,11 +291,11 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
           <div className="overflow-x-auto">
             <div className="inline-block min-w-full align-middle">
               {/* Header */}
-              <div className="flex border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center border-b border-gray-200 dark:border-gray-700">
                 <button
                     type="button"
                     onClick={() => setIsSettingsOpen(true)}
-                    className="w-12 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex-shrink-0 flex items-center justify-center text-gray-500 hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="w-10 h-10 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex-shrink-0 flex items-center justify-center text-gray-500 hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     title="Настройки отображения полей"
                 >
                   <Settings2 className="w-4 h-4" />

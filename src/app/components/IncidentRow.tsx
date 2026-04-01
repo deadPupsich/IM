@@ -146,7 +146,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
       <>
         <div className="flex border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
           <div
-              className="w-12 flex items-center justify-center border-r border-gray-200 dark:border-gray-700 flex-shrink-0 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
+              className="w-10 h-10 flex items-center justify-center border-r border-gray-200 dark:border-gray-700 flex-shrink-0 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsExpanded(!isExpanded);
@@ -169,9 +169,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
             {columns.map((col, index) => (
                 <div
                     key={col.key}
-                    className={`px-4 py-3 text-sm text-gray-900 dark:text-gray-100 border-r border-gray-200 dark:border-gray-700 ${
-                        index === columns.length - 1 ? 'border-r-0' : ''
-                    } truncate flex-shrink-0`}
+                    className={`px-3 h-10 flex items-center text-sm text-gray-900 dark:text-gray-100 border-r border-gray-150 dark:border-gray-700 truncate flex-shrink-0`}
                     style={{ width: `${col.width}px`, userSelect: 'text' }}
                 >
                   {getIncidentColumnValue(incident, col.key)}
@@ -230,18 +228,8 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
 
         {isExpanded && (
             <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6">
-              <div className="max-w-4xl">
+              <div className="max-w-6xl">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Детали инцидента</h3>
-
-                <div className="mb-4 flex flex-wrap items-center gap-3">
-                  <ExportButtons incident={incident} />
-                  <button
-                    onClick={() => navigate(`/incident/${incident.id}`)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                  >
-                    Редактировать
-                  </button>
-                </div>
 
                 {actions.length > 0 && (
                   <div className="mb-5">
@@ -249,7 +237,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
                       <Workflow className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       Действия
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       {actions.map((action, index) => (
                         <DraggableIncidentAction
                           key={action.id}
@@ -260,27 +248,35 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
                           readonly
                         />
                       ))}
+                      <ExportButtons incident={incident} />
                     </div>
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-4">
+                {actions.length === 0 && (
+                  <div className="mb-5 flex items-center gap-4">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Действия не настроены</div>
+                    <ExportButtons incident={incident} />
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                   {requiredDetails.map((detail) => (
-                    <div key={detail.key} className="flex items-start gap-3">
+                    <div key={detail.key} className="flex items-start gap-3 min-w-0">
                       <div className={`w-10 h-10 ${detail.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}>
                         {detail.icon}
                       </div>
-                      <div>
-                        <div className="mb-1 flex items-center gap-2">
-                          <div className="text-xs text-gray-500 dark:text-gray-400">{detail.label}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-baseline gap-2 mb-1">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 w-28 flex-shrink-0">{detail.label}</div>
                           <button
                             onClick={() => openFieldEditor(detail.key, detail.label, String(detail.value), detail.key === 'статус' ? 'select' : detail.key === 'команда' ? 'select' : 'text', detail.key === 'статус' ? incidentStatusOptions : detail.key === 'команда' ? ['SOC L1', 'SOC L2', 'DLP'] : undefined)}
-                            className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                            className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 flex-shrink-0"
                           >
                             <Pencil className="w-3 h-3" />
                           </button>
                         </div>
-                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{detail.value}</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words">{detail.value}</div>
                         {detail.key === 'название' && (
                           <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                             Тип: {incidentType?.label ?? incident.типИнцидента}
@@ -294,23 +290,23 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
                 <div className="mt-5 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Дополнительные поля</div>
                   {incidentType?.extraFields.length ? (
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                       {incidentType.extraFields.map((field) => (
-                        <div key={field.id} className="flex items-start gap-3">
+                        <div key={field.id} className="flex items-start gap-3 min-w-0">
                           <div className="w-10 h-10 bg-slate-100 dark:bg-slate-900 rounded-lg flex items-center justify-center flex-shrink-0">
                             <FileText className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                           </div>
-                          <div>
-                            <div className="mb-1 flex items-center gap-2">
-                              <div className="text-xs text-gray-500 dark:text-gray-400">{field.label}</div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-baseline gap-2 mb-1">
+                              <div className="text-xs text-gray-500 dark:text-gray-400 w-28 flex-shrink-0">{field.label}</div>
                               <button
                                 onClick={() => openFieldEditor(field.id, field.label, incident.дополнительныеПоля?.[field.id] ?? '', 'text', undefined, true)}
-                                className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                                className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 flex-shrink-0"
                               >
                                 <Pencil className="w-3 h-3" />
                               </button>
                             </div>
-                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words">
                               {incident.дополнительныеПоля?.[field.id] ?? '—'}
                             </div>
                           </div>

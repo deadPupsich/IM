@@ -101,7 +101,7 @@ export default function ResizableDraggableColumnHeader({
   return (
       <div
           ref={ref}
-          className={`relative flex items-center gap-2 px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-r border-gray-200 dark:border-gray-700 font-medium text-sm text-gray-700 dark:text-gray-300 ${
+          className={`relative flex items-center h-10 px-2 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 last:border-r-0 font-medium text-sm text-gray-700 dark:text-gray-300 ${
               isDragging ? 'opacity-50' : ''
           }`}
           style={{ width: `${width}px` }}
@@ -109,14 +109,14 @@ export default function ResizableDraggableColumnHeader({
         <div ref={dragHandleRef} className="cursor-move flex-shrink-0">
           <GripVertical className="w-4 h-4 text-gray-400 dark:text-gray-500" />
         </div>
-        <span 
+        <span
           onClick={handleSortClick}
           className="truncate flex-1 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1"
         >
           {label}
           {sortDirection !== null && (
-            sortDirection === 'asc' ? 
-              <ArrowUp className="w-3 h-3 flex-shrink-0" /> : 
+            sortDirection === 'asc' ?
+              <ArrowUp className="w-3 h-3 flex-shrink-0" /> :
               <ArrowDown className="w-3 h-3 flex-shrink-0" />
           )}
         </span>

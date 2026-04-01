@@ -41,6 +41,15 @@
   background-color: rgb(55 65 81 / var(--tw-bg-opacity));
 }
 
+/* Custom border color for table cells */
+.border-gray-150 {
+  border-color: #d1d5db;
+}
+
+.dark .border-gray-150 {
+  border-color: #374151;
+}
+
 /* React-colorful styles - copied from react-colorful/dist/index.css */
 .react-colorful {
   position: relative;
