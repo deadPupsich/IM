@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Trash2, ChevronDown, Search } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CustomField } from '../../types/settings.ts';
 
 interface IncidentField {
@@ -16,6 +16,8 @@ interface IncidentType {
   actions: string[];
   isExpanded: boolean;
 }
+
+const ITEMS_PER_PAGE = 10;
 
 // Mock data for fields (в реальности будет из FieldSettings)
 const availableFields: CustomField[] = [
@@ -58,6 +60,12 @@ export default function IncidentTypeSettings() {
 
   const [fieldSearch, setFieldSearch] = useState<{ [key: string]: string }>({});
   const [actionSearch, setActionSearch] = useState<{ [key: string]: string }>({});
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const filteredIncidentTypes = incidentTypes;
+  const totalPages = Math.ceil(filteredIncidentTypes.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedIncidentTypes = filteredIncidentTypes.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const addIncidentType = () => {
     const newType: IncidentType = {
@@ -131,7 +139,7 @@ export default function IncidentTypeSettings() {
       </div>
 
       <div className="space-y-4">
-        {incidentTypes.map((type) => (
+        {paginatedIncidentTypes.map((type) => (
           <div key={type.id} className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-start gap-3">
@@ -311,6 +319,48 @@ export default function IncidentTypeSettings() {
           </div>
         ))}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-4 border-t border-blue-200 dark:border-blue-800">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            Показано {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, filteredIncidentTypes.length)} из {filteredIncidentTypes.length}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-8 h-8 rounded-lg transition-colors ${
+                    currentPage === page
+                      ? 'bg-blue-600 text-white'
+                      : 'hover:bg-gray-100 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       <button
         onClick={addIncidentType}

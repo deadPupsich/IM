@@ -1,9 +1,12 @@
-import { useState, useRef } from 'react';
-import { Plus, Trash2, ChevronDown, ChevronUp, Search } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Plus, Trash2, ChevronDown, ChevronUp, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { CustomAction } from '../../types/settings.ts';
 import { CustomField } from '../../types/settings.ts';
 import { SYSTEM_INCIDENT_ACTIONS } from '../../config/incident-actions.ts';
+import { HexColorPicker } from 'react-colorful';
+
+const ITEMS_PER_PAGE = 10;
 
 const iconsList = [
   'UserPlus', 'UserCheck', 'Mail', 'MessageSquare', 'Send', 'CheckCircle',
@@ -65,6 +68,12 @@ export default function ActionSettings() {
   const [iconSearch, setIconSearch] = useState<{ [key: string]: string }>({});
   const [colorPickerOpen, setColorPickerOpen] = useState<{ [key: string]: boolean }>({});
   const colorPickerRef = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const filteredActions = actions;
+  const totalPages = Math.ceil(filteredActions.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedActions = filteredActions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const getIconComponent = (iconName: string) => {
     const IconComponent = (Icons as any)[iconName];
@@ -306,7 +315,7 @@ export default function ActionSettings() {
       </div>
 
       <div className="space-y-3">
-        {actions.map((action) => {
+        {paginatedActions.map((action) => {
           const IconComponent = getIconComponent(action.icon);
           const isExpanded = expandedAction === action.id;
 
@@ -571,6 +580,48 @@ export default function ActionSettings() {
           );
         })}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-4 border-t border-blue-200 dark:border-blue-800">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            Показано {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, filteredActions.length)} из {filteredActions.length}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-8 h-8 rounded-lg transition-colors ${
+                    currentPage === page
+                      ? 'bg-blue-600 text-white'
+                      : 'hover:bg-gray-100 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       <button
         onClick={addAction}
