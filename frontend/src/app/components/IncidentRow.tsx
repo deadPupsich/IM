@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronRight, ChevronDown, ChevronUp, FileText, User, Users, Database, AlertTriangle, Monitor, Activity, Calendar, Workflow, Pencil } from 'lucide-react';
+import { ChevronRight, ChevronDown, ChevronUp, FileText, User, Users, Database, AlertTriangle, AlertCircle, Monitor, Activity, Calendar, Workflow, Pencil, Flag, Clock, Server } from 'lucide-react';
 import { DynamicColumnKey, Incident } from '../types/incident.ts';
 import ExportButtons from './ExportButtons.tsx';
 import { getIncidentColumnValue, getIncidentTypeDefinition } from '../config/incident-config.ts';
 import { useIncidentCollaboration } from '../store/incidentCollaboration.ts';
+import { useIncidentTypesStore } from '../store/incidentTypesStore.ts';
 import DraggableIncidentAction from './DraggableIncidentAction.tsx';
 import IncidentFieldEditDialog from './IncidentFieldEditDialog.tsx';
 import { useIncidentsStore } from '../store/incidents.ts';
@@ -29,16 +30,49 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
   } | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; incidentId: string } | null>(null);
   const navigate = useNavigate();
+  const typesStore = useIncidentTypesStore();
   const incidentType = getIncidentTypeDefinition(incident.типИнцидента);
   const actionsByIncident = useIncidentCollaboration((state) => state.actionsByIncident);
   const initializeIncidentActions = useIncidentCollaboration((state) => state.initializeIncidentActions);
   const updateIncident = useIncidentsStore((state) => state.updateIncident);
+  
+  // Получаем fieldIds для типа инцидента из types store
+  const typeFieldSlugs = typesStore.getTypeFieldIds(incident.типИнцидента);
+  
+  // Базовые поля (всегда отображаются)
+  const baseFieldSlugs = new Set(['title', 'assignee', 'source', 'host', 'login', 'status', 'team', 'date']);
+  
+  // Получаем ТОЛЬКО дополнительные поля для типа инцидента (без базовых)
+  const typeExtraFields = typeFieldSlugs.filter(slug => !baseFieldSlugs.has(slug));
 
   useEffect(() => {
     initializeIncidentActions(incident.id, incident.типИнцидента);
   }, [incident.id, incident.типИнцидента, initializeIncidentActions]);
 
   const actions = actionsByIncident[incident.id] ?? [];
+  
+  // Функция для получения иконки по slug поля
+  const getFieldIcon = (slug: string) => {
+    const iconMap: Record<string, { icon: any; bg: string }> = {
+      'priority': { icon: <Flag className="w-5 h-5 text-orange-600 dark:text-orange-400" />, bg: 'bg-orange-100 dark:bg-orange-900' },
+      'detected_at': { icon: <Clock className="w-5 h-5 text-rose-600 dark:text-rose-400" />, bg: 'bg-rose-100 dark:bg-rose-900' },
+      'description': { icon: <FileText className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />, bg: 'bg-cyan-100 dark:bg-cyan-900' },
+      'response_time': { icon: <Clock className="w-5 h-5 text-teal-600 dark:text-teal-400" />, bg: 'bg-teal-100 dark:bg-teal-900' },
+      'needs_escalation': { icon: <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />, bg: 'bg-red-100 dark:bg-red-900' },
+      'affected_systems': { icon: <Server className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />, bg: 'bg-indigo-100 dark:bg-indigo-900' },
+    };
+    return iconMap[slug] || { icon: <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />, bg: 'bg-gray-100 dark:bg-gray-900' };
+  };
+  
+  // Маппинг slug в отображаемое имя
+  const slugToNameMap: Record<string, string> = {
+    'priority': 'Приоритет',
+    'detected_at': 'Дата обнаружения',
+    'description': 'Описание',
+    'response_time': 'Время реакции (мин)',
+    'needs_escalation': 'Требуется эскалация',
+    'affected_systems': 'Затронутые системы',
+  };
 
   const requiredDetails = useMemo(() => ([
     {
@@ -308,34 +342,38 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
                 </div>
 
                 {/* Additional Fields Section */}
-                {incidentType?.extraFields.length ? (
+                {typeExtraFields.length > 0 && (
                   <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
                     <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Дополнительные поля</div>
                     <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                      {incidentType.extraFields.map((field) => (
-                        <div key={field.id} className="flex items-start gap-3 min-w-0">
-                          <div className="w-10 h-10 bg-slate-100 dark:bg-slate-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <FileText className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-baseline gap-2 mb-1">
-                              <div className="text-xs text-gray-500 dark:text-gray-400 w-28 flex-shrink-0">{field.label}</div>
-                              <button
-                                onClick={() => openFieldEditor(field.id, field.label, incident.дополнительныеПоля?.[field.id] ?? '', 'text', undefined, true)}
-                                className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 flex-shrink-0"
-                              >
-                                <Pencil className="w-3 h-3" />
-                              </button>
+                      {typeExtraFields.map((slug) => {
+                        const { icon, bg } = getFieldIcon(slug);
+                        const fieldName = slugToNameMap[slug] || slug;
+                        return (
+                          <div key={slug} className="flex items-start gap-3 min-w-0">
+                            <div className={`w-10 h-10 ${bg} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                              {icon}
                             </div>
-                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words">
-                              {incident.дополнительныеПоля?.[field.id] ?? '—'}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-baseline gap-2 mb-1">
+                                <div className="text-xs text-gray-500 dark:text-gray-400 w-28 flex-shrink-0">{fieldName}</div>
+                                <button
+                                  onClick={() => openFieldEditor(slug, fieldName, incident.дополнительныеПоля?.[slug] ?? '', 'text', undefined, true)}
+                                  className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 flex-shrink-0"
+                                >
+                                  <Pencil className="w-3 h-3" />
+                                </button>
+                              </div>
+                              <div className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words">
+                                {incident.дополнительныеПоля?.[slug] ?? '—'}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
-                ) : null}
+                )}
               </div>
             </div>
         )}

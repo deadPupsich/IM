@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Plus, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { CustomField, SelectOptionValue } from '../../types/settings.ts';
 import { HexColorPicker } from 'react-colorful';
+import { useIncidentFieldsStore, DEFAULT_BASE_FIELDS } from '../../store/incidentFieldsStore.ts';
 
 const iconsList = [
   'FileText', 'User', 'Users', 'Database', 'FileStack', 'AlertTriangle', 'AlertCircle',
@@ -17,16 +18,26 @@ const iconsList = [
 ];
 
 const ITEMS_PER_PAGE = 10;
-const SYSTEM_FIELD_SLUGS = new Set(['title', 'assignee', 'source', 'login', 'status', 'host']);
 
-const slugify = (value: string) => {
+// Валидация slug: только латинские буквы, цифры и подчёркивание (как в Postgres)
+// Начинается с буквы или подчёркивания, не может содержать последовательные подчёркивания
+const isValidSlug = (slug: string): boolean => {
+  if (!slug) return false;
+  // Проверка на соответствие шаблону: начинается с буквы или _, далее буквы, цифры, _
+  const slugRegex = /^[a-z_][a-z0-9_]*$/;
+  if (!slugRegex.test(slug)) return false;
+  // Проверка на последовательные подчёркивания
+  if (slug.includes('__')) return false;
+  return true;
+};
+
+const slugify = (value: string): string => {
   return value
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9_]/g, '')
-    .replace(/\s+/g, '_')
+    .replace(/[^a-z0-9_]/g, '_')
     .replace(/_+/g, '_')
-    .replace(/^_|_$/g, '');
+    .replace(/^_+|_+$/g, '');
 };
 
 const capitalizeFirst = (str: string) => {
@@ -35,189 +46,19 @@ const capitalizeFirst = (str: string) => {
 };
 
 export default function FieldSettings() {
-  const [fields, setFields] = useState<CustomField[]>([
-    {
-      id: '1',
-      name: 'название',
-      slug: 'title',
-      type: 'string',
-      icon: 'FileText',
-      iconColor: '#3b82f6',
-      required: true,
-      description: 'Название инцидента',
-      slugLocked: true,
-    },
-    {
-      id: '2',
-      name: 'ответственный',
-      slug: 'assignee',
-      type: 'string',
-      icon: 'User',
-      iconColor: '#22c55e',
-      required: true,
-      description: 'Ответственный за инцидент',
-      slugLocked: true,
-    },
-    {
-      id: '3',
-      name: 'источник',
-      slug: 'source',
-      type: 'string',
-      icon: 'Database',
-      iconColor: '#a855f7',
-      required: true,
-      description: 'Источник инцидента',
-      slugLocked: true,
-    },
-    {
-      id: '4',
-      name: 'нарушитель',
-      slug: 'login',
-      type: 'string',
-      icon: 'AlertTriangle',
-      iconColor: '#ef4444',
-      required: true,
-      description: 'Это должен быть логин пользователя из AD',
-      slugLocked: true,
-    },
-    {
-      id: '5',
-      name: 'статус',
-      slug: 'status',
-      type: 'select',
-      icon: 'Activity',
-      iconColor: '#6366f1',
-      required: true,
-      description: 'Статус инцидента',
-      selectOptions: [
-        { label: 'Открыт', borderColor: '#3b82f6', textColor: '#1d4ed8', bgColor: '#dbeafe' },
-        { label: 'В работе', borderColor: '#f59e0b', textColor: '#b45309', bgColor: '#fef3c7' },
-        { label: 'Расследование', borderColor: '#8b5cf6', textColor: '#6d28d9', bgColor: '#ede9fe' },
-        { label: 'Закрыт', borderColor: '#6b7280', textColor: '#374151', bgColor: '#f3f4f6' },
-        { label: 'Ложный', borderColor: '#ef4444', textColor: '#b91c1c', bgColor: '#fee2e2' },
-      ],
-      slugLocked: true,
-    },
-    {
-      id: '6',
-      name: 'хост',
-      slug: 'host',
-      type: 'string',
-      icon: 'Monitor',
-      iconColor: '#6b7280',
-      required: true,
-      description: 'Хост, на котором зафиксирован инцидент',
-      slugLocked: true,
-    },
-    {
-      id: '7',
-      name: 'описание',
-      slug: 'description',
-      type: 'multiline',
-      icon: 'FileText',
-      iconColor: '#06b6d4',
-      required: false,
-      description: 'Подробное описание инцидента',
-      slugLocked: true,
-    },
-    {
-      id: '8',
-      name: 'дата обнаружения',
-      slug: 'detected_at',
-      type: 'datetime',
-      icon: 'Calendar',
-      iconColor: '#ec4899',
-      required: false,
-      description: 'Дата и время обнаружения инцидента',
-      slugLocked: true,
-    },
-    {
-      id: '9',
-      name: 'приоритет',
-      slug: 'priority',
-      type: 'select',
-      icon: 'Flag',
-      iconColor: '#f97316',
-      required: false,
-      description: 'Приоритет инцидента',
-      selectOptions: [
-        { label: 'Низкий', borderColor: '#22c55e', textColor: '#15803d', bgColor: '#dcfce7' },
-        { label: 'Средний', borderColor: '#f59e0b', textColor: '#b45309', bgColor: '#fef3c7' },
-        { label: 'Высокий', borderColor: '#ef4444', textColor: '#b91c1c', bgColor: '#fee2e2' },
-        { label: 'Критический', borderColor: '#7c3aed', textColor: '#5b21b6', bgColor: '#ddd6fe' },
-      ],
-      allowMultiple: false,
-      slugLocked: true,
-    },
-    {
-      id: '10',
-      name: 'время реакции (мин)',
-      slug: 'response_time',
-      type: 'number',
-      icon: 'Clock',
-      iconColor: '#14b8a6',
-      required: false,
-      description: 'Время реакции на инцидент в минутах',
-    },
-    {
-      id: '11',
-      name: 'требуется эскалация',
-      slug: 'needs_escalation',
-      type: 'boolean',
-      icon: 'AlertCircle',
-      iconColor: '#dc2626',
-      required: false,
-      description: 'Требуется ли эскалация инцидента',
-    },
-    {
-      id: '12',
-      name: 'файлы доказательств',
-      slug: 'evidence_files',
-      type: 'file',
-      icon: 'Paperclip',
-      iconColor: '#64748b',
-      required: false,
-      description: 'Прикреплённые файлы доказательств',
-    },
-    {
-      id: '13',
-      name: 'комментарий',
-      slug: 'comment',
-      type: 'multiline',
-      icon: 'MessageSquare',
-      iconColor: '#8b5cf6',
-      required: false,
-      description: 'Дополнительный комментарий аналитика',
-    },
-    {
-      id: '14',
-      name: 'затронутые системы',
-      slug: 'affected_systems',
-      type: 'select',
-      icon: 'Server',
-      iconColor: '#3b82f6',
-      required: false,
-      description: 'Системы, затронутые инцидентом',
-      selectOptions: [
-        { label: 'Active Directory', borderColor: '#2563eb', textColor: '#1e40af', bgColor: '#dbeafe' },
-        { label: 'Exchange', borderColor: '#059669', textColor: '#065f46', bgColor: '#d1fae5' },
-        { label: 'File Server', borderColor: '#d97706', textColor: '#92400e', bgColor: '#fef3c7' },
-        { label: 'VPN', borderColor: '#7c3aed', textColor: '#5b21b6', bgColor: '#ede9fe' },
-        { label: 'Web Server', borderColor: '#dc2626', textColor: '#b91c1c', bgColor: '#fee2e2' },
-      ],
-      allowMultiple: true,
-    },
-    {
-      id: '15',
-      name: 'риск реализован',
-      slug: 'risk_realized',
-      type: 'boolean',
-      icon: 'TriangleAlert',
-      iconColor: '#f59e0b',
-      required: false,
-      description: 'Был ли реализован риск безопасности',
-    },
-  ]);
+  const { 
+    baseFields, 
+    extraFields, 
+    customFields,
+    setBaseFields,
+    addCustomField,
+    removeCustomField,
+    updateCustomField,
+    setExtraFields,
+    addExtraField,
+    removeExtraField,
+    updateExtraField,
+  } = useIncidentFieldsStore();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [editingField, setEditingField] = useState<string | null>(null);
@@ -226,6 +67,44 @@ export default function FieldSettings() {
   const [newSelectOption, setNewSelectOption] = useState<Record<string, string>>({});
   const [iconColorPickerOpen, setIconColorPickerOpen] = useState<{ [key: string]: boolean }>({});
   const [optionColorPicker, setOptionColorPicker] = useState<{ fieldId: string; optionIndex: number; pickerType: 'border' | 'text' | 'bg' } | null>(null);
+
+  // Собираем все уникальные поля: базовые + все дополнительные из типов + пользовательские
+  const allFields: CustomField[] = (() => {
+    const fieldMap = new Map<string, CustomField>();
+
+    // Добавляем базовые поля
+    baseFields.forEach(f => fieldMap.set(f.slug, f));
+
+    // Добавляем все дополнительные поля из всех типов
+    if (extraFields && typeof extraFields === 'object') {
+      Object.values(extraFields).forEach(typeFields => {
+        if (Array.isArray(typeFields)) {
+          typeFields.forEach(f => {
+            if (!fieldMap.has(f.slug)) {
+              fieldMap.set(f.slug, f);
+            }
+          });
+        }
+      });
+    }
+
+    // Добавляем пользовательские поля
+    customFields.forEach(f => fieldMap.set(f.slug, f));
+
+    return Array.from(fieldMap.values());
+  })();
+
+  // Определяем тип поля для UI
+  const getFieldCategory = (fieldId: string) => {
+    if (baseFields.some(f => f.id === fieldId)) return 'base';
+    if (customFields.some(f => f.id === fieldId)) return 'custom';
+    // Проверяем, является ли поле дополнительным в каком-либо типе
+    const isExtra = Object.values(extraFields || {}).some(typeFields =>
+      Array.isArray(typeFields) && typeFields.some(f => f.id === fieldId)
+    );
+    if (isExtra) return 'extra';
+    return 'custom';
+  };
 
   const addField = () => {
     const newField: CustomField = {
@@ -239,59 +118,105 @@ export default function FieldSettings() {
       selectOptions: [],
       slugLocked: false,
     };
-    setFields([...fields, newField]);
+    addCustomField(newField);
     setEditingField(newField.id);
-    setCurrentPage(Math.ceil((fields.length + 1) / ITEMS_PER_PAGE));
+    setCurrentPage(Math.ceil((customFields.length + 1) / ITEMS_PER_PAGE));
   };
 
   const removeField = (id: string) => {
-    setFields(fields.filter(f => f.id !== id));
+    const category = getFieldCategory(id);
+    
+    if (category === 'base') {
+      // Базовые поля нельзя удалить
+      return;
+    }
+    
+    if (category === 'extra') {
+      // Удаляем из всех типов, где это поле используется
+      Object.keys(extraFields || {}).forEach(typeId => {
+        removeExtraField(typeId, id);
+      });
+      return;
+    }
+    
+    // Это пользовательское поле
+    removeCustomField(id);
   };
 
   const updateField = (id: string, updates: Partial<CustomField>) => {
-    setFields(fields.map(f => f.id === id ? { ...f, ...updates } : f));
+    // Валидация названия
+    if (updates.name !== undefined) {
+      if (!updates.name.trim()) {
+        return; // Нельзя установить пустое название
+      }
+    }
+
+    // Валидация slug
+    if (updates.slug !== undefined) {
+      const newSlug = updates.slug;
+      if (newSlug && !isValidSlug(newSlug)) {
+        return; // Нельзя установить невалидный slug
+      }
+    }
+
+    const category = getFieldCategory(id);
+    
+    if (category === 'base') {
+      setBaseFields(baseFields.map(f => f.id === id ? { ...f, ...updates } : f));
+      // Обновляем также во всех extraFields где это поле используется
+      Object.keys(extraFields || {}).forEach(typeId => {
+        updateExtraField(typeId, id, updates);
+      });
+      return;
+    }
+    
+    if (category === 'extra') {
+      // Обновляем во всех типах, где используется это поле
+      Object.keys(extraFields || {}).forEach(typeId => {
+        updateExtraField(typeId, id, updates);
+      });
+      return;
+    }
+    
+    // Это пользовательское поле
+    updateCustomField(id, updates);
   };
 
   const addSelectOption = (fieldId: string) => {
     const value = (newSelectOption[fieldId] || '').trim();
     if (!value) return;
 
-    setFields(fields.map(field =>
-      field.id === fieldId
-        ? {
-            ...field,
-            selectOptions: [...(field.selectOptions || []), { label: value, borderColor: '#3b82f6', textColor: '#1d4ed8', bgColor: '#dbeafe' }]
-          }
-        : field
-    ));
+    const field = allFields.find(f => f.id === fieldId);
+    if (!field) return;
+
+    const updatedOptions: SelectOptionValue[] = [
+      ...(field.selectOptions || []), 
+      { label: value, borderColor: '#3b82f6', textColor: '#1d4ed8', bgColor: '#dbeafe' }
+    ];
+
+    updateField(fieldId, { selectOptions: updatedOptions });
     setNewSelectOption((prev) => ({ ...prev, [fieldId]: '' }));
   };
 
   const removeSelectOption = (fieldId: string, optionIndex: number) => {
-    setFields(fields.map(field =>
-      field.id === fieldId
-        ? {
-            ...field,
-            selectOptions: (field.selectOptions || []).filter((_, i) => i !== optionIndex)
-          }
-        : field
-    ));
+    const field = allFields.find(f => f.id === fieldId);
+    if (!field) return;
+
+    const updatedOptions = (field.selectOptions || []).filter((_, i) => i !== optionIndex);
+    updateField(fieldId, { selectOptions: updatedOptions });
   };
 
   const updateSelectOption = (fieldId: string, optionIndex: number, updates: Partial<SelectOptionValue>) => {
-    setFields(fields.map(field =>
-      field.id === fieldId
-        ? {
-            ...field,
-            selectOptions: (field.selectOptions || []).map((opt, i) =>
-              i === optionIndex ? { ...opt, ...updates } : opt
-            )
-          }
-        : field
-    ));
+    const field = allFields.find(f => f.id === fieldId);
+    if (!field) return;
+
+    const updatedOptions = (field.selectOptions || []).map((opt, i) =>
+      i === optionIndex ? { ...opt, ...updates } : opt
+    );
+    updateField(fieldId, { selectOptions: updatedOptions });
   };
 
-  const filteredFields = fields.filter(f =>
+  const filteredFields = allFields.filter(f =>
     f.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -329,12 +254,10 @@ export default function FieldSettings() {
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      // Close icon color picker
       const openPickerId = Object.keys(iconColorPickerOpen).find(key => iconColorPickerOpen[key]);
       if (openPickerId && colorPickerRef.current[openPickerId] && !colorPickerRef.current[openPickerId]?.contains(target)) {
         setIconColorPickerOpen({});
       }
-      // Close option color picker
       if (optionColorPicker && !target.closest('[data-option-color-picker]')) {
         setOptionColorPicker(null);
       }
@@ -385,7 +308,10 @@ export default function FieldSettings() {
         {paginatedFields.map((field) => {
           const IconComponent = getIconComponent(field.icon);
           const isEditing = editingField === field.id;
-          const isSystemField = SYSTEM_FIELD_SLUGS.has(field.slug);
+          const fieldCategory = getFieldCategory(field.id);
+          const isBaseField = fieldCategory === 'base';
+          const isExtraField = fieldCategory === 'extra';
+          const isCustomField = fieldCategory === 'custom';
 
           return (
             <div
@@ -399,12 +325,18 @@ export default function FieldSettings() {
                       <h4 className="text-lg font-semibold text-blue-900 dark:text-blue-300">
                         {capitalizeFirst(field.name) || 'Новое поле'}
                       </h4>
-                      {isSystemField && (
+                      {isBaseField && (
                         <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded">
                           Системное
                         </span>
                       )}
                     </div>
+                    <button
+                      onClick={() => setEditingField(null)}
+                      className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      Готово
+                    </button>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -416,10 +348,10 @@ export default function FieldSettings() {
                         value={field.name}
                         onChange={(e) => updateField(field.id, { name: e.target.value })}
                         placeholder="Название_поля"
-                        disabled={isSystemField}
+                        disabled={isBaseField}
                         className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100 dark:disabled:bg-gray-700"
                       />
-                      {isSystemField && (
+                      {isBaseField && (
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                           Для системного поля название менять нельзя.
                         </p>
@@ -434,18 +366,25 @@ export default function FieldSettings() {
                         type="text"
                         value={field.slug}
                         onChange={(e) => {
-                          const value = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+                          const value = slugify(e.target.value);
                           updateField(field.id, { slug: value });
                         }}
-                        placeholder="field_slug"
+                        placeholder="field_name"
                         disabled={field.slugLocked}
-                        className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100 dark:disabled:bg-gray-700 font-mono"
+                        className={`w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100 dark:disabled:bg-gray-700 font-mono ${
+                          field.slug && !isValidSlug(field.slug) ? 'border-red-500 focus:ring-red-500' : ''
+                        }`}
                       />
                       <p className="mt-1 text-xs text-blue-800 dark:text-blue-400">
                         {field.slugLocked
                           ? 'Slug уже зафиксирован и больше не редактируется.'
-                          : 'Только латинские буквы, цифры и подчёркивание. Пример: field_name'}
+                          : 'Только латинские буквы, цифры и подчёркивание. Начинается с буквы.'}
                       </p>
+                      {field.slug && !isValidSlug(field.slug) && (
+                        <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                          Некорректный slug. Пример: field_name, priority, detected_at
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -455,7 +394,7 @@ export default function FieldSettings() {
                       <select
                         value={field.type}
                         onChange={(e) => updateField(field.id, { type: e.target.value as any })}
-                        disabled={isSystemField}
+                        disabled={isBaseField}
                         className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100 disabled:bg-gray-100 disabled:text-gray-500 dark:disabled:bg-gray-700"
                       >
                         <option value="string">Строка</option>
@@ -466,7 +405,7 @@ export default function FieldSettings() {
                         <option value="number">Число</option>
                         <option value="boolean">Да/Нет</option>
                       </select>
-                      {isSystemField && (
+                      {isBaseField && (
                         <p className="mt-1 text-xs text-blue-800 dark:text-blue-400">
                           Для системного поля тип менять нельзя.
                         </p>
@@ -636,9 +575,9 @@ export default function FieldSettings() {
                                 <button
                                   type="button"
                                   onClick={() => removeSelectOption(field.id, index)}
-                                  className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
+                                  className="p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors"
                                 >
-                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <Trash2 className="w-4 h-4" />
                                 </button>
                               </div>
                             </div>
@@ -688,21 +627,20 @@ export default function FieldSettings() {
                         Цвет иконки
                       </label>
                       <div className="flex items-center gap-4">
-                        <div className="relative inline-block">
+                        <div className="relative">
                           <button
                             type="button"
                             onClick={() => toggleIconColorPicker(field.id)}
                             className="w-12 h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-blue-500 transition-colors shadow-sm"
-                            style={{ backgroundColor: field.iconColor || '#3b82f6' }}
+                            style={{ backgroundColor: field.iconColor }}
                           />
                           {iconColorPickerOpen[field.id] && (
                             <div
                               ref={(el) => { colorPickerRef.current[field.id] = el; }}
-                              className="absolute top-full left-0 mt-2 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50"
-                              data-color-picker
+                              className="absolute top-full left-0 mt-2 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-[100] w-[260px]"
                             >
                               <HexColorPicker
-                                color={field.iconColor || '#3b82f6'}
+                                color={field.iconColor}
                                 onChange={(color) => updateField(field.id, { iconColor: color })}
                               />
                               <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
@@ -710,56 +648,29 @@ export default function FieldSettings() {
                                   HEX цвет
                                 </label>
                                 <div className="flex items-center gap-2 mb-3">
-                                  <div 
+                                  <div
                                     className="w-8 h-8 rounded border border-gray-300 dark:border-gray-600 flex-shrink-0"
-                                    style={{ backgroundColor: field.iconColor || '#3b82f6' }}
+                                    style={{ backgroundColor: field.iconColor }}
                                   />
                                   <input
                                     type="text"
-                                    value={field.iconColor || '#3b82f6'}
+                                    value={field.iconColor}
                                     onChange={(e) => updateField(field.id, { iconColor: e.target.value })}
                                     className="flex-1 px-3 py-1.5 text-sm font-mono border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     placeholder="#000000"
                                   />
                                 </div>
-                                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-                                  RGB значения
-                                </label>
-                                <div className="grid grid-cols-3 gap-2">
-                                  {(['r', 'g', 'b'] as const).map((channel) => {
-                                    const rgb = hexToRgb(field.iconColor || '#3b82f6');
-                                    return (
-                                      <div key={channel}>
-                                        <label className="block text-xs text-gray-500 dark:text-gray-500 mb-1 uppercase">
-                                          {channel === 'r' ? 'Red' : channel === 'g' ? 'Green' : 'Blue'}
-                                        </label>
-                                        <input
-                                          type="number"
-                                          min="0"
-                                          max="255"
-                                          value={rgb[channel]}
-                                          onChange={(e) => {
-                                            const value = Math.max(0, Math.min(255, parseInt(e.target.value) || 0));
-                                            const newHex = rgbToHex(
-                                              channel === 'r' ? value : rgb.r,
-                                              channel === 'g' ? value : rgb.g,
-                                              channel === 'b' ? value : rgb.b
-                                            );
-                                            updateField(field.id, { iconColor: newHex });
-                                          }}
-                                          className="w-full px-2 py-1.5 text-sm text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        />
-                                      </div>
-                                    );
-                                  })}
-                                </div>
                               </div>
                             </div>
                           )}
                         </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-400 font-mono">
-                          {field.iconColor || '#3b82f6'}
-                        </span>
+                        <input
+                          type="text"
+                          value={field.iconColor}
+                          onChange={(e) => updateField(field.id, { iconColor: e.target.value })}
+                          className="flex-1 px-3 py-2 text-sm font-mono border border-blue-200 dark:border-blue-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="#000000"
+                        />
                       </div>
                     </div>
 
@@ -767,116 +678,63 @@ export default function FieldSettings() {
                       <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
                         Описание
                       </label>
-                      <input
-                        type="text"
+                      <textarea
                         value={field.description || ''}
                         onChange={(e) => updateField(field.id, { description: e.target.value })}
                         placeholder="Описание поля"
-                        disabled={isSystemField}
-                        className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100 dark:disabled:bg-gray-700"
+                        rows={2}
+                        className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
                       />
-                      {isSystemField && (
-                        <p className="mt-1 text-xs text-blue-800 dark:text-blue-400">
-                          Для системного поля описание менять нельзя.
-                        </p>
-                      )}
                     </div>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <button
-                      onClick={() => {
-                        setEditingField(null);
-                        setIconSearchTerm('');
-                      }}
-                      className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-sm"
-                    >
-                      Отмена
-                    </button>
-                    <button
-                      onClick={() => {
-                        const nextSlug = field.slug.trim() || slugify(field.name) || `field_${field.id}`;
-                        updateField(field.id, {
-                          slug: nextSlug.toLowerCase().replace(/[^a-z0-9_]/g, ''),
-                          slugLocked: true,
-                        });
-                        setEditingField(null);
-                        setIconSearchTerm('');
-                      }}
-                      disabled={!field.slug.trim() && !field.name.trim()}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Готово
-                    </button>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div 
-                      className="w-12 h-12 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: `${field.iconColor || '#3b82f6'}20` }}
-                    >
-                      <IconComponent 
-                        className="w-6 h-6" 
-                        style={{ color: field.iconColor || '#3b82f6' }}
-                      />
-                    </div>
-                    
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-gray-900 dark:text-gray-100">{capitalizeFirst(field.name)}</h4>
-                        {isSystemField && (
-                          <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded">
-                            Системное
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {field.description || `Тип: ${field.type}`}
-                      </p>
-                      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Slug: {field.slug}
-                        {field.type === 'select' && field.selectOptions && field.selectOptions.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-1">
-                            {field.selectOptions.map((opt, i) => (
-                              <span
-                                key={i}
-                                className="px-2 py-0.5 rounded-full border text-xs font-medium"
-                                style={{
-                                  borderColor: opt.borderColor,
-                                  color: opt.textColor,
-                                  backgroundColor: opt.bgColor,
-                                }}
-                              >
-                                {opt.label}
-                              </span>
-                            ))}
-                            {field.allowMultiple && (
-                              <span className="ml-2 text-blue-600 dark:text-blue-400">• Мультивыбор</span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: `${field.iconColor}20` }}
+                  >
+                    <IconComponent className="w-5 h-5" style={{ color: field.iconColor }} />
                   </div>
-
-                  <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold text-blue-900 dark:text-blue-300">
+                        {field.name}
+                      </h4>
+                      {isBaseField && (
+                        <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded">
+                          Системное
+                        </span>
+                      )}
+                      {isExtraField && (
+                        <span className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-2 py-0.5 rounded">
+                          Доп. поле
+                        </span>
+                      )}
+                      {isCustomField && (
+                        <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded">
+                          Пользовательское
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-blue-800 dark:text-blue-400">
+                      {field.slug} • {field.type}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setEditingField(field.id)}
+                    className="px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                  >
+                    Редактировать
+                  </button>
+                  {(isExtraField || isCustomField) && (
                     <button
-                      onClick={() => setEditingField(field.id)}
-                      className="px-3 py-1.5 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                      onClick={() => removeField(field.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                     >
-                      Изменить
+                      <Trash2 className="w-4 h-4" />
                     </button>
-                    {!isSystemField && (
-                      <button
-                        onClick={() => removeField(field.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
+                  )}
                 </div>
               )}
             </div>
@@ -884,18 +742,17 @@ export default function FieldSettings() {
         })}
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-4 border-t border-blue-200 dark:border-blue-800">
           <div className="text-sm text-gray-600 dark:text-gray-400">
             Показано {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, filteredFields.length)} из {filteredFields.length}
           </div>
-          
+
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -919,19 +776,13 @@ export default function FieldSettings() {
             <button
               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>
       )}
-
-      <div className="pt-6 border-t border-blue-200 dark:border-blue-800">
-        <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-          Сохранить настройки
-        </button>
-      </div>
     </div>
   );
 }

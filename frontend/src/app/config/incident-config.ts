@@ -1,4 +1,6 @@
 import { BaseColumnKey, DynamicColumnKey, Incident, IncidentTypeId } from '../types/incident.ts';
+import { useIncidentFieldsStore } from '../store/incidentFieldsStore.ts';
+import { useIncidentTypesStore } from '../store/incidentTypesStore.ts';
 
 export interface IncidentColumnDefinition {
   key: DynamicColumnKey;
@@ -14,12 +16,13 @@ export interface IncidentTypeFieldDefinition {
 }
 
 export interface IncidentTypeDefinition {
-  id: IncidentTypeId;
+  id: IncidentTypeId | string;
   label: string;
   description: string;
   extraFields: IncidentTypeFieldDefinition[];
 }
 
+// Дефолтные колонки (для обратной совместимости)
 export const DEFAULT_INCIDENT_COLUMNS: IncidentColumnDefinition[] = [
   { key: 'название', label: 'Название', width: 250, isDefault: true },
   { key: 'ответственный', label: 'Ответственный', width: 180, isDefault: true },
@@ -30,80 +33,66 @@ export const DEFAULT_INCIDENT_COLUMNS: IncidentColumnDefinition[] = [
   { key: 'дата', label: 'Дата', width: 150, isDefault: true },
 ];
 
-export const INCIDENT_TYPE_DEFINITIONS: IncidentTypeDefinition[] = [
-  {
-    id: 'security',
-    label: 'Безопасность',
-    description: 'Инциденты безопасности и несанкционированного доступа',
-    extraFields: [
-      { id: 'priority', label: 'Приоритет', width: 120 },
-      { id: 'detected_at', label: 'Дата обнаружения', width: 160 },
-      { id: 'description', label: 'Описание', width: 250 },
-      { id: 'response_time', label: 'Время реакции (мин)', width: 140 },
-      { id: 'needs_escalation', label: 'Требуется эскалация', width: 140 },
-      { id: 'affected_systems', label: 'Затронутые системы', width: 200 },
-    ],
-  },
-  {
-    id: 'dlp',
-    label: 'DLP',
-    description: 'Инциденты утечки и нарушения работы с данными',
-    extraFields: [
-      { id: 'priority', label: 'Приоритет', width: 120 },
-      { id: 'detected_at', label: 'Дата обнаружения', width: 160 },
-      { id: 'description', label: 'Описание', width: 250 },
-      { id: 'response_time', label: 'Время реакции (мин)', width: 140 },
-      { id: 'needs_escalation', label: 'Требуется эскалация', width: 140 },
-      { id: 'affected_systems', label: 'Затронутые системы', width: 200 },
-    ],
-  },
-  {
-    id: 'network',
-    label: 'Сеть',
-    description: 'Сетевые аномалии и подозрительная активность',
-    extraFields: [
-      { id: 'priority', label: 'Приоритет', width: 120 },
-      { id: 'detected_at', label: 'Дата обнаружения', width: 160 },
-      { id: 'description', label: 'Описание', width: 250 },
-      { id: 'response_time', label: 'Время реакции (мин)', width: 140 },
-      { id: 'needs_escalation', label: 'Требуется эскалация', width: 140 },
-      { id: 'affected_systems', label: 'Затронутые системы', width: 200 },
-    ],
-  },
-  {
-    id: 'malware',
-    label: 'Вредоносное ПО',
-    description: 'Детекты вредоносного ПО и заражения',
-    extraFields: [
-      { id: 'priority', label: 'Приоритет', width: 120 },
-      { id: 'detected_at', label: 'Дата обнаружения', width: 160 },
-      { id: 'description', label: 'Описание', width: 250 },
-      { id: 'response_time', label: 'Время реакции (мин)', width: 140 },
-      { id: 'needs_escalation', label: 'Требуется эскалация', width: 140 },
-      { id: 'affected_systems', label: 'Затронутые системы', width: 200 },
-    ],
-  },
-];
+/**
+ * Получает определение типа инцидента из store
+ */
+export function getIncidentTypeDefinition(typeId: IncidentTypeId | string): IncidentTypeDefinition | null {
+  const type = useIncidentTypesStore.getState().getTypeById(typeId);
+  if (!type) return null;
 
-export function getIncidentTypeDefinition(typeId: IncidentTypeId) {
-  return INCIDENT_TYPE_DEFINITIONS.find((type) => type.id === typeId) ?? null;
+  const fieldsStore = useIncidentFieldsStore.getState();
+  const extraFields = type.fieldIds
+    .map((fieldId) => {
+      const field = fieldsStore.getFieldBySlug(fieldId, typeId as string);
+      if (!field) return null;
+      return {
+        id: field.slug,
+        label: field.name,
+        width: 150, // Дефолтная ширина, можно хранить в поле
+      };
+    })
+    .filter((f): f is IncidentTypeFieldDefinition => f !== null);
+
+  return {
+    id: type.id,
+    label: type.label,
+    description: type.description,
+    extraFields,
+  };
 }
 
-export function getExtraColumnDefinitions(typeId: IncidentTypeId): IncidentColumnDefinition[] {
-  const type = getIncidentTypeDefinition(typeId);
+/**
+ * Получает дополнительные колонки для типа инцидента из store
+ */
+export function getExtraColumnDefinitions(typeId: IncidentTypeId | string): IncidentColumnDefinition[] {
+  const fieldsStore = useIncidentFieldsStore.getState();
+  const type = useIncidentTypesStore.getState().getTypeById(typeId);
+  
   if (!type) {
     return [];
   }
 
-  return type.extraFields.map((field) => ({
-    key: `custom:${field.id}` as DynamicColumnKey,
-    label: field.label,
-    width: field.width,
-    isDefault: false,
-  }));
+  return type.fieldIds
+    .map((fieldId) => {
+      const field = fieldsStore.getFieldBySlug(fieldId, typeId as string);
+      if (!field) return null;
+      return {
+        key: `custom:${field.slug}` as DynamicColumnKey,
+        label: field.name,
+        width: 150,
+        isDefault: false,
+      };
+    })
+    .filter((col): col is IncidentColumnDefinition => col !== null);
 }
 
-export function getColumnDefinition(columnKey: DynamicColumnKey, incidentTypeId?: IncidentTypeId | null) {
+/**
+ * Получает определение колонки по ключу
+ */
+export function getColumnDefinition(
+  columnKey: DynamicColumnKey,
+  incidentTypeId?: IncidentTypeId | null
+): IncidentColumnDefinition | null {
   const defaultColumn = DEFAULT_INCIDENT_COLUMNS.find((column) => column.key === columnKey);
   if (defaultColumn) {
     return defaultColumn;
@@ -116,6 +105,9 @@ export function getColumnDefinition(columnKey: DynamicColumnKey, incidentTypeId?
   return getExtraColumnDefinitions(incidentTypeId).find((column) => column.key === columnKey) ?? null;
 }
 
+/**
+ * Получает значение колонки для инцидента
+ */
 export function getIncidentColumnValue(incident: Incident, columnKey: DynamicColumnKey): string {
   if (columnKey.startsWith('custom:')) {
     const fieldId = columnKey.replace('custom:', '');
@@ -128,4 +120,19 @@ export function getIncidentColumnValue(incident: Incident, columnKey: DynamicCol
   }
 
   return String(value ?? '—');
+}
+
+/**
+ * Хук для получения всех полей для типа инцидента
+ * Используется в React компонентах
+ */
+export function useFieldsForIncidentType(typeId: IncidentTypeId | string) {
+  return useIncidentFieldsStore((state) => state.getAllFieldsForType(typeId as string));
+}
+
+/**
+ * Хук для получения типа инцидента
+ */
+export function useIncidentType(typeId: IncidentTypeId | string) {
+  return useIncidentTypesStore((state) => state.getTypeById(typeId));
 }

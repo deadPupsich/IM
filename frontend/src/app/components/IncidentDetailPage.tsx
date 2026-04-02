@@ -33,6 +33,8 @@ import DraggableField from './DraggableField.tsx';
 import ExportButtons from './ExportButtons.tsx';
 import DraggableIncidentAction from './DraggableIncidentAction.tsx';
 import { InvestigationAttachment, InvestigationEntry, useIncidentCollaboration } from '../store/incidentCollaboration.ts';
+import { useIncidentTypesStore } from '../store/incidentTypesStore.ts';
+import { useIncidentActionsStore } from '../store/incidentActionsStore.ts';
 import { getIncidentTypeDefinition } from '../config/incident-config.ts';
 import { SYSTEM_INCIDENT_ACTIONS } from '../config/incident-actions.ts';
 import { useIncidentsStore } from '../store/incidents.ts';
@@ -326,6 +328,8 @@ export default function IncidentDetailPage() {
 
   const incidents = useIncidentsStore((state) => state.incidents);
   const updateIncident = useIncidentsStore((state) => state.updateIncident);
+  const typesStore = useIncidentTypesStore();
+  const actionsStore = useIncidentActionsStore();
 
   const incident = useMemo(() => {
     return incidents.find((inc) => inc.id === id);
@@ -438,19 +442,56 @@ export default function IncidentDetailPage() {
   const actions = incident ? (actionsByIncident[incident.id] ?? []) : [];
   const investigationEntries = incident ? (investigationByIncident[incident.id] ?? []) : [];
   const investigationThreads = useMemo(() => buildInvestigationThreads(investigationEntries), [investigationEntries]);
-  const availableActions = SYSTEM_INCIDENT_ACTIONS.filter((systemAction) => !actions.some((action) => action.label === systemAction.name));
+  const availableActions = actionsStore.getActions().filter((action) => !actions.some((a) => a.label === action.name));
   const incidentType = incident ? getIncidentTypeDefinition(incident.типИнцидента) : undefined;
   const suggestedRecipient = incident ? (emailRecipient || resolveViolatorEmail(incident.login, incident.id)) : emailRecipient;
-  const requiredFieldIds = new Set(['название', 'ответственный', 'источник', 'login', 'хост', 'статус', 'команда', 'дата']);
-  const requiredFields = allFields.filter((field) => requiredFieldIds.has(field.id));
-  const optionalFields = allFields.filter((field) => !requiredFieldIds.has(field.id));
   
-  // Filter out fields that have no value for this incident
-  const displayedOptionalFields = optionalFields.filter((field) => {
+  // Маппинг русских id полей в английские slug store
+  const fieldIdToSlugMap: Record<string, string> = {
+    'название': 'title',
+    'ответственный': 'assignee',
+    'источник': 'source',
+    'login': 'login',
+    'хост': 'host',
+    'статус': 'status',
+    'команда': 'team',
+    'дата': 'date',
+  };
+  
+  // Обратный маппинг: английские slug в русские id
+  const slugToFieldIdMap: Record<string, string> = {
+    'title': 'название',
+    'assignee': 'ответственный',
+    'source': 'источник',
+    'host': 'хост',
+    'login': 'login',
+    'status': 'статус',
+    'team': 'команда',
+    'date': 'дата',
+  };
+  
+  // Базовые поля (всегда отображаются)
+  const baseFieldIds = new Set(['название', 'ответственный', 'источник', 'login', 'хост', 'статус', 'команда', 'дата']);
+  const baseFieldSlugs = new Set(['title', 'assignee', 'source', 'host', 'login', 'status', 'team', 'date']);
+  
+  // Получаем fieldIds для типа инцидента из types store
+  const typeFieldSlugs = incident ? new Set(typesStore.getTypeFieldIds(incident.типИнцидента)) : new Set<string>();
+  
+  const requiredFields = allFields.filter((field) => baseFieldIds.has(field.id));
+  
+  // Дополнительные поля - только те, что выбраны в настройках типа инцидента
+  const typeSpecificFields = allFields.filter((field) => {
+    // Пропускаем базовые поля
+    if (baseFieldIds.has(field.id)) return false;
+    // Проверяем, есть ли поле в настройках типа (через маппинг slug)
+    const slug = fieldIdToSlugMap[field.id] || field.id;
+    return typeFieldSlugs.has(slug);
+  });
+  
+  // Фильтруем поля, у которых есть значения
+  const displayedOptionalFields = typeSpecificFields.filter((field) => {
     const value = field.getValue(incident);
-    // Check if value is empty or just a dash
     if (value === '—' || value === '' || value === null || value === undefined) return false;
-    // For React elements, check if they have children
     if (typeof value === 'object') return true;
     return true;
   });

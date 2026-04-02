@@ -5,12 +5,12 @@ import ResizableDraggableColumnHeader from './ResizableDraggableColumnHeader.tsx
 import IncidentRow from './IncidentRow.tsx';
 import ColumnFilter from './ColumnFilter.tsx';
 import { useAppSettings } from '../store/settings.ts';
+import { useIncidentTypesStore } from '../store/incidentTypesStore.ts';
 import {
   DEFAULT_INCIDENT_COLUMNS,
   getExtraColumnDefinitions,
   getIncidentColumnValue,
   getIncidentTypeDefinition,
-  INCIDENT_TYPE_DEFINITIONS,
   IncidentColumnDefinition,
 } from '../config/incident-config.ts';
 import {
@@ -29,6 +29,7 @@ interface IncidentTableProps {
 const itemsPerPageOptions = [10, 20, 50, 100];
 
 export default function IncidentTable({ incidents }: IncidentTableProps) {
+  const types = useIncidentTypesStore((state) => state.getTypes());
   const [columns, setColumns] = useState<IncidentColumnDefinition[]>(DEFAULT_INCIDENT_COLUMNS);
   const [filters, setFilters] = useState<Map<DynamicColumnKey, Set<string>>>(new Map());
   const [currentPage, setCurrentPage] = useState(1);
@@ -241,7 +242,7 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
                   className="min-w-48 px-3 py-1.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">Все типы</option>
-                {INCIDENT_TYPE_DEFINITIONS.map((type) => (
+                {types.map((type) => (
                     <option key={type.id} value={type.id}>
                       {type.label}
                     </option>

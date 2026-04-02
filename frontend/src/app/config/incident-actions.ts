@@ -1,4 +1,5 @@
 import { IncidentTypeId } from '../types/incident.ts';
+import { useIncidentActionsStore } from '../store/incidentActionsStore.ts';
 
 export interface SystemIncidentAction {
   id: string;
@@ -9,64 +10,56 @@ export interface SystemIncidentAction {
   targetType: 'user' | 'team' | 'status' | 'custom';
 }
 
-export const SYSTEM_INCIDENT_ACTIONS: SystemIncidentAction[] = [
-  {
-    id: 'assign-analyst',
-    name: 'Назначить на аналитика',
-    description: 'Назначить инцидент на ответственного аналитика',
-    icon: 'UserPlus',
-    iconColor: '#3b82f6',
-    targetType: 'user',
-  },
-  {
-    id: 'request-artifacts',
-    name: 'Запросить артефакты',
-    description: 'Собрать недостающие материалы расследования',
-    icon: 'Archive',
-    iconColor: '#f97316',
-    targetType: 'custom',
-  },
-  {
-    id: 'escalate-l2',
-    name: 'Эскалировать в SOC L2',
-    description: 'Передать инцидент на следующую линию',
-    icon: 'ShieldAlert',
-    iconColor: '#22c55e',
-    targetType: 'team',
-  },
-  {
-    id: 'notify-owner',
-    name: 'Уведомить владельца системы',
-    description: 'Отправить уведомление владельцу затронутой системы',
-    icon: 'Mail',
-    iconColor: '#a855f7',
-    targetType: 'user',
-  },
-  {
-    id: 'change-status',
-    name: 'Сменить статус',
-    description: 'Перевести инцидент в другой статус',
-    icon: 'CheckCircle',
-    iconColor: '#3b82f6',
-    targetType: 'status',
-  },
-  {
-    id: 'contact-violator',
-    name: 'Связаться с нарушителем',
-    description: 'Отправить системное письмо подозреваемому пользователю',
-    icon: 'Send',
-    iconColor: '#ef4444',
-    targetType: 'custom',
-  },
-];
-
-export const INCIDENT_TYPE_ACTIONS: Record<IncidentTypeId, string[]> = {
-  security: ['Назначить на аналитика', 'Сменить статус', 'Связаться с нарушителем'],
-  dlp: ['Назначить на аналитика', 'Запросить артефакты', 'Связаться с нарушителем'],
-  network: ['Назначить на аналитика', 'Эскалировать в SOC L2', 'Запросить артефакты'],
-  malware: ['Назначить на аналитика', 'Сменить статус', 'Уведомить владельца системы'],
-};
-
-export function getDefaultActionsForIncidentType(typeId: IncidentTypeId) {
-  return INCIDENT_TYPE_ACTIONS[typeId] ?? [];
+/**
+ * Получает все действия из store
+ */
+export function getIncidentActions(): SystemIncidentAction[] {
+  const store = useIncidentActionsStore.getState();
+  return store.getActions().map((a) => ({
+    id: a.id,
+    name: a.name,
+    description: a.description,
+    icon: a.icon,
+    iconColor: a.iconColor,
+    targetType: a.targetType,
+  }));
 }
+
+/**
+ * Получает действия для типа инцидента из store
+ */
+export function getDefaultActionsForIncidentType(typeId: IncidentTypeId): string[] {
+  const store = useIncidentActionsStore.getState();
+  return store.typeActions[typeId] ?? [];
+}
+
+/**
+ * Получает полные объекты действий для типа инцидента
+ */
+export function getActionsForIncidentType(typeId: IncidentTypeId) {
+  const store = useIncidentActionsStore.getState();
+  return store.getActionsForType(typeId);
+}
+
+/**
+ * Хук для получения действий для типа инцидента в React компонентах
+ */
+export function useActionsForIncidentType(typeId: IncidentTypeId) {
+  return useIncidentActionsStore((state) => state.getActionsForType(typeId));
+}
+
+/**
+ * Хук для получения всех действий в React компонентах
+ */
+export function useAllIncidentActions() {
+  return useIncidentActionsStore((state) => state.getActions());
+}
+
+// Экспортируем константы для обратной совместимости
+export const SYSTEM_INCIDENT_ACTIONS = getIncidentActions();
+export const INCIDENT_TYPE_ACTIONS: Record<IncidentTypeId, string[]> = {
+  security: getDefaultActionsForIncidentType('security'),
+  dlp: getDefaultActionsForIncidentType('dlp'),
+  network: getDefaultActionsForIncidentType('network'),
+  malware: getDefaultActionsForIncidentType('malware'),
+};
