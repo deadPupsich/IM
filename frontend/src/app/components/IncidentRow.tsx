@@ -102,31 +102,33 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
 
   // Функция для определения типа ввода по ключу поля
   const getFieldInputType = (fieldKey: string): { inputType: 'text' | 'select' | 'boolean' | 'datetime' | 'textarea' | 'number' | 'multiselect', options?: { label: string; value: string }[] } => {
-    const fieldType = slugToTypeMap[fieldKey] || 'text';
+    // Убираем префикс custom: если есть
+    const slug = fieldKey.replace('custom:', '');
     
-    // Сначала проверяем selectOptionsMap для базовых полей
-    let stringOptions = selectOptionsMap[fieldKey];
+    // Сначала получаем поле из store (для дополнительных полей)
+    const storeField = fieldsStore.getFieldBySlug(slug, incident.типИнцидента);
     
-    // Получаем поле из store для проверки allowMultiple
-    const storeField = fieldsStore.getFieldBySlug(fieldKey, incident.типИнцидента);
-    
-    // Если не нашли опции, пытаемся получить из store
-    if (!stringOptions) {
-      if (storeField?.selectOptions) {
-        stringOptions = storeField.selectOptions.map(opt => opt.label);
+    // Если поле найдено в store, используем его тип и опции
+    if (storeField) {
+      const options = storeField.selectOptions?.map(opt => ({ label: opt.label, value: opt.label }));
+      
+      if (storeField.type === 'select') {
+        return { inputType: storeField.allowMultiple ? 'multiselect' : 'select', options };
       }
+      if (storeField.type === 'multiline') return { inputType: 'textarea', options };
+      if (storeField.type === 'datetime') return { inputType: 'datetime', options };
+      if (storeField.type === 'boolean') return { inputType: 'boolean', options };
+      if (storeField.type === 'number') return { inputType: 'number', options };
+      if (storeField.type === 'file') return { inputType: 'file', options };
     }
     
-    // Преобразуем string[] в { label, value }[]
+    // Fallback на slugToTypeMap для базовых полей
+    const fieldType = slugToTypeMap[fieldKey] || 'text';
+    let stringOptions = selectOptionsMap[fieldKey];
     const options = stringOptions?.map(s => ({ label: s, value: s }));
     
-    // Приводим типы к формату openFieldEditor
     if (fieldType === 'multiline') return { inputType: 'textarea', options };
-    if (fieldType === 'select') {
-      // Проверяем allowMultiple из store
-      const isMultiple = storeField?.allowMultiple || false;
-      return { inputType: isMultiple ? 'multiselect' : 'select', options };
-    }
+    if (fieldType === 'select') return { inputType: 'select', options };
     if (fieldType === 'datetime') return { inputType: 'datetime', options };
     if (fieldType === 'boolean') return { inputType: 'boolean', options };
     if (fieldType === 'number') return { inputType: 'number', options };
@@ -136,10 +138,13 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
 
   // Функция для рендеринга значения поля с учётом типа
   const renderFieldValue = (fieldKey: string, value: string) => {
+    // Убираем префикс custom: если есть
+    const slug = fieldKey.replace('custom:', '');
+    
     const { inputType, options } = getFieldInputType(fieldKey);
     
     // Получаем поле из store для цветов
-    const storeField = fieldsStore.getFieldBySlug(fieldKey, incident.типИнцидента);
+    const storeField = fieldsStore.getFieldBySlug(slug, incident.типИнцидента);
     
     // Для select/multiselect полей рендерим цветные бейджи
     if (inputType === 'select' || inputType === 'multiselect') {
@@ -351,15 +356,18 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
               onContextMenu={handleRowContextMenu}
               style={{ userSelect: 'text' }}
           >
-            {columns.map((col, index) => (
+            {columns.map((col, index) => {
+              const value = getIncidentColumnValue(incident, col.key);
+              return (
                 <div
-                    key={col.key}
-                    className={`px-3 h-10 flex items-center text-sm text-gray-900 dark:text-gray-100 border-r border-gray-150 dark:border-gray-700 truncate flex-shrink-0`}
-                    style={{ width: `${col.width}px`, userSelect: 'text' }}
+                  key={col.key}
+                  className={`px-3 h-10 flex items-center text-sm text-gray-900 dark:text-gray-100 border-r border-gray-150 dark:border-gray-700 truncate flex-shrink-0`}
+                  style={{ width: `${col.width}px`, userSelect: 'text' }}
                 >
-                  {getIncidentColumnValue(incident, col.key)}
+                  {renderFieldValue(col.key, value)}
                 </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
