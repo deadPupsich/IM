@@ -6,6 +6,7 @@ import ExportButtons from './ExportButtons.tsx';
 import { getIncidentColumnValue, getIncidentTypeDefinition } from '../config/incident-config.ts';
 import { useIncidentCollaboration } from '../store/incidentCollaboration.ts';
 import { useIncidentTypesStore } from '../store/incidentTypesStore.ts';
+import { useIncidentFieldsStore } from '../store/incidentFieldsStore.ts';
 import DraggableIncidentAction from './DraggableIncidentAction.tsx';
 import IncidentFieldEditDialog from './IncidentFieldEditDialog.tsx';
 import { useIncidentsStore } from '../store/incidents.ts';
@@ -23,7 +24,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
   const [editingField, setEditingField] = useState<{
     key: string;
     label: string;
-    inputType: 'text' | 'select' | 'boolean' | 'datetime' | 'textarea' | 'number';
+    inputType: 'text' | 'select' | 'boolean' | 'datetime' | 'textarea' | 'number' | 'multiselect';
     value: string;
     options?: { label: string; value: string }[];
     isAdditional?: boolean;
@@ -31,6 +32,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; incidentId: string } | null>(null);
   const navigate = useNavigate();
   const typesStore = useIncidentTypesStore();
+  const fieldsStore = useIncidentFieldsStore();
   const incidentType = getIncidentTypeDefinition(incident.типИнцидента);
   const actionsByIncident = useIncidentCollaboration((state) => state.actionsByIncident);
   const initializeIncidentActions = useIncidentCollaboration((state) => state.initializeIncidentActions);
@@ -99,21 +101,127 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
   };
 
   // Функция для определения типа ввода по ключу поля
-  const getFieldInputType = (fieldKey: string): { inputType: 'text' | 'select' | 'boolean' | 'datetime' | 'textarea' | 'number', options?: { label: string; value: string }[] } => {
+  const getFieldInputType = (fieldKey: string): { inputType: 'text' | 'select' | 'boolean' | 'datetime' | 'textarea' | 'number' | 'multiselect', options?: { label: string; value: string }[] } => {
     const fieldType = slugToTypeMap[fieldKey] || 'text';
-    const stringOptions = selectOptionsMap[fieldKey];
+    
+    // Сначала проверяем selectOptionsMap для базовых полей
+    let stringOptions = selectOptionsMap[fieldKey];
+    
+    // Получаем поле из store для проверки allowMultiple
+    const storeField = fieldsStore.getFieldBySlug(fieldKey, incident.типИнцидента);
+    
+    // Если не нашли опции, пытаемся получить из store
+    if (!stringOptions) {
+      if (storeField?.selectOptions) {
+        stringOptions = storeField.selectOptions.map(opt => opt.label);
+      }
+    }
     
     // Преобразуем string[] в { label, value }[]
     const options = stringOptions?.map(s => ({ label: s, value: s }));
     
     // Приводим типы к формату openFieldEditor
     if (fieldType === 'multiline') return { inputType: 'textarea', options };
-    if (fieldType === 'select') return { inputType: 'select', options };
+    if (fieldType === 'select') {
+      // Проверяем allowMultiple из store
+      const isMultiple = storeField?.allowMultiple || false;
+      return { inputType: isMultiple ? 'multiselect' : 'select', options };
+    }
     if (fieldType === 'datetime') return { inputType: 'datetime', options };
     if (fieldType === 'boolean') return { inputType: 'boolean', options };
     if (fieldType === 'number') return { inputType: 'number', options };
     
     return { inputType: 'text', options };
+  };
+
+  // Функция для рендеринга значения поля с учётом типа
+  const renderFieldValue = (fieldKey: string, value: string) => {
+    const { inputType, options } = getFieldInputType(fieldKey);
+    
+    // Получаем поле из store для цветов
+    const storeField = fieldsStore.getFieldBySlug(fieldKey, incident.типИнцидента);
+    
+    // Для select/multiselect полей рендерим цветные бейджи
+    if (inputType === 'select' || inputType === 'multiselect') {
+      if (!options || options.length === 0) {
+        return (
+          <div className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words">
+            {value || '—'}
+          </div>
+        );
+      }
+      const values = value.split(',').map(v => v.trim()).filter(v => v);
+      return (
+        <div className="flex flex-wrap gap-1">
+          {values.map((val, idx) => {
+            // Ищем опцию в store для получения цветов
+            const storeOption = storeField?.selectOptions?.find(opt => opt.label === val);
+            const option = options.find(o => o.value === val);
+            return (
+              <span
+                key={idx}
+                className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium border"
+                style={{
+                  borderColor: storeOption?.borderColor || (option ? '#3b82f6' : '#e5e7eb'),
+                  color: storeOption?.textColor || (option ? '#1d4ed8' : '#374151'),
+                  backgroundColor: storeOption?.bgColor || (option ? '#dbeafe' : '#f3f4f6'),
+                }}
+              >
+                {val}
+              </span>
+            );
+          })}
+        </div>
+      );
+    }
+    
+    // Для multiline рендерим с переносами
+    if (inputType === 'textarea' || inputType === 'multiline') {
+      return (
+        <div className="text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words">
+          {value}
+        </div>
+      );
+    }
+    
+    // Для boolean
+    if (inputType === 'boolean') {
+      return (
+        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+          value === 'true' 
+            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' 
+            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+        }`}>
+          {value === 'true' ? 'Да' : 'Нет'}
+        </span>
+      );
+    }
+    
+    // Для datetime
+    if (inputType === 'datetime') {
+      return (
+        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+          {value || '—'}
+        </div>
+      );
+    }
+    
+    // Для number с postfix
+    if (inputType === 'number') {
+      const postfix = fieldKey === 'response_time' ? ' мин' : '';
+      return (
+        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+          {value}{postfix}
+        </div>
+      );
+    }
+    
+    // Обычный текст
+    return (
+      <div className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words">
+        {value}
+      </div>
+    );
   };
 
   const requiredDetails = useMemo(() => ([
@@ -197,7 +305,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
     return () => document.removeEventListener('click', handleClick);
   }, []);
 
-  const openFieldEditor = (fieldKey: string, label: string, value: string, inputType: 'text' | 'select' | 'boolean' | 'datetime' | 'textarea' | 'number' = 'text', options?: { label: string; value: string }[], isAdditional = false) => {
+  const openFieldEditor = (fieldKey: string, label: string, value: string, inputType: 'text' | 'select' | 'boolean' | 'datetime' | 'textarea' | 'number' | 'multiselect' = 'text', options?: { label: string; value: string }[], isAdditional = false) => {
     setEditingField({ key: fieldKey, label, value, inputType, options, isAdditional });
   };
 
@@ -375,7 +483,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
                               <Pencil className="w-3 h-3" />
                             </button>
                           </div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words">{detail.value}</div>
+                          {renderFieldValue(detail.key, String(detail.value))}
                           {detail.key === 'название' && (
                             <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                               Тип: {incidentType?.label ?? incident.типИнцидента}
@@ -413,9 +521,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
                                   <Pencil className="w-3 h-3" />
                                 </button>
                               </div>
-                              <div className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words">
-                                {incident.дополнительныеПоля?.[slug] ?? '—'}
-                              </div>
+                              {renderFieldValue(slug, incident.дополнительныеПоля?.[slug] ?? '—')}
                             </div>
                           </div>
                         );

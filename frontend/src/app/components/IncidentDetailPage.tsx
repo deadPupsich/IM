@@ -34,6 +34,7 @@ import ExportButtons from './ExportButtons.tsx';
 import DraggableIncidentAction from './DraggableIncidentAction.tsx';
 import { InvestigationAttachment, InvestigationEntry, useIncidentCollaboration } from '../store/incidentCollaboration.ts';
 import { useIncidentTypesStore } from '../store/incidentTypesStore.ts';
+import { useIncidentFieldsStore } from '../store/incidentFieldsStore.ts';
 import { useIncidentActionsStore } from '../store/incidentActionsStore.ts';
 import { getIncidentTypeDefinition } from '../config/incident-config.ts';
 import { SYSTEM_INCIDENT_ACTIONS } from '../config/incident-actions.ts';
@@ -195,13 +196,26 @@ const fieldTypes: FieldTypeDefinition[] = [
       if (!value || value === '—' || value === '') return '—';
       const systems = value.split(',').map(s => s.trim()).filter(s => s);
       if (systems.length === 0) return '—';
+      
+      // Цвета для систем
+      const systemColors: Record<string, { bg: string; text: string }> = {
+        'Active Directory': { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400' },
+        'Exchange': { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400' },
+        'File Server': { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-400' },
+        'VPN': { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-400' },
+        'Web Server': { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400' },
+      };
+      
       return (
         <div className="flex flex-wrap gap-1">
-          {systems.map((system, i) => (
-            <span key={i} className="inline-flex px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded text-xs font-medium">
-              {system}
-            </span>
-          ))}
+          {systems.map((system, i) => {
+            const colors = systemColors[system] || { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-700 dark:text-gray-300' };
+            return (
+              <span key={i} className={`inline-flex px-2 py-1 rounded text-xs font-medium ${colors.bg} ${colors.text}`}>
+                {system}
+              </span>
+            );
+          })}
         </div>
       );
     }
@@ -346,6 +360,7 @@ export default function IncidentDetailPage() {
   const incidents = useIncidentsStore((state) => state.incidents);
   const updateIncident = useIncidentsStore((state) => state.updateIncident);
   const typesStore = useIncidentTypesStore();
+  const fieldsStore = useIncidentFieldsStore();
   const actionsStore = useIncidentActionsStore();
 
   const incident = useMemo(() => {
@@ -532,13 +547,48 @@ export default function IncidentDetailPage() {
   const openFieldEditor = (fieldId: string, label: string) => {
     // Find field type definition from allFields (has type info)
     const fieldDef = allFields.find(f => f.id === fieldId);
+    
+    // Для дополнительных полей берем информацию из store
+    const storeField = incident ? fieldsStore.getFieldBySlug(fieldId, incident.типИнцидента) : null;
 
     let inputType: 'text' | 'textarea' | 'select' | 'boolean' | 'datetime' | 'file' | 'number' | 'multiselect' = 'text';
     let value = String(incident[fieldId as keyof Incident] ?? incident.дополнительныеПоля?.[fieldId] ?? '');
     let options: { label: string; value: string }[] = [];
 
-    if (fieldDef) {
-      // Map field type to input type
+    // Используем тип из store если есть
+    if (storeField?.type) {
+      switch (storeField.type) {
+        case 'select':
+          inputType = storeField.allowMultiple ? 'multiselect' : 'select';
+          options = storeField.selectOptions?.map(opt => ({ label: opt.label, value: opt.label })) || [];
+          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+          break;
+        case 'boolean':
+          inputType = 'boolean';
+          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || 'false';
+          break;
+        case 'datetime':
+          inputType = 'datetime';
+          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+          break;
+        case 'multiline':
+          inputType = 'textarea';
+          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+          break;
+        case 'file':
+          inputType = 'file';
+          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+          break;
+        case 'number':
+          inputType = 'number';
+          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '0';
+          break;
+        default:
+          inputType = 'text';
+          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+      }
+    } else if (fieldDef) {
+      // Fallback к fieldDef если store поле не найдено
       switch (fieldDef.type) {
         case 'select':
           inputType = fieldDef.allowMultiple ? 'multiselect' : 'select';
@@ -578,8 +628,8 @@ export default function IncidentDetailPage() {
       value,
       options,
       isAdditional: !!incident.дополнительныеПоля?.[fieldId],
-      prefix: fieldDef?.prefix,
-      postfix: fieldDef?.postfix
+      prefix: storeField?.prefix || fieldDef?.prefix,
+      postfix: storeField?.postfix || fieldDef?.postfix
     });
   };
 
