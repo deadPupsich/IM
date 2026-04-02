@@ -218,9 +218,26 @@ const basicFields: Omit<FieldTypeDefinition, 'type' | 'selectOptions' | 'allowMu
   { id: 'дата', label: 'Дата создания', icon: <Calendar className="w-5 h-5 text-pink-600 dark:text-pink-400" />, getValue: (incident: Incident) => incident.дата },
 ];
 
-// All fields combined - add default type 'string' to basic fields
+// All fields combined - add types to basic fields
 const allFields: FieldTypeDefinition[] = [
-  ...basicFields.map(f => ({ ...f, type: 'string' as const })),
+  ...basicFields.map(f => {
+    if (f.id === 'дата') return { ...f, type: 'datetime' as const };
+    if (f.id === 'источник') return { ...f, type: 'select' as const, selectOptions: [
+      { label: 'SIEM', value: 'SIEM' },
+      { label: 'Firewall', value: 'Firewall' },
+      { label: 'DLP System', value: 'DLP System' },
+      { label: 'Antivirus', value: 'Antivirus' },
+      { label: 'Network Monitor', value: 'Network Monitor' },
+      { label: 'Email Gateway', value: 'Email Gateway' },
+      { label: 'UEBA', value: 'UEBA' },
+      { label: 'EDR', value: 'EDR' },
+      { label: 'WAF', value: 'WAF' },
+      { label: 'Resource Monitor', value: 'Resource Monitor' },
+      { label: 'Device Control', value: 'Device Control' },
+      { label: 'Email Security', value: 'Email Security' },
+    ]};
+    return { ...f, type: 'string' as const };
+  }),
   ...fieldTypes,
 ];
 
@@ -513,9 +530,9 @@ export default function IncidentDetailPage() {
   }
 
   const openFieldEditor = (fieldId: string, label: string) => {
-    // Find field type definition from fieldTypes (has type info)
-    const fieldDef = fieldTypes.find(f => f.id === fieldId);
-    
+    // Find field type definition from allFields (has type info)
+    const fieldDef = allFields.find(f => f.id === fieldId);
+
     let inputType: 'text' | 'textarea' | 'select' | 'boolean' | 'datetime' | 'file' | 'number' | 'multiselect' = 'text';
     let value = String(incident[fieldId as keyof Incident] ?? incident.дополнительныеПоля?.[fieldId] ?? '');
     let options: { label: string; value: string }[] = [];
@@ -554,12 +571,12 @@ export default function IncidentDetailPage() {
       }
     }
 
-    setEditingField({ 
-      key: fieldId, 
-      label, 
-      inputType, 
-      value, 
-      options, 
+    setEditingField({
+      key: fieldId,
+      label,
+      inputType,
+      value,
+      options,
       isAdditional: !!incident.дополнительныеПоля?.[fieldId],
       prefix: fieldDef?.prefix,
       postfix: fieldDef?.postfix

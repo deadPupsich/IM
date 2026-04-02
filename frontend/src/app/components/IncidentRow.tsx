@@ -23,9 +23,9 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
   const [editingField, setEditingField] = useState<{
     key: string;
     label: string;
-    inputType: 'text' | 'select';
+    inputType: 'text' | 'select' | 'boolean' | 'datetime' | 'textarea' | 'number';
     value: string;
-    options?: string[];
+    options?: { label: string; value: string }[];
     isAdditional?: boolean;
   } | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; incidentId: string } | null>(null);
@@ -72,6 +72,48 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
     'response_time': 'Время реакции (мин)',
     'needs_escalation': 'Требуется эскалация',
     'affected_systems': 'Затронутые системы',
+  };
+
+  // Маппинг slug в тип поля (используем русские ключи, как в requiredDetails)
+  const slugToTypeMap: Record<string, 'select' | 'boolean' | 'datetime' | 'multiline' | 'number' | 'text'> = {
+    'priority': 'select',
+    'статус': 'select',
+    'команда': 'select',
+    'источник': 'select',
+    'дата': 'datetime',
+    'detected_at': 'datetime',
+    'description': 'multiline',
+    'response_time': 'number',
+    'needs_escalation': 'boolean',
+    'affected_systems': 'select',
+  };
+
+  // Опции для select полей (используем русские ключи)
+  const selectOptionsMap: Record<string, string[]> = {
+    'priority': ['Низкий', 'Средний', 'Высокий', 'Критический'],
+    'статус': incidentStatusOptions,
+    'команда': ['SOC L1', 'SOC L2', 'DLP'],
+    'источник': ['SIEM', 'Firewall', 'DLP System', 'Antivirus', 'Network Monitor', 'Email Gateway', 'UEBA', 'EDR', 'WAF', 'Resource Monitor', 'Device Control', 'Email Security'],
+    'needs_escalation': ['true', 'false'],
+    'affected_systems': ['Active Directory', 'Exchange', 'File Server', 'VPN', 'Web Server'],
+  };
+
+  // Функция для определения типа ввода по ключу поля
+  const getFieldInputType = (fieldKey: string): { inputType: 'text' | 'select' | 'boolean' | 'datetime' | 'textarea' | 'number', options?: { label: string; value: string }[] } => {
+    const fieldType = slugToTypeMap[fieldKey] || 'text';
+    const stringOptions = selectOptionsMap[fieldKey];
+    
+    // Преобразуем string[] в { label, value }[]
+    const options = stringOptions?.map(s => ({ label: s, value: s }));
+    
+    // Приводим типы к формату openFieldEditor
+    if (fieldType === 'multiline') return { inputType: 'textarea', options };
+    if (fieldType === 'select') return { inputType: 'select', options };
+    if (fieldType === 'datetime') return { inputType: 'datetime', options };
+    if (fieldType === 'boolean') return { inputType: 'boolean', options };
+    if (fieldType === 'number') return { inputType: 'number', options };
+    
+    return { inputType: 'text', options };
   };
 
   const requiredDetails = useMemo(() => ([
@@ -155,7 +197,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
     return () => document.removeEventListener('click', handleClick);
   }, []);
 
-  const openFieldEditor = (fieldKey: string, label: string, value: string, inputType: 'text' | 'select' = 'text', options?: string[], isAdditional = false) => {
+  const openFieldEditor = (fieldKey: string, label: string, value: string, inputType: 'text' | 'select' | 'boolean' | 'datetime' | 'textarea' | 'number' = 'text', options?: { label: string; value: string }[], isAdditional = false) => {
     setEditingField({ key: fieldKey, label, value, inputType, options, isAdditional });
   };
 
@@ -323,7 +365,11 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
                           <div className="flex items-baseline gap-2 mb-1">
                             <div className="text-xs text-gray-500 dark:text-gray-400 w-28 flex-shrink-0">{detail.label}</div>
                             <button
-                              onClick={() => openFieldEditor(detail.key, detail.label, String(detail.value), detail.key === 'статус' ? 'select' : detail.key === 'команда' ? 'select' : 'text', detail.key === 'статус' ? incidentStatusOptions : detail.key === 'команда' ? ['SOC L1', 'SOC L2', 'DLP'] : undefined)}
+                              onClick={() => {
+                                const { inputType, options } = getFieldInputType(detail.key);
+                                console.log('Editing field:', detail.key, 'type:', inputType, 'options:', options);
+                                openFieldEditor(detail.key, detail.label, String(detail.value), inputType, options);
+                              }}
                               className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 flex-shrink-0"
                             >
                               <Pencil className="w-3 h-3" />
@@ -358,7 +404,10 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
                               <div className="flex items-baseline gap-2 mb-1">
                                 <div className="text-xs text-gray-500 dark:text-gray-400 w-28 flex-shrink-0">{fieldName}</div>
                                 <button
-                                  onClick={() => openFieldEditor(slug, fieldName, incident.дополнительныеПоля?.[slug] ?? '', 'text', undefined, true)}
+                                  onClick={() => {
+                                    const { inputType, options } = getFieldInputType(slug);
+                                    openFieldEditor(slug, fieldName, incident.дополнительныеПоля?.[slug] ?? '', inputType, options, true);
+                                  }}
                                   className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 flex-shrink-0"
                                 >
                                   <Pencil className="w-3 h-3" />
