@@ -1,0 +1,17 @@
+name: IM_frontend_dev
+services:
+  frontend:
+    build:
+      context: ..
+      dockerfile: .docker/frontend/Dockerfile.dev
+    working_dir: /app
+    volumes:
+      - ../frontend:/app:rw
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    command: npm run dev -- --host 0.0.0.0
