@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Plus, Trash2, Search, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { CustomField, SelectOptionValue } from '../../types/settings.ts';
@@ -150,7 +150,29 @@ export default function FieldSettings() {
 
   const colorPickerRef = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
-  const toggleIconColorPicker = (fieldId: string, event?: React.MouseEvent<HTMLButtonElement>) => {
+  // Вычисляем позицию пикера относительно кнопки
+  const calculatePickerPosition = (button: HTMLElement) => {
+    const rect = button.getBoundingClientRect();
+    const pickerHeight = 360;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+
+    const top = spaceBelow < pickerHeight && spaceAbove > spaceBelow
+      ? rect.top - pickerHeight
+      : rect.bottom;
+
+    let left = rect.left + rect.width / 2;
+    const pickerWidth = 300;
+    if (left - pickerWidth / 2 < 0) {
+      left = pickerWidth / 2;
+    } else if (left + pickerWidth / 2 > window.innerWidth) {
+      left = window.innerWidth - pickerWidth / 2;
+    }
+
+    return { top, left };
+  };
+
+  const toggleIconColorPicker = (fieldId: string) => {
     if (iconColorPickerOpen[fieldId]) {
       setIconColorPickerOpen(prev => ({ ...prev, [fieldId]: false }));
       setIconColorPickerPosition(null);
@@ -159,36 +181,15 @@ export default function FieldSettings() {
 
     const button = iconColorButtonRefs.current[fieldId];
     if (button) {
-      const rect = button.getBoundingClientRect();
-      const pickerHeight = 360;
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const spaceAbove = rect.top;
-
-      // Определяем позицию: снизу или сверху
-      const top = spaceBelow < pickerHeight && spaceAbove > spaceBelow
-        ? rect.top - pickerHeight
-        : rect.bottom;
-
-      // Центрируем по горизонтали относительно кнопки
-      let left = rect.left + rect.width / 2;
-
-      // Защита от выхода за края экрана (ширина пикера ~260px + padding)
-      const pickerWidth = 300;
-      if (left - pickerWidth / 2 < 0) {
-        left = pickerWidth / 2;
-      } else if (left + pickerWidth / 2 > window.innerWidth) {
-        left = window.innerWidth - pickerWidth / 2;
-      }
-
-      setIconColorPickerPosition({ top, left });
+      setIconColorPickerPosition(calculatePickerPosition(button));
     }
 
     setIconColorPickerOpen(prev => ({ ...prev, [fieldId]: true }));
   };
 
-  const toggleOptionColorPicker = (fieldId: string, optionIndex: number, pickerType: 'border' | 'text' | 'bg', event?: React.MouseEvent<HTMLButtonElement>) => {
+  const toggleOptionColorPicker = (fieldId: string, optionIndex: number, pickerType: 'border' | 'text' | 'bg') => {
     const pickerKey = `${fieldId}-${optionIndex}-${pickerType}`;
-    
+
     if (optionColorPicker?.fieldId === fieldId && optionColorPicker?.optionIndex === optionIndex && optionColorPicker?.pickerType === pickerType) {
       setOptionColorPicker(null);
       setOptionColorPickerPosition(null);
@@ -197,28 +198,7 @@ export default function FieldSettings() {
 
     const button = optionColorButtonRefs.current[pickerKey];
     if (button) {
-      const rect = button.getBoundingClientRect();
-      const pickerHeight = 360;
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const spaceAbove = rect.top;
-
-      // Определяем позицию: снизу или сверху
-      const top = spaceBelow < pickerHeight && spaceAbove > spaceBelow
-        ? rect.top - pickerHeight
-        : rect.bottom;
-
-      // Центрируем по горизонтали относительно кнопки
-      let left = rect.left + rect.width / 2;
-
-      // Защита от выхода за края экрана (ширина пикера ~260px + padding)
-      const pickerWidth = 300;
-      if (left - pickerWidth / 2 < 0) {
-        left = pickerWidth / 2;
-      } else if (left + pickerWidth / 2 > window.innerWidth) {
-        left = window.innerWidth - pickerWidth / 2;
-      }
-
-      setOptionColorPickerPosition({ top, left });
+      setOptionColorPickerPosition(calculatePickerPosition(button));
     }
 
     setOptionColorPicker({ fieldId, optionIndex, pickerType });
@@ -491,7 +471,7 @@ export default function FieldSettings() {
                                   <button
                                     type="button"
                                     ref={(el) => { optionColorButtonRefs.current[`${field.id}-${index}-border`] = el; }}
-                                    onClick={(e) => toggleOptionColorPicker(field.id, index, 'border', e)}
+                                    onClick={() => toggleOptionColorPicker(field.id, index, 'border')}
                                     className="w-6 h-6 rounded border-2 flex items-center justify-center hover:scale-110 transition-transform"
                                     style={{ backgroundColor: option.borderColor, borderColor: option.borderColor }}
                                     title="Цвет обводки"
@@ -522,7 +502,7 @@ export default function FieldSettings() {
                                   <button
                                     type="button"
                                     ref={(el) => { optionColorButtonRefs.current[`${field.id}-${index}-text`] = el; }}
-                                    onClick={(e) => toggleOptionColorPicker(field.id, index, 'text', e)}
+                                    onClick={() => toggleOptionColorPicker(field.id, index, 'text')}
                                     className="w-6 h-6 rounded border-2 flex items-center justify-center hover:scale-110 transition-transform"
                                     style={{ backgroundColor: option.textColor, borderColor: option.textColor }}
                                     title="Цвет текста"
@@ -553,7 +533,7 @@ export default function FieldSettings() {
                                   <button
                                     type="button"
                                     ref={(el) => { optionColorButtonRefs.current[`${field.id}-${index}-bg`] = el; }}
-                                    onClick={(e) => toggleOptionColorPicker(field.id, index, 'bg', e)}
+                                    onClick={() => toggleOptionColorPicker(field.id, index, 'bg')}
                                     className="w-6 h-6 rounded border-2 flex items-center justify-center hover:scale-110 transition-transform"
                                     style={{ backgroundColor: option.bgColor, borderColor: option.bgColor }}
                                     title="Цвет фона"
@@ -639,7 +619,7 @@ export default function FieldSettings() {
                           <button
                             type="button"
                             ref={(el) => { iconColorButtonRefs.current[field.id] = el; }}
-                            onClick={(e) => toggleIconColorPicker(field.id, e)}
+                            onClick={() => toggleIconColorPicker(field.id)}
                             className="w-12 h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-blue-500 transition-colors shadow-sm"
                             style={{ backgroundColor: field.iconColor }}
                           />
