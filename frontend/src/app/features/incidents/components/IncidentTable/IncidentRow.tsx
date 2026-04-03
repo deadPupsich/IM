@@ -9,6 +9,7 @@ import { getFileIcon } from '../../utils/fileIcons.tsx';
 import { useIncidentCollaboration } from '../../../../store/incidentCollaboration.ts';
 import { useIncidentTypesStore } from '../../../../store/incidentTypesStore.ts';
 import { useIncidentFieldsStore } from '../../../../store/incidentFieldsStore.ts';
+import { useTeamsStore } from '../../../../store/teamsStore.ts';
 import DraggableIncidentAction from '../DraggableIncidentAction.tsx';
 import IncidentFieldEditDialog from '../IncidentDetailPage/IncidentFieldEditDialog.tsx';
 import { useIncidentsStore } from '../../../../store/incidents.ts';
@@ -36,6 +37,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
   const typesStore = useIncidentTypesStore();
   const getExtraFieldsByIds = useIncidentFieldsStore((state) => state.getExtraFieldsByIds);
   const getExtraFieldById = useIncidentFieldsStore((state) => state.getExtraFieldById);
+  const teamNames = useTeamsStore((state) => state.getTeamNames)();
   const incidentType = getIncidentTypeDefinition(incident.типИнцидента);
   const actionsByIncident = useIncidentCollaboration((state) => state.actionsByIncident);
   const initializeIncidentActions = useIncidentCollaboration((state) => state.initializeIncidentActions);
@@ -124,7 +126,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
   const selectOptionsMap: Record<string, string[]> = {
     'priority': ['Низкий', 'Средний', 'Высокий', 'Критический'],
     'статус': incidentStatusOptions,
-    'команда': ['SOC L1', 'SOC L2', 'DLP'],
+    'команда': teamNames,
     'источник': ['SIEM', 'Firewall', 'DLP System', 'Antivirus', 'Network Monitor', 'Email Gateway', 'UEBA', 'EDR', 'WAF', 'Resource Monitor', 'Device Control', 'Email Security'],
     'needs_escalation': ['true', 'false'],
     'affected_systems': ['Active Directory', 'Exchange', 'File Server', 'VPN', 'Web Server'],

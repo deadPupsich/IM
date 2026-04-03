@@ -1,12 +1,22 @@
 import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router';
-import { mockUser } from '../data/mockData.ts';
 import TopBar from './TopBar.tsx';
 import Sidebar from './Sidebar.tsx';
 import { useAppSettings } from '../store/settings.ts';
+import { useTeamsStore } from '../store/teamsStore.ts';
+import { User } from '../types/incident.ts';
+
+// Временный mock пользователь (будет заменён на авторизацию)
+const currentUser: User = {
+  id: 'u1',
+  name: 'Иван Петров',
+  email: 'ivan.petrov@company.com',
+  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ivan'
+};
 
 export default function MainLayout() {
-  const [activeTeam, setActiveTeam] = useState(mockUser.teams[0]);
+  const teams = useTeamsStore((state) => state.teams);
+  const [activeTeam, setActiveTeam] = useState(teams[0]?.name || '');
   const theme = useAppSettings((state) => state.theme);
 
   useEffect(() => {
@@ -25,7 +35,7 @@ export default function MainLayout() {
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-gray-100 dark:bg-gray-950">
       <TopBar
-        user={mockUser}
+        user={currentUser}
         activeTeam={activeTeam}
         onTeamChange={setActiveTeam}
         onLogout={handleLogout}

@@ -4,8 +4,7 @@ export const mockUser: User = {
   id: 'u1',
   name: 'Иван Петров',
   email: 'ivan.petrov@company.com',
-  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ivan',
-  teams: ['SOC L1', 'SOC L2', 'DLP']
+  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ivan'
 };
 
 export const mockUsersDirectory: User[] = [
@@ -14,50 +13,43 @@ export const mockUsersDirectory: User[] = [
     id: 'u2',
     name: 'Алексей Смирнов',
     email: 'alexey.smirnov@company.com',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alexey',
-    teams: ['SOC L1', 'SOC L2']
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alexey'
   },
   {
     id: 'u3',
     name: 'Мария Иванова',
     email: 'maria.ivanova@company.com',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Maria',
-    teams: ['SOC L2', 'DLP']
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Maria'
   },
   {
     id: 'u4',
     name: 'Дмитрий Козлов',
     email: 'dmitry.kozlov@company.com',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Dmitry',
-    teams: ['DLP']
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Dmitry'
   },
   {
     id: 'u5',
     name: 'Ольга Морозова',
     email: 'olga.morozova@company.com',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Olga',
-    teams: ['SOC L1']
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Olga'
   },
   {
     id: 'u6',
     name: 'Сергей Волков',
     email: 'sergey.volkov@company.com',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sergey',
-    teams: ['SOC L2']
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sergey'
   },
   {
     id: 'u7',
     name: 'Елена Новикова',
     email: 'elena.novikova@company.com',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Elena',
-    teams: ['DLP']
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Elena'
   },
   {
     id: 'u8',
     name: 'Иван Петров',
     email: 'ivan.petrov@company.com',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=IvanP',
-    teams: ['SOC L1']
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=IvanP'
   },
 ];
 

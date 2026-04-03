@@ -1,4 +1,6 @@
-export type IncidentTeam = 'SOC L1' | 'SOC L2' | 'DLP';
+// Тип команды инцидента теперь определяется динамически через teamsStore
+// Здесь оставляем string для совместимости
+export type IncidentTeam = string;
 
 export type IncidentTypeId = 'security' | 'dlp' | 'network' | 'malware';
 
@@ -34,7 +36,6 @@ export interface User {
   name: string;
   email: string;
   avatar: string;
-  teams: string[];
 }
 
 export type ColumnKey = DynamicColumnKey;

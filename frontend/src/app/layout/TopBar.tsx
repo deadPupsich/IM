@@ -4,6 +4,7 @@ import { ChevronDown, LogOut, Sun, Moon, Bell, AtSign } from 'lucide-react';
 import { User } from '../types/incident.ts';
 import { useAppSettings } from '../store/settings.ts';
 import { useIncidentCollaboration } from '../store/incidentCollaboration.ts';
+import { useTeamsStore } from '../store/teamsStore.ts';
 
 interface TopBarProps {
   user: User;
@@ -23,6 +24,7 @@ export default function TopBar({ user, activeTeam, onTeamChange, onLogout }: Top
   const unreadCount = notifications.filter((notification) => !notification.read).length;
   const markNotificationRead = useIncidentCollaboration((state) => state.markNotificationRead);
   const markAllNotificationsRead = useIncidentCollaboration((state) => state.markAllNotificationsRead);
+  const teams = useTeamsStore((state) => state.teams);
 
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light');
@@ -34,17 +36,17 @@ export default function TopBar({ user, activeTeam, onTeamChange, onLogout }: Top
         <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">IM</h1>
         
         <div className="flex gap-2">
-          {user.teams.map((team) => (
+          {teams.map((team) => (
             <button
-              key={team}
-              onClick={() => onTeamChange(team)}
+              key={team.id}
+              onClick={() => onTeamChange(team.name)}
               className={`px-4 py-2 rounded-lg transition-colors ${
-                activeTeam === team
+                activeTeam === team.name
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
             >
-              {team}
+              {team.name}
             </button>
           ))}
         </div>

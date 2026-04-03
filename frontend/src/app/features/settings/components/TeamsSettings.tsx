@@ -1,104 +1,25 @@
-import { useState } from 'react';
 import { Plus, Trash2, Users as UsersIcon } from 'lucide-react';
-
-interface TeamMember {
-  userId: string;
-  permissions: {
-    canView: boolean;
-    canEdit: boolean;
-    canDelete: boolean;
-    canAssign: boolean;
-  };
-}
-
-interface Team {
-  id: string;
-  name: string;
-  description: string;
-  members: TeamMember[];
-}
-
-const mockUsers = [
-  { id: 'u1', name: 'Иван Петров', email: 'ivan@company.com' },
-  { id: 'u2', name: 'Алексей Смирнов', email: 'alexey@company.com' },
-  { id: 'u3', name: 'Мария Иванова', email: 'maria@company.com' },
-  { id: 'u4', name: 'Дмитрий Козлов', email: 'dmitry@company.com' },
-];
+import { useTeamsStore } from '../../../store/teamsStore.ts';
+import { mockUsersDirectory } from '../../../data/mockData.ts';
 
 export default function TeamsSettings() {
-  const [teams, setTeams] = useState<Team[]>([
-    {
-      id: '1',
-      name: 'SOC L1',
-      description: 'Команда первой линии безопасности',
-      members: [
-        { 
-          userId: 'u1', 
-          permissions: { canView: true, canEdit: true, canDelete: false, canAssign: true }
-        }
-      ]
-    }
-  ]);
+  const teams = useTeamsStore((state) => state.teams);
+  const addTeam = useTeamsStore((state) => state.addTeam);
+  const removeTeam = useTeamsStore((state) => state.removeTeam);
+  const updateTeam = useTeamsStore((state) => state.updateTeam);
+  const addMember = useTeamsStore((state) => state.addMember);
+  const removeMember = useTeamsStore((state) => state.removeMember);
+  const updatePermission = useTeamsStore((state) => state.updatePermission);
 
-  const addTeam = () => {
-    const newTeam: Team = {
-      id: Date.now().toString(),
+  const handleAddTeam = () => {
+    addTeam({
       name: '',
       description: '',
       members: []
-    };
-    setTeams([...teams, newTeam]);
+    });
   };
 
-  const removeTeam = (id: string) => {
-    setTeams(teams.filter(t => t.id !== id));
-  };
-
-  const updateTeam = (id: string, updates: Partial<Team>) => {
-    setTeams(teams.map(t => t.id === id ? { ...t, ...updates } : t));
-  };
-
-  const addMember = (teamId: string, userId: string) => {
-    setTeams(teams.map(t => {
-      if (t.id !== teamId) return t;
-      if (t.members.some(m => m.userId === userId)) return t;
-      
-      return {
-        ...t,
-        members: [
-          ...t.members,
-          {
-            userId,
-            permissions: { canView: true, canEdit: false, canDelete: false, canAssign: false }
-          }
-        ]
-      };
-    }));
-  };
-
-  const removeMember = (teamId: string, userId: string) => {
-    setTeams(teams.map(t => 
-      t.id === teamId 
-        ? { ...t, members: t.members.filter(m => m.userId !== userId) }
-        : t
-    ));
-  };
-
-  const updatePermission = (teamId: string, userId: string, permission: string, value: boolean) => {
-    setTeams(teams.map(t => {
-      if (t.id !== teamId) return t;
-      return {
-        ...t,
-        members: t.members.map(m =>
-          m.userId === userId
-            ? { ...m, permissions: { ...m.permissions, [permission]: value } }
-            : m
-        )
-      };
-    }));
-  };
-
-  const getUserById = (userId: string) => mockUsers.find(u => u.id === userId);
+  const getUserById = (userId: string) => mockUsersDirectory.find(u => u.id === userId);
 
   return (
     <div className="space-y-6">
@@ -146,14 +67,17 @@ export default function TeamsSettings() {
               <select
                 onChange={(e) => {
                   if (e.target.value) {
-                    addMember(team.id, e.target.value);
+                    addMember(team.id, {
+                      userId: e.target.value,
+                      permissions: { canView: true, canEdit: false, canDelete: false, canAssign: false }
+                    });
                     e.target.value = '';
                   }
                 }}
                 className="w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100"
               >
                 <option value="">Добавить пользователя</option>
-                {mockUsers
+                {mockUsersDirectory
                   .filter(u => !team.members.some(m => m.userId === u.id))
                   .map(user => (
                     <option key={user.id} value={user.id}>
@@ -228,7 +152,7 @@ export default function TeamsSettings() {
       </div>
 
       <button
-        onClick={addTeam}
+        onClick={handleAddTeam}
         className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
       >
         <Plus className="w-4 h-4" />

@@ -30,6 +30,7 @@ import {
   Download,
 } from 'lucide-react';
 import { mockUser, mockUsersDirectory } from '../../../../data/mockData.ts';
+import { useTeamsStore } from '../../../../store/teamsStore.ts';
 import DraggableField from '../DraggableField.tsx';
 import ExportButtons from '../ExportButtons.tsx';
 import DraggableIncidentAction from '../DraggableIncidentAction.tsx';
@@ -88,11 +89,7 @@ const fieldTypes: FieldTypeDefinition[] = [
     id: 'команда',
     label: 'Команда',
     type: 'select',
-    selectOptions: [
-      { label: 'SOC L1', value: 'SOC L1' },
-      { label: 'SOC L2', value: 'SOC L2' },
-      { label: 'DLP', value: 'DLP' },
-    ],
+    selectOptions: [], // Will be populated dynamically
     icon: <Users className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />,
     getValue: (incident) => incident.команда
   },
@@ -393,6 +390,7 @@ export default function IncidentDetailPage() {
   const getExtraFieldsByIds = useIncidentFieldsStore((state) => state.getExtraFieldsByIds);
   const getExtraFieldById = useIncidentFieldsStore((state) => state.getExtraFieldById);
   const actionsStore = useIncidentActionsStore();
+  const teamNames = useTeamsStore((state) => state.getTeamNames)();
 
   const incident = useMemo(() => {
     return incidents.find((inc) => inc.id === id);
@@ -551,7 +549,12 @@ export default function IncidentDetailPage() {
   }));
 
   // All fields combined - include dynamic extra fields
-  const allFieldsWithExtras = [...allFields, ...dynamicExtraFieldDefinitions];
+  const allFieldsWithExtras = [...allFields.map(f => {
+    if (f.id === 'команда') {
+      return { ...f, selectOptions: teamNames.map(name => ({ label: name, value: name })) };
+    }
+    return f;
+  }), ...dynamicExtraFieldDefinitions];
 
   const requiredFields = allFieldsWithExtras.filter((field) => baseFieldIds.has(field.id));
 
