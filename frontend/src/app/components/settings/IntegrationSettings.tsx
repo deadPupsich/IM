@@ -110,7 +110,7 @@ export default function IntegrationSettings() {
               <div className="flex items-start gap-3">
                 <button
                   onClick={() => toggleIntegration(integration.id)}
-                  className="flex-shrink-0 mt-0.5"
+                  className="shrink-0 mt-0.5"
                 >
                   <ChevronDown className={`w-5 h-5 text-blue-600 dark:text-blue-400 transition-transform ${integration.isExpanded ? '' : '-rotate-90'}`} />
                 </button>
@@ -168,7 +168,7 @@ export default function IntegrationSettings() {
                     <h5 className="text-sm font-semibold text-blue-900 dark:text-blue-300">Маппинг полей</h5>
                     <button
                       onClick={() => addField(integration.id)}
-                      className="flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-400"
+                      className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400"
                     >
                       <Plus className="w-4 h-4" />
                       Добавить поле

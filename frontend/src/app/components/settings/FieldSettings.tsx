@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Plus, Trash2, Search, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { CustomField, SelectOptionValue } from '../../types/settings.ts';
@@ -295,7 +295,7 @@ export default function FieldSettings() {
                 <div className="flex items-start gap-3">
                   <button
                     onClick={() => setEditingField(isEditing ? null : field.id)}
-                    className="flex-shrink-0 mt-0.5"
+                    className="shrink-0 mt-0.5"
                   >
                     <ChevronDown className={`w-5 h-5 text-blue-600 dark:text-blue-400 transition-transform ${isEditing ? '' : '-rotate-90'}`} />
                   </button>
@@ -646,7 +646,7 @@ export default function FieldSettings() {
                           {iconColorPickerOpen[field.id] && iconColorPickerPosition && (
                             <div
                               ref={(el) => { colorPickerRef.current[field.id] = el; }}
-                              className="fixed p-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-[100] w-[260px]"
+                              className="fixed p-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-100 w-65"
                               style={{
                                 top: `${iconColorPickerPosition.top + 8}px`,
                                 left: `${iconColorPickerPosition.left - 130}px`,
@@ -662,7 +662,7 @@ export default function FieldSettings() {
                                 </label>
                                 <div className="flex items-center gap-2 mb-3">
                                   <div
-                                    className="w-8 h-8 rounded border border-gray-300 dark:border-gray-600 flex-shrink-0"
+                                    className="w-8 h-8 rounded border border-gray-300 dark:border-gray-600 shrink-0"
                                     style={{ backgroundColor: field.iconColor }}
                                   />
                                   <input

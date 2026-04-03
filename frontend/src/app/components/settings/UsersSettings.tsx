@@ -119,7 +119,7 @@ export default function UsersSettings() {
       {/* AD Sync Section */}
       <div className="space-y-4">
         <div className="flex items-start gap-3">
-          <UsersIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+          <UsersIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
           <div>
             <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-1">
               Синхронизация с Active Directory
@@ -280,7 +280,7 @@ export default function UsersSettings() {
         </div>
 
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg overflow-x-auto">
-          <table className="w-full min-w-[800px]">
+          <table className="w-full min-w-200">
             <thead className="bg-blue-100/50 dark:bg-blue-900/30 border-b border-blue-200 dark:border-blue-800">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-blue-900 dark:text-blue-300 uppercase">

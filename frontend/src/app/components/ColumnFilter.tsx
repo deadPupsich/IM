@@ -91,7 +91,7 @@ export default function ColumnFilter({ values, selectedValues, onFilterChange }:
         {isOpen && createPortal(
             <div
                 ref={menuRef}
-                className="fixed bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[1000]"
+                className="fixed bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-1000"
                 style={{
                   top: `${position.top}px`,
                   left: `${position.left}px`,

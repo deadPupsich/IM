@@ -124,7 +124,7 @@ export default function IncidentTypeSettings() {
                 <div className="flex items-start gap-3">
                   <button
                     onClick={() => setExpandedTypeId(isExpanded ? null : type.id)}
-                    className="flex-shrink-0 mt-0.5"
+                    className="shrink-0 mt-0.5"
                   >
                     <ChevronDown className={`w-5 h-5 text-blue-600 dark:text-blue-400 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
                   </button>

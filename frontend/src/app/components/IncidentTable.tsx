@@ -295,7 +295,7 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
                 <button
                     type="button"
                     onClick={() => setIsSettingsOpen(true)}
-                    className="w-10 h-10 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex-shrink-0 flex items-center justify-center text-gray-500 hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="w-10 h-10 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shrink-0 flex items-center justify-center text-gray-500 hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     title="Настройки отображения полей"
                 >
                   <Settings2 className="w-4 h-4" />
@@ -304,7 +304,7 @@ export default function IncidentTable({ incidents }: IncidentTableProps) {
                   {columns.map((col, index) => (
                       <div
                           key={col.key}
-                          className="relative flex-shrink-0"
+                          className="relative shrink-0"
                           style={{ width: `${col.width}px` }}
                       >
                         <ResizableDraggableColumnHeader

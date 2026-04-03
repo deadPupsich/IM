@@ -55,7 +55,7 @@ export default function TelegramSettings() {
 
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
         <div className="flex gap-3">
-          <MessageSquare className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+          <MessageSquare className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
           <div>
             <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-1">Как создать бота?</h4>
             <ol className="text-sm text-blue-800 dark:text-blue-400 space-y-1 list-decimal list-inside">

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import { DynamicColumnKey } from '../types/incident.ts';
@@ -106,7 +106,7 @@ export default function ResizableDraggableColumnHeader({
           }`}
           style={{ width: `${width}px` }}
       >
-        <div ref={dragHandleRef} className="cursor-move flex-shrink-0">
+        <div ref={dragHandleRef} className="cursor-move shrink-0">
           <GripVertical className="w-4 h-4 text-gray-400 dark:text-gray-500" />
         </div>
         <span
@@ -116,8 +116,8 @@ export default function ResizableDraggableColumnHeader({
           {label}
           {sortDirection !== null && (
             sortDirection === 'asc' ?
-              <ArrowUp className="w-3 h-3 flex-shrink-0" /> :
-              <ArrowDown className="w-3 h-3 flex-shrink-0" />
+              <ArrowUp className="w-3 h-3 shrink-0" /> :
+              <ArrowDown className="w-3 h-3 shrink-0" />
           )}
         </span>
 

@@ -369,7 +369,7 @@ export default function ActionSettings() {
                 <div className="flex items-start gap-3">
                   <button
                     onClick={() => setExpandedAction(isExpanded ? null : action.id)}
-                    className="flex-shrink-0 mt-0.5"
+                    className="shrink-0 mt-0.5"
                   >
                     <ChevronDown className={`w-5 h-5 text-blue-600 dark:text-blue-400 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
                   </button>
@@ -512,7 +512,7 @@ export default function ActionSettings() {
                           {colorPickerOpen[action.id] && colorPickerPosition && (
                             <div
                               ref={(el) => { colorPickerRef.current[action.id] = el; }}
-                              className="fixed p-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-[100] w-[260px] overflow-visible"
+                              className="fixed p-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-100 w-65 overflow-visible"
                               style={{
                                 top: `${colorPickerPosition.top + 8}px`,
                                 left: `${colorPickerPosition.left - 130}px`,
@@ -529,7 +529,7 @@ export default function ActionSettings() {
                                 </label>
                                 <div className="flex items-center gap-2 mb-3">
                                   <div
-                                    className="w-8 h-8 rounded border border-gray-300 dark:border-gray-600 flex-shrink-0"
+                                    className="w-8 h-8 rounded border border-gray-300 dark:border-gray-600 shrink-0"
                                     style={{ backgroundColor: action.iconColor || '#3b82f6' }}
                                   />
                                   <input
