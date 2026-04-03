@@ -1,26 +1,26 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Settings2 } from 'lucide-react';
-import { DynamicColumnKey, Incident, IncidentTypeId } from '../types/incident.ts';
+import { DynamicColumnKey, Incident, IncidentTypeId } from '../../../../types/incident.ts';
 import ResizableDraggableColumnHeader from './ResizableDraggableColumnHeader.tsx';
 import IncidentRow from './IncidentRow.tsx';
 import ColumnFilter from './ColumnFilter.tsx';
-import { useAppSettings } from '../store/settings.ts';
-import { useIncidentTypesStore } from '../store/incidentTypesStore.ts';
+import { useAppSettings } from '../../../../store/settings.ts';
+import { useIncidentTypesStore } from '../../../../store/incidentTypesStore.ts';
 import {
   DEFAULT_INCIDENT_COLUMNS,
   getExtraColumnDefinitions,
   getIncidentColumnValue,
   getIncidentTypeDefinition,
   IncidentColumnDefinition,
-} from '../config/incident-config.tsx';
+} from '../../../../config/incident-config.tsx';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from './ui/dialog.tsx';
-import { Checkbox } from './ui/checkbox.tsx';
+} from '../../../../components/ui/dialog.tsx';
+import { Checkbox } from '../../../../components/ui/checkbox.tsx';
 
 interface IncidentTableProps {
   incidents: Incident[];

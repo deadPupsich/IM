@@ -29,18 +29,18 @@ import {
   Server,
   Download,
 } from 'lucide-react';
-import { mockUser, mockUsersDirectory } from '../data/mockData.ts';
-import DraggableField from './DraggableField.tsx';
-import ExportButtons from './ExportButtons.tsx';
-import DraggableIncidentAction from './DraggableIncidentAction.tsx';
-import { InvestigationAttachment, InvestigationEntry, useIncidentCollaboration } from '../store/incidentCollaboration.ts';
-import { useIncidentTypesStore } from '../store/incidentTypesStore.ts';
-import { useIncidentFieldsStore } from '../store/incidentFieldsStore.ts';
-import { useIncidentActionsStore } from '../store/incidentActionsStore.ts';
-import { getIncidentTypeDefinition } from '../config/incident-config.tsx';
-import { getFileIcon, getFileIconLarge } from '../utils/fileIcons.tsx';
-import { useIncidentsStore } from '../store/incidents.ts';
-import { Incident } from '../types/incident.ts';
+import { mockUser, mockUsersDirectory } from '../../../../data/mockData.ts';
+import DraggableField from '../DraggableField.tsx';
+import ExportButtons from '../ExportButtons.tsx';
+import DraggableIncidentAction from '../DraggableIncidentAction.tsx';
+import { InvestigationAttachment, InvestigationEntry, useIncidentCollaboration } from '../../../../store/incidentCollaboration.ts';
+import { useIncidentTypesStore } from '../../../../store/incidentTypesStore.ts';
+import { useIncidentFieldsStore } from '../../../../store/incidentFieldsStore.ts';
+import { useIncidentActionsStore } from '../../../../store/incidentActionsStore.ts';
+import { getIncidentTypeDefinition } from '../../../../config/incident-config.tsx';
+import { getFileIcon, getFileIconLarge } from '../../utils/fileIcons.tsx';
+import { useIncidentsStore } from '../../../../store/incidents.ts';
+import { Incident } from '../../../../types/incident.ts';
 import IncidentFieldEditDialog from './IncidentFieldEditDialog.tsx';
 
 // Field type definitions for editor and display

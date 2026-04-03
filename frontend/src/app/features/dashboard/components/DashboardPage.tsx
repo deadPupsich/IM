@@ -2,7 +2,7 @@ import { useMemo, useState, useRef } from 'react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Calendar, Download, TrendingUp, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import html2canvas from 'html2canvas';
-import { useIncidentsStore } from '../store/incidents.ts';
+import { useIncidentsStore } from '../../../store/incidents.ts';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 

@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { Plus, Trash2, Search, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import * as Icons from 'lucide-react';
-import { CustomField, SelectOptionValue } from '../../types/settings.ts';
+import { CustomField, SelectOptionValue } from '../../../../types/settings.ts';
 import { HexColorPicker } from 'react-colorful';
-import { useIncidentFieldsStore } from '../../store/incidentFieldsStore.ts';
+import { useIncidentFieldsStore } from '../../../../store/incidentFieldsStore.ts';
 
 const iconsList = [
   'FileText', 'User', 'Users', 'Database', 'FileStack', 'AlertTriangle', 'AlertCircle',

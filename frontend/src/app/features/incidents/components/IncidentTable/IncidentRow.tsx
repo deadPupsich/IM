@@ -2,16 +2,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronRight, ChevronDown, ChevronUp, FileText, User, Users, Database, AlertTriangle, AlertCircle, Monitor, Activity, Calendar, Workflow, Pencil, Flag, Clock, Server, Paperclip, Download } from 'lucide-react';
 import * as Icons from 'lucide-react';
-import { DynamicColumnKey, Incident } from '../types/incident.ts';
-import ExportButtons from './ExportButtons.tsx';
-import { getIncidentColumnValueReact, getIncidentTypeDefinition } from '../config/incident-config.tsx';
-import { getFileIcon } from '../utils/fileIcons.tsx';
-import { useIncidentCollaboration } from '../store/incidentCollaboration.ts';
-import { useIncidentTypesStore } from '../store/incidentTypesStore.ts';
-import { useIncidentFieldsStore } from '../store/incidentFieldsStore.ts';
-import DraggableIncidentAction from './DraggableIncidentAction.tsx';
-import IncidentFieldEditDialog from './IncidentFieldEditDialog.tsx';
-import { useIncidentsStore } from '../store/incidents.ts';
+import { DynamicColumnKey, Incident } from '../../../../types/incident.ts';
+import ExportButtons from '../ExportButtons.tsx';
+import { getIncidentColumnValueReact, getIncidentTypeDefinition } from '../../../../config/incident-config.tsx';
+import { getFileIcon } from '../../utils/fileIcons.tsx';
+import { useIncidentCollaboration } from '../../../../store/incidentCollaboration.ts';
+import { useIncidentTypesStore } from '../../../../store/incidentTypesStore.ts';
+import { useIncidentFieldsStore } from '../../../../store/incidentFieldsStore.ts';
+import DraggableIncidentAction from '../DraggableIncidentAction.tsx';
+import IncidentFieldEditDialog from '../IncidentDetailPage/IncidentFieldEditDialog.tsx';
+import { useIncidentsStore } from '../../../../store/incidents.ts';
 
 const incidentStatusOptions = ['Открыт', 'В работе', 'Расследование', 'Закрыт', 'Ложный'];
 

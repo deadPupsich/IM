@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
-import { DynamicColumnKey } from '../types/incident.ts';
+import { DynamicColumnKey } from '../../../../types/incident.ts';
 
 interface ResizableDraggableColumnHeaderProps {
   columnKey: DynamicColumnKey;

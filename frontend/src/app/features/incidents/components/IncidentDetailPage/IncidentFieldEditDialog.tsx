@@ -1,13 +1,13 @@
 import { useEffect, useState, ChangeEvent, useRef } from 'react';
 import { Upload, X, ChevronDown, Check, Trash2 } from 'lucide-react';
-import { getFileIconLarge } from '../utils/fileIcons.tsx';
+import { getFileIconLarge } from '../../utils/fileIcons.tsx';
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from './ui/dialog.tsx';
+} from '../../../../components/ui/dialog.tsx';
 
 interface IncidentFieldEditDialogProps {
   open: boolean;

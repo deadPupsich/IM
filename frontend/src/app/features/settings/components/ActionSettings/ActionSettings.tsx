@@ -2,9 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { Plus, Trash2, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
-import { useIncidentActionsStore } from '../../store/incidentActionsStore.ts';
-import { useIncidentFieldsStore } from '../../store/incidentFieldsStore.ts';
-import { useIncidentTypesStore } from '../../store/incidentTypesStore.ts';
+import { useIncidentActionsStore } from '../../../../store/incidentActionsStore.ts';
+import { useIncidentFieldsStore } from '../../../../store/incidentFieldsStore.ts';
+import { useIncidentTypesStore } from '../../../../store/incidentTypesStore.ts';
 
 const ITEMS_PER_PAGE = 10;
 

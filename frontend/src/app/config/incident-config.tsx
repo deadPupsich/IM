@@ -1,7 +1,7 @@
 import { BaseColumnKey, DynamicColumnKey, Incident, IncidentTypeId } from '../types/incident.ts';
 import { useIncidentFieldsStore } from '../store/incidentFieldsStore.ts';
 import { useIncidentTypesStore } from '../store/incidentTypesStore.ts';
-import { getFileIcon } from '../utils/fileIcons.tsx';
+import { getFileIcon } from '../features/incidents/utils/fileIcons.tsx';
 import React from 'react';
 
 export interface IncidentColumnDefinition {

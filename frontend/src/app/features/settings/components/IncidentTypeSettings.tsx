@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Plus, Trash2, ChevronDown, Search, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useIncidentTypesStore } from '../../store/incidentTypesStore.ts';
-import { useIncidentFieldsStore } from '../../store/incidentFieldsStore.ts';
-import { useIncidentActionsStore } from '../../store/incidentActionsStore.ts';
+import { useIncidentTypesStore } from '../../../store/incidentTypesStore.ts';
+import { useIncidentFieldsStore } from '../../../store/incidentFieldsStore.ts';
+import { useIncidentActionsStore } from '../../../store/incidentActionsStore.ts';
 
 const ITEMS_PER_PAGE = 10;
 

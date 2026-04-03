@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback } from 'react';
-import { mockUser } from '../data/mockData.ts';
-import CollapsibleIncidentTable from './CollapsibleIncidentTable.tsx';
-import { useIncidentsStore } from '../store/incidents.ts';
+import { mockUser } from '../../../data/mockData.ts';
+import CollapsibleIncidentTable from './IncidentTable/CollapsibleIncidentTable.tsx';
+import { useIncidentsStore } from '../../../store/incidents.ts';
 
 export default function MyIncidentsPage() {
   const [tables, setTables] = useState([

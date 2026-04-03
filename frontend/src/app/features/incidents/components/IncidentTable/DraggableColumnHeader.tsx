@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { GripVertical } from 'lucide-react';
-import { ColumnKey } from '../types/incident.ts';
+import { ColumnKey } from '../../../../types/incident.ts';
 
 interface DraggableColumnHeaderProps {
   columnKey: ColumnKey;

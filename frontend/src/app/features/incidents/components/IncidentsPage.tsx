@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useOutletContext } from 'react-router';
-import IncidentTable from './IncidentTable.tsx';
-import { useIncidentsStore } from '../store/incidents.ts';
+import IncidentTable from './IncidentTable/IncidentTable.tsx';
+import { useIncidentsStore } from '../../../store/incidents.ts';
 
 interface OutletContext {
   activeTeam: string;

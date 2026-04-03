@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { GripVertical, Mail, ShieldAlert, UserPlus, Workflow, CheckCircle, Archive, Send, X } from 'lucide-react';
-import { IncidentAction } from '../store/incidentCollaboration.ts';
+import { IncidentAction } from '../../../store/incidentCollaboration.ts';
 
 interface DraggableIncidentActionProps {
   action: IncidentAction;

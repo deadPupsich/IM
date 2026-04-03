@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Server, Link2, FileType, Hash, MessageSquare, Zap, Users, UserCog } from 'lucide-react';
-import ActiveDirectorySettings from './settings/ActiveDirectorySettings.tsx';
-import IntegrationSettings from './settings/IntegrationSettings.tsx';
-import IncidentTypeSettings from './settings/IncidentTypeSettings.tsx';
-import FieldSettings from './settings/FieldSettings.tsx';
-import TelegramSettings from './settings/TelegramSettings.tsx';
-import ActionSettings from './settings/ActionSettings.tsx';
-import TeamsSettings from './settings/TeamsSettings.tsx';
-import UsersSettings from './settings/UsersSettings.tsx';
+import ActiveDirectorySettings from './ActiveDirectorySettings.tsx';
+import IntegrationSettings from './IntegrationSettings.tsx';
+import IncidentTypeSettings from './IncidentTypeSettings.tsx';
+import FieldSettings from './FieldSettings/FieldSettings.tsx';
+import TelegramSettings from './TelegramSettings.tsx';
+import ActionSettings from './ActionSettings/ActionSettings.tsx';
+import TeamsSettings from './TeamsSettings.tsx';
+import UsersSettings from './UsersSettings.tsx';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('fields');

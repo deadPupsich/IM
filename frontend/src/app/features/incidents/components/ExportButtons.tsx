@@ -1,5 +1,5 @@
 import { Download, FileArchive } from 'lucide-react';
-import { Incident } from '../types/incident.ts';
+import { Incident } from '../../../types/incident.ts';
 
 interface ExportButtonsProps {
   incident: Incident;

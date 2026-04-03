@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { ChevronDown, ChevronRight, GripVertical } from 'lucide-react';
 import IncidentTable from './IncidentTable.tsx';
-import { Incident } from '../types/incident.ts';
+import { Incident } from '../../../../types/incident.ts';
 import { useDrag, useDrop } from 'react-dnd';
 
 interface CollapsibleIncidentTableProps {

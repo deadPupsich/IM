@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Trash2, X } from 'lucide-react';
-import IncidentTable from './IncidentTable.tsx';
-import { useIncidentsStore } from '../store/incidents.ts';
+import { IncidentTable } from '../../incidents';
+import { useIncidentsStore } from '../../../store/incidents.ts';
 
 export default function TrashPage() {
   const [showClearDialog, setShowClearDialog] = useState(false);

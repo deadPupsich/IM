@@ -1,12 +1,10 @@
 import { createBrowserRouter } from "react-router";
-import MainLayout from "./components/MainLayout.tsx";
-import IncidentsPage from "./components/IncidentsPage.tsx";
-import MyIncidentsPage from "./components/MyIncidentsPage.tsx";
-import IncidentDetailPage from "./components/IncidentDetailPage.tsx";
-import DashboardPage from "./components/DashboardPage.tsx";
-import SettingsPage from "./components/SettingsPage.tsx";
-import LoginPage from "./components/LoginPage.tsx";
-import TrashPage from "./components/TrashPage.tsx";
+import { MainLayout } from "./layout";
+import { IncidentsPage, MyIncidentsPage, IncidentDetailPage } from "./features/incidents";
+import { DashboardPage } from "./features/dashboard";
+import { SettingsPage } from "./features/settings";
+import { LoginPage } from "./features/auth";
+import { TrashPage } from "./features/trash";
 
 export const router = createBrowserRouter([
   {
