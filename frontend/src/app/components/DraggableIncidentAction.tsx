@@ -54,15 +54,19 @@ export default function DraggableIncidentAction({ action, index, moveAction, onR
     }
   });
 
-  preview(drop(ref));
-
   return (
     <div
-      ref={ref}
+      ref={(node) => {
+        ref.current = node;
+        if (node) {
+          drop(node);
+          preview(node);
+        }
+      }}
       className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${toneClasses[action.tone]} ${isDragging ? 'opacity-50' : ''}`}
     >
       {!readonly && (
-        <div ref={drag} className="cursor-move">
+        <div ref={(node) => { if (node) drag(node); }} className="cursor-move">
           <GripVertical className="w-3.5 h-3.5 opacity-60" />
         </div>
       )}

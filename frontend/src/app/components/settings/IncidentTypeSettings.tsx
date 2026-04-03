@@ -13,7 +13,6 @@ export default function IncidentTypeSettings() {
     removeType,
     updateType,
     getTypeFieldIds,
-    getTypes,
   } = useIncidentTypesStore();
 
   const baseFields = useIncidentFieldsStore((state) => state.baseFields);

@@ -44,47 +44,44 @@ export default function CollapsibleIncidentTable({
 
       if (dragIndex === hoverIndex) return;
 
-      // Получаем прямоугольник элемента
       const hoverBoundingRect = ref.current.getBoundingClientRect();
-      
-      // Получаем позицию мыши относительно элемента
       const clientOffset = monitor.getClientOffset();
       if (!clientOffset) return;
-      
-      // Вычисляем середину элемента по вертикали
+
       const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
       const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-      
-      // Определяем направление перемещения
+
       const isDraggingDown = dragIndex < hoverIndex;
       const isDraggingUp = dragIndex > hoverIndex;
-      
-      // При перемещении вниз - срабатываем когда мышь прошла больше половины
-      // При перемещении вверх - срабатываем когда мышь прошла меньше половины
-      if (isDraggingDown && hoverClientY < hoverMiddleY) {
-        return;
-      }
-      
-      if (isDraggingUp && hoverClientY > hoverMiddleY) {
-        return;
-      }
+
+      if (isDraggingDown && hoverClientY < hoverMiddleY) return;
+      if (isDraggingUp && hoverClientY > hoverMiddleY) return;
 
       moveTable(dragIndex, hoverIndex);
       item.index = hoverIndex;
     }
   });
 
-  preview(drop(ref));
-
   return (
-    <div 
-      ref={ref}
+    <div
+      ref={(node) => {
+        ref.current = node;
+        if (node) {
+          drop(node);
+          preview(node);
+        }
+      }}
       className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden ${
         isDragging ? 'opacity-50' : ''
       }`}
     >
       <div className="flex items-center gap-2 px-6 py-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-        <div ref={drag} className="cursor-move">
+        <div
+          ref={(node) => {
+            if (node) drag(node);
+          }}
+          className="cursor-move"
+        >
           <GripVertical className="w-5 h-5 text-gray-400 dark:text-gray-500" />
         </div>
         <button

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { IncidentTypeId } from '../types/incident.ts';
-import { ActionActivity, CustomAction } from '../types/settings.ts';
+import { CustomAction } from '../types/settings.ts';
 
 export const DEFAULT_INCIDENT_ACTIONS: CustomAction[] = [
   {

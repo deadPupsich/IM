@@ -1,10 +1,9 @@
 import { useEffect, useState, ChangeEvent, useRef } from 'react';
-import { Upload, X, ChevronDown, Check, Download, Trash2 } from 'lucide-react';
+import { Upload, X, ChevronDown, Check, Trash2 } from 'lucide-react';
 import { getFileIconLarge } from '../utils/fileIcons.tsx';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,

@@ -43,16 +43,20 @@ export default function DraggableColumnHeader({
     }
   });
 
-  preview(drop(ref));
-
   return (
     <div
-      ref={ref}
+      ref={(node) => {
+        ref.current = node;
+        if (node) {
+          drop(node);
+          preview(node);
+        }
+      }}
       className={`flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-200 font-medium text-sm text-gray-700 ${
         isDragging ? 'opacity-50' : ''
       }`}
     >
-      <div ref={drag} className="cursor-move">
+      <div ref={(node) => { if (node) drag(node); }} className="cursor-move">
         <GripVertical className="w-4 h-4 text-gray-400" />
       </div>
       <span>{label}</span>

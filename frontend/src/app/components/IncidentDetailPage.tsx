@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, type ChangeEvent } from 'react';
+import { useState, useMemo, useEffect, type ChangeEvent } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import {
   ArrowLeft,
@@ -39,7 +39,6 @@ import { useIncidentFieldsStore } from '../store/incidentFieldsStore.ts';
 import { useIncidentActionsStore } from '../store/incidentActionsStore.ts';
 import { getIncidentTypeDefinition } from '../config/incident-config.tsx';
 import { getFileIcon, getFileIconLarge } from '../utils/fileIcons.tsx';
-import { SYSTEM_INCIDENT_ACTIONS } from '../config/incident-actions.ts';
 import { useIncidentsStore } from '../store/incidents.ts';
 import { Incident } from '../types/incident.ts';
 import IncidentFieldEditDialog from './IncidentFieldEditDialog.tsx';
@@ -139,7 +138,7 @@ const fieldTypes: FieldTypeDefinition[] = [
     type: 'multiline',
     icon: <FileText className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />,
     getValue: (incident) => {
-      const value = incident.дополнительныеПоля?.description || incident.описание || '—';
+      const value = incident.дополнительныеПоля?.description || '—';
       if (value === '—') return value;
       return (
         <div className="whitespace-pre-wrap text-sm text-gray-900 dark:text-gray-100">
@@ -168,7 +167,7 @@ const fieldTypes: FieldTypeDefinition[] = [
     getValue: (incident) => {
       const value = incident.дополнительныеПоля?.needs_escalation;
       if (!value || value === '—' || value === '') return '—';
-      const isTrue = value === 'true' || value === true || value === '1' || value === 1;
+      const isTrue = String(value) === 'true' || String(value) === '1';
       return isTrue ? (
         <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
           Да
@@ -365,10 +364,6 @@ function buildInvestigationThreads(entries: InvestigationEntry[]): Investigation
   return roots.map(attachChildren);
 }
 
-function countTotalEntries(nodes: InvestigationThreadNode[]): number {
-  return nodes.reduce((count, node) => count + 1 + countTotalEntries(node.children), 0);
-}
-
 export default function IncidentDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -412,17 +407,6 @@ export default function IncidentDetailPage() {
   const addComment = useIncidentCollaboration((state) => state.addComment);
   const sendSystemEmail = useIncidentCollaboration((state) => state.sendSystemEmail);
   const replyToEmailThread = useIncidentCollaboration((state) => state.replyToEmailThread);
-
-  const moveField = useCallback((dragIndex: number, hoverIndex: number) => {
-    setFields((prevFields) => {
-      if (dragIndex === hoverIndex) return prevFields;
-      const newFields = [...prevFields];
-      const temp = newFields[dragIndex];
-      newFields[dragIndex] = newFields[hoverIndex];
-      newFields[hoverIndex] = temp;
-      return newFields;
-    });
-  }, []);
 
   const handleAddMention = (userName: string) => {
     setCommentText((prev) => `${prev}${prev.trim().length > 0 ? ' ' : ''}@${userName} `);
@@ -615,31 +599,31 @@ export default function IncidentDetailPage() {
         case 'select':
           inputType = storeField.allowMultiple ? 'multiselect' : 'select';
           options = storeField.selectOptions?.map(opt => ({ label: opt.label, value: opt.label })) || [];
-          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+          value = String(incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '');
           break;
         case 'boolean':
           inputType = 'boolean';
-          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || 'false';
+          value = String(incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || 'false');
           break;
         case 'datetime':
           inputType = 'datetime';
-          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+          value = String(incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '');
           break;
         case 'multiline':
           inputType = 'textarea';
-          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+          value = String(incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '');
           break;
         case 'file':
           inputType = 'file';
-          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+          value = String(incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '');
           break;
         case 'number':
           inputType = 'number';
-          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '0';
+          value = String(incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '0');
           break;
         default:
           inputType = 'text';
-          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+          value = String(incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '');
       }
     } else if (fieldDef) {
       // Fallback к fieldDef если store поле не найдено
@@ -647,31 +631,31 @@ export default function IncidentDetailPage() {
         case 'select':
           inputType = fieldDef.allowMultiple ? 'multiselect' : 'select';
           options = fieldDef.selectOptions || [];
-          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+          value = String(incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '');
           break;
         case 'boolean':
           inputType = 'boolean';
-          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || 'false';
+          value = String(incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || 'false');
           break;
         case 'datetime':
           inputType = 'datetime';
-          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+          value = String(incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '');
           break;
         case 'multiline':
           inputType = 'textarea';
-          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+          value = String(incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '');
           break;
         case 'file':
           inputType = 'file';
-          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+          value = String(incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '');
           break;
         case 'number':
           inputType = 'number';
-          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '0';
+          value = String(incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '0');
           break;
         default:
           inputType = 'text';
-          value = incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '';
+          value = String(incident.дополнительныеПоля?.[fieldId] || incident[fieldId as keyof Incident] || '');
       }
     }
 
@@ -907,7 +891,7 @@ export default function IncidentDetailPage() {
               value={field.getValue(incident)}
               icon={field.icon}
               index={index}
-              moveField={moveField}
+              moveField={() => {}}
               action={
                 <button
                   onClick={() => openFieldEditor(field.id, field.label)}
@@ -933,7 +917,7 @@ export default function IncidentDetailPage() {
                   value={field.getValue(incident)}
                   icon={field.icon}
                   index={requiredFields.length + index}
-                  moveField={moveField}
+                  moveField={() => {}}
                   action={
                     <button
                       onClick={() => openFieldEditor(field.id, field.label)}

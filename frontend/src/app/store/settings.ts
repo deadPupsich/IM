@@ -10,7 +10,7 @@ interface AppSettings {
 
 export const useAppSettings = create<AppSettings>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       theme: 'light',
       itemsPerPage: 20,
       setTheme: (theme) => {

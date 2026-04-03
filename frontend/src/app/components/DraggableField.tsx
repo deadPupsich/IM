@@ -43,47 +43,39 @@ export default function DraggableField({
 
       if (dragIndex === hoverIndex) return;
 
-      // Получаем прямоугольник элемента
       const hoverBoundingRect = ref.current.getBoundingClientRect();
-      
-      // Получаем позицию мыши относительно элемента
       const clientOffset = monitor.getClientOffset();
       if (!clientOffset) return;
-      
-      // Вычисляем середину элемента по вертикали
+
       const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
       const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-      
-      // Определяем направление перемещения
+
       const isDraggingDown = dragIndex < hoverIndex;
       const isDraggingUp = dragIndex > hoverIndex;
-      
-      // При перемещении вниз - срабатываем когда мышь прошла больше половины
-      // При перемещении вверх - срабатываем когда мышь прошла меньше половины
-      if (isDraggingDown && hoverClientY < hoverMiddleY) {
-        return;
-      }
-      
-      if (isDraggingUp && hoverClientY > hoverMiddleY) {
-        return;
-      }
+
+      if (isDraggingDown && hoverClientY < hoverMiddleY) return;
+      if (isDraggingUp && hoverClientY > hoverMiddleY) return;
 
       moveField(dragIndex, hoverIndex);
       item.index = hoverIndex;
     }
   });
 
-  preview(drop(ref));
-
   return (
     <div
-      ref={ref}
+      ref={(node) => {
+        ref.current = node;
+        if (node) {
+          drop(node);
+          preview(node);
+        }
+      }}
       className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 ${
         isDragging ? 'opacity-50' : ''
       }`}
     >
       <div className="flex items-start gap-3">
-        <div ref={drag} className="cursor-move pt-1">
+        <div ref={(node) => { if (node) drag(node); }} className="cursor-move pt-1">
           <GripVertical className="w-5 h-5 text-gray-400 dark:text-gray-500" />
         </div>
         

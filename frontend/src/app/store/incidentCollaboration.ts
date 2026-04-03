@@ -261,7 +261,6 @@ export const useIncidentCollaboration = create<IncidentCollaborationState>()((se
       };
 
       const mentionNotifications: UserNotification[] = mentionedUserIds.map((userId) => {
-        const mentionedUser = mockUsersDirectory.find((user) => user.id === userId);
         return {
           id: `notification-${Date.now()}-${userId}`,
           userId,

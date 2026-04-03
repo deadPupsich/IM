@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Trash2, X, Filter } from 'lucide-react';
+import { Trash2, X } from 'lucide-react';
 import IncidentTable from './IncidentTable.tsx';
 import { useIncidentsStore } from '../store/incidents.ts';
 

@@ -3,7 +3,7 @@ import { Plus, Trash2, Search, ChevronLeft, ChevronRight, ChevronDown } from 'lu
 import * as Icons from 'lucide-react';
 import { CustomField, SelectOptionValue } from '../../types/settings.ts';
 import { HexColorPicker } from 'react-colorful';
-import { useIncidentFieldsStore, DEFAULT_BASE_FIELDS } from '../../store/incidentFieldsStore.ts';
+import { useIncidentFieldsStore } from '../../store/incidentFieldsStore.ts';
 
 const iconsList = [
   'FileText', 'User', 'Users', 'Database', 'FileStack', 'AlertTriangle', 'AlertCircle',
@@ -18,11 +18,6 @@ const iconsList = [
 ];
 
 const ITEMS_PER_PAGE = 10;
-
-const capitalizeFirst = (str: string) => {
-  if (!str) return '';
-  return str.charAt(0).toUpperCase() + str.slice(1);
-};
 
 export default function FieldSettings() {
   const { 
@@ -153,22 +148,6 @@ export default function FieldSettings() {
 
   const toggleIconColorPicker = (fieldId: string) => {
     setIconColorPickerOpen(prev => ({ ...prev, [fieldId]: !prev[fieldId] }));
-  };
-
-  const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : { r: 0, g: 0, b: 0 };
-  };
-
-  const rgbToHex = (r: number, g: number, b: number) => {
-    return '#' + [r, g, b].map(x => {
-      const hex = Math.max(0, Math.min(255, x)).toString(16);
-      return hex.length === 1 ? '0' + hex : hex;
-    }).join('');
   };
 
   useEffect(() => {

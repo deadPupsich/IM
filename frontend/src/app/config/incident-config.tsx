@@ -174,13 +174,6 @@ export function getIncidentColumnValueReact(incident: Incident, columnKey: Dynam
  * Хук для получения всех полей для типа инцидента
  * Используется в React компонентах
  */
-export function useFieldsForIncidentType(typeId: IncidentTypeId | string) {
-  return useIncidentFieldsStore((state) => state.getAllFieldsForType(typeId as string));
-}
-
-/**
- * Хук для получения типа инцидента
- */
 export function useIncidentType(typeId: IncidentTypeId | string) {
   return useIncidentTypesStore((state) => state.getTypeById(typeId));
 }

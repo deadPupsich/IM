@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Plus, Trash2, ChevronDown, ChevronUp, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
 import { useIncidentActionsStore } from '../../store/incidentActionsStore.ts';
@@ -27,14 +27,11 @@ const activityTypes = [
 ];
 
 export default function ActionSettings() {
-  const { 
+  const {
     actions,
     addAction,
     removeAction,
     updateAction,
-    typeActions,
-    addActionToType,
-    removeActionFromType,
   } = useIncidentActionsStore();
 
   const { getTypes } = useIncidentTypesStore();
@@ -192,7 +189,7 @@ export default function ActionSettings() {
         );
 
       case 'custom':
-        const selectedField = availableFields.find(f => f.slug === config.fieldSlug);
+        const selectedField = availableFields.find(f => f.id === config.fieldId);
         return (
           <div className="space-y-3">
             <div>
@@ -218,13 +215,13 @@ export default function ActionSettings() {
                 Изменяемое поле
               </label>
               <select
-                value={config.fieldSlug || ''}
-                onChange={(e) => updateTargetConfig(action.id, { fieldSlug: e.target.value, value: '' })}
+                value={config.fieldId || ''}
+                onChange={(e) => updateTargetConfig(action.id, { fieldId: e.target.value, value: '' })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100"
               >
                 <option value="">Выберите поле</option>
                 {availableFields.map(field => (
-                  <option key={field.slug} value={field.slug}>{field.name} ({field.type})</option>
+                  <option key={field.id} value={field.id}>{field.name} ({field.type})</option>
                 ))}
               </select>
             </div>

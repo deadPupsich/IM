@@ -4,7 +4,7 @@ import { ChevronRight, ChevronDown, ChevronUp, FileText, User, Users, Database, 
 import * as Icons from 'lucide-react';
 import { DynamicColumnKey, Incident } from '../types/incident.ts';
 import ExportButtons from './ExportButtons.tsx';
-import { getIncidentColumnValue, getIncidentColumnValueReact, getIncidentTypeDefinition } from '../config/incident-config.tsx';
+import { getIncidentColumnValueReact, getIncidentTypeDefinition } from '../config/incident-config.tsx';
 import { getFileIcon } from '../utils/fileIcons.tsx';
 import { useIncidentCollaboration } from '../store/incidentCollaboration.ts';
 import { useIncidentTypesStore } from '../store/incidentTypesStore.ts';
@@ -239,7 +239,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
     }
     
     // Для multiline рендерим с переносами
-    if (inputType === 'textarea' || inputType === 'multiline') {
+    if (inputType === 'textarea' || String(inputType) === 'multiline') {
       return (
         <div className="text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words">
           {value}
@@ -414,7 +414,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
               onContextMenu={handleRowContextMenu}
               style={{ userSelect: 'text' }}
           >
-            {columns.map((col, index) => {
+            {columns.map((col) => {
               const value = getIncidentColumnValueReact(incident, col.key);
               return (
                 <div
