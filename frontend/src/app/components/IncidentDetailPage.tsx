@@ -513,34 +513,9 @@ export default function IncidentDetailPage() {
   const availableActions = actionsStore.getActions().filter((action) => !actions.some((a) => a.label === action.name));
   const incidentType = incident ? getIncidentTypeDefinition(incident.типИнцидента) : undefined;
   const suggestedRecipient = incident ? (emailRecipient || resolveViolatorEmail(incident.login, incident.id)) : emailRecipient;
-  
-  // Маппинг русских id полей в английские slug store
-  const fieldIdToSlugMap: Record<string, string> = {
-    'название': 'title',
-    'ответственный': 'assignee',
-    'источник': 'source',
-    'login': 'login',
-    'хост': 'host',
-    'статус': 'status',
-    'команда': 'team',
-    'дата': 'date',
-  };
-  
-  // Обратный маппинг: английские slug в русские id
-  const slugToFieldIdMap: Record<string, string> = {
-    'title': 'название',
-    'assignee': 'ответственный',
-    'source': 'источник',
-    'host': 'хост',
-    'login': 'login',
-    'status': 'статус',
-    'team': 'команда',
-    'date': 'дата',
-  };
-  
+
   // Базовые поля (всегда отображаются)
   const baseFieldIds = new Set(['название', 'ответственный', 'источник', 'login', 'хост', 'статус', 'команда', 'дата']);
-  const baseFieldSlugs = new Set(['title', 'assignee', 'source', 'host', 'login', 'status', 'team', 'date']);
   
   // Получаем fieldIds для типа инцидента из types store
   const typeFieldIds = incident ? typesStore.getTypeFieldIds(incident.типИнцидента) : [];
