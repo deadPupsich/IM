@@ -1,9 +1,1 @@
 export { default as SettingsPage } from './components/SettingsPage';
-export { default as FieldSettings } from './components/FieldSettings/FieldSettings';
-export { default as ActionSettings } from './components/ActionSettings/ActionSettings';
-export { default as UsersSettings } from './components/UsersSettings';
-export { default as TeamsSettings } from './components/TeamsSettings';
-export { default as IncidentTypeSettings } from './components/IncidentTypeSettings';
-export { default as ActiveDirectorySettings } from './components/ActiveDirectorySettings';
-export { default as TelegramSettings } from './components/TelegramSettings';
-export { default as IntegrationSettings } from './components/IntegrationSettings';
