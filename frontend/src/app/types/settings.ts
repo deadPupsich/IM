@@ -8,7 +8,6 @@ export interface SelectOptionValue {
 export interface CustomField {
   id: string;
   name: string;
-  slug: string;
   type: 'string' | 'multiline' | 'datetime' | 'file' | 'select' | 'number' | 'boolean';
   icon: string;
   iconColor: string;
@@ -16,7 +15,6 @@ export interface CustomField {
   description?: string;
   selectOptions?: SelectOptionValue[];
   allowMultiple?: boolean;
-  slugLocked?: boolean;
   prefix?: string;
   postfix?: string;
 }

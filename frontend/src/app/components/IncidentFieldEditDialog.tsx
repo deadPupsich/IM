@@ -1,5 +1,6 @@
 import { useEffect, useState, ChangeEvent, useRef } from 'react';
-import { Upload, X, FileText, ChevronDown, Check } from 'lucide-react';
+import { Upload, X, ChevronDown, Check, Download, Trash2 } from 'lucide-react';
+import { getFileIconLarge } from '../utils/fileIcons.tsx';
 import {
   Dialog,
   DialogContent,
@@ -36,13 +37,14 @@ export default function IncidentFieldEditDialog({
   const [datetime, setDatetime] = useState({ date: '', time: '' });
   const [booleanValue, setBooleanValue] = useState(value === 'true');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [existingFileNames, setExistingFileNames] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [multiselectOpen, setMultiselectOpen] = useState(false);
 
   useEffect(() => {
     if (open) {
       setDraft(value);
-      
+
       // Parse datetime value
       if (inputType === 'datetime' && value) {
         const parts = value.split(' ');
@@ -51,10 +53,17 @@ export default function IncidentFieldEditDialog({
           time: parts[1] || ''
         });
       }
-      
+
       // Parse boolean value
       if (inputType === 'boolean') {
         setBooleanValue(value === 'true');
+      }
+
+      // Parse existing file names for file type
+      if (inputType === 'file' && value && value !== '—') {
+        setExistingFileNames(value.split(',').map(s => s.trim()).filter(s => s));
+      } else {
+        setExistingFileNames([]);
       }
     }
   }, [open, value, inputType]);
@@ -80,8 +89,9 @@ export default function IncidentFieldEditDialog({
     } else if (inputType === 'boolean') {
       onSave(booleanValue ? 'true' : 'false');
     } else if (inputType === 'file') {
-      // For files, save file names as comma-separated list
-      onSave(selectedFiles.map(f => f.name).join(', '));
+      // Combine existing file names with new file names
+      const allFiles = [...existingFileNames, ...selectedFiles.map(f => f.name)];
+      onSave(allFiles.join(', '));
     } else if (inputType === 'multiselect') {
       // For multiselect, value is already comma-separated
       onSave(draft);
@@ -89,6 +99,10 @@ export default function IncidentFieldEditDialog({
       onSave(draft.trim());
     }
     onOpenChange(false);
+  };
+
+  const removeExistingFile = (fileName: string) => {
+    setExistingFileNames(prev => prev.filter(f => f !== fileName));
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -288,12 +302,37 @@ export default function IncidentFieldEditDialog({
                   className="hidden"
                 />
               </label>
+              
+              {/* Existing files */}
+              {existingFileNames.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Загруженные файлы:</p>
+                  {existingFileNames.map((fileName, index) => (
+                    <div key={`existing-${index}`} className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        {getFileIconLarge(fileName)}
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{fileName}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeExistingFile(fileName)}
+                        className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* New files */}
               {selectedFiles.length > 0 && (
                 <div className="space-y-2">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Новые файлы:</p>
                   {selectedFiles.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                    <div key={`new-${index}`} className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        {getFileIconLarge(file.name)}
                         <span className="text-sm text-gray-700 dark:text-gray-300">{file.name}</span>
                         <span className="text-xs text-gray-500 dark:text-gray-400">
                           {(file.size / 1024).toFixed(1)} KB

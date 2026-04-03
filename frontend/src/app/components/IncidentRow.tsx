@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { ChevronRight, ChevronDown, ChevronUp, FileText, User, Users, Database, AlertTriangle, AlertCircle, Monitor, Activity, Calendar, Workflow, Pencil, Flag, Clock, Server } from 'lucide-react';
+import { ChevronRight, ChevronDown, ChevronUp, FileText, User, Users, Database, AlertTriangle, AlertCircle, Monitor, Activity, Calendar, Workflow, Pencil, Flag, Clock, Server, Paperclip, Download } from 'lucide-react';
+import * as Icons from 'lucide-react';
 import { DynamicColumnKey, Incident } from '../types/incident.ts';
 import ExportButtons from './ExportButtons.tsx';
-import { getIncidentColumnValue, getIncidentTypeDefinition } from '../config/incident-config.ts';
+import { getIncidentColumnValue, getIncidentColumnValueReact, getIncidentTypeDefinition } from '../config/incident-config.tsx';
+import { getFileIcon } from '../utils/fileIcons.tsx';
 import { useIncidentCollaboration } from '../store/incidentCollaboration.ts';
 import { useIncidentTypesStore } from '../store/incidentTypesStore.ts';
 import { useIncidentFieldsStore } from '../store/incidentFieldsStore.ts';
@@ -24,7 +26,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
   const [editingField, setEditingField] = useState<{
     key: string;
     label: string;
-    inputType: 'text' | 'select' | 'boolean' | 'datetime' | 'textarea' | 'number' | 'multiselect';
+    inputType: 'text' | 'select' | 'boolean' | 'datetime' | 'textarea' | 'number' | 'multiselect' | 'file';
     value: string;
     options?: { label: string; value: string }[];
     isAdditional?: boolean;
@@ -32,20 +34,22 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; incidentId: string } | null>(null);
   const navigate = useNavigate();
   const typesStore = useIncidentTypesStore();
-  const fieldsStore = useIncidentFieldsStore();
+  const getExtraFieldsByIds = useIncidentFieldsStore((state) => state.getExtraFieldsByIds);
+  const getExtraFieldById = useIncidentFieldsStore((state) => state.getExtraFieldById);
   const incidentType = getIncidentTypeDefinition(incident.типИнцидента);
   const actionsByIncident = useIncidentCollaboration((state) => state.actionsByIncident);
   const initializeIncidentActions = useIncidentCollaboration((state) => state.initializeIncidentActions);
   const updateIncident = useIncidentsStore((state) => state.updateIncident);
   
   // Получаем fieldIds для типа инцидента из types store
-  const typeFieldSlugs = typesStore.getTypeFieldIds(incident.типИнцидента);
-  
+  const typeFieldIds = typesStore.getTypeFieldIds(incident.типИнцидента);
+
   // Базовые поля (всегда отображаются)
-  const baseFieldSlugs = new Set(['title', 'assignee', 'source', 'host', 'login', 'status', 'team', 'date']);
-  
-  // Получаем ТОЛЬКО дополнительные поля для типа инцидента (без базовых)
-  const typeExtraFields = typeFieldSlugs.filter(slug => !baseFieldSlugs.has(slug));
+  const baseFieldIds = new Set(['title', 'assignee', 'source', 'host', 'login', 'status', 'team', 'date']);
+
+  // Получаем ТОЛЬКО дополнительные поля, выбранные для типа инцидента
+  const typeExtraFields = getExtraFieldsByIds(typeFieldIds);
+  const typeExtraFieldIds = typeExtraFields.filter(f => !baseFieldIds.has(f.id)).map(f => f.id);
 
   useEffect(() => {
     initializeIncidentActions(incident.id, incident.типИнцидента);
@@ -53,8 +57,21 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
 
   const actions = actionsByIncident[incident.id] ?? [];
   
-  // Функция для получения иконки по slug поля
-  const getFieldIcon = (slug: string) => {
+  // Функция для получения иконки по id поля
+  const getFieldIcon = (id: string) => {
+    // Сначала пытаемся получить иконку из store
+    const storeField = getExtraFieldById(id);
+    if (storeField) {
+      const IconComponent = (Icons as any)[storeField.icon];
+      if (IconComponent) {
+        return { 
+          icon: <IconComponent className="w-5 h-5" style={{ color: storeField.iconColor }} />, 
+          bg: `${storeField.iconColor}20` 
+        };
+      }
+    }
+    
+    // Fallback на захардкоженные иконки
     const iconMap: Record<string, { icon: any; bg: string }> = {
       'priority': { icon: <Flag className="w-5 h-5 text-orange-600 dark:text-orange-400" />, bg: 'bg-orange-100 dark:bg-orange-900' },
       'detected_at': { icon: <Clock className="w-5 h-5 text-rose-600 dark:text-rose-400" />, bg: 'bg-rose-100 dark:bg-rose-900' },
@@ -62,22 +79,34 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
       'response_time': { icon: <Clock className="w-5 h-5 text-teal-600 dark:text-teal-400" />, bg: 'bg-teal-100 dark:bg-teal-900' },
       'needs_escalation': { icon: <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />, bg: 'bg-red-100 dark:bg-red-900' },
       'affected_systems': { icon: <Server className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />, bg: 'bg-indigo-100 dark:bg-indigo-900' },
+      'evidence_files': { icon: <Paperclip className="w-5 h-5 text-slate-600 dark:text-slate-400" />, bg: 'bg-slate-100 dark:bg-slate-900' },
     };
-    return iconMap[slug] || { icon: <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />, bg: 'bg-gray-100 dark:bg-gray-900' };
+    return iconMap[id] || { icon: <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />, bg: 'bg-gray-100 dark:bg-gray-900' };
   };
   
-  // Маппинг slug в отображаемое имя
-  const slugToNameMap: Record<string, string> = {
-    'priority': 'Приоритет',
-    'detected_at': 'Дата обнаружения',
-    'description': 'Описание',
-    'response_time': 'Время реакции (мин)',
-    'needs_escalation': 'Требуется эскалация',
-    'affected_systems': 'Затронутые системы',
+  // Функция для получения имени поля
+  const getFieldDisplayName = (id: string): string => {
+    // Сначала пытаемся получить имя из store
+    const storeField = getExtraFieldById(id);
+    if (storeField) {
+      return storeField.name;
+    }
+    
+    // Fallback на захардкоженные имена
+    const idToNameMap: Record<string, string> = {
+      'priority': 'Приоритет',
+      'detected_at': 'Дата обнаружения',
+      'description': 'Описание',
+      'response_time': 'Время реакции (мин)',
+      'needs_escalation': 'Требуется эскалация',
+      'affected_systems': 'Затронутые системы',
+      'evidence_files': 'Файлы доказательств',
+    };
+    return idToNameMap[id] || id;
   };
 
   // Маппинг slug в тип поля (используем русские ключи, как в requiredDetails)
-  const slugToTypeMap: Record<string, 'select' | 'boolean' | 'datetime' | 'multiline' | 'number' | 'text'> = {
+  const slugToTypeMap: Record<string, 'select' | 'boolean' | 'datetime' | 'multiline' | 'number' | 'text' | 'file'> = {
     'priority': 'select',
     'статус': 'select',
     'команда': 'select',
@@ -88,6 +117,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
     'response_time': 'number',
     'needs_escalation': 'boolean',
     'affected_systems': 'select',
+    'evidence_files': 'file',
   };
 
   // Опции для select полей (используем русские ключи)
@@ -101,14 +131,10 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
   };
 
   // Функция для определения типа ввода по ключу поля
-  const getFieldInputType = (fieldKey: string): { inputType: 'text' | 'select' | 'boolean' | 'datetime' | 'textarea' | 'number' | 'multiselect', options?: { label: string; value: string }[] } => {
-    // Убираем префикс custom: если есть
-    const slug = fieldKey.replace('custom:', '');
+  const getFieldInputType = (fieldKey: string): { inputType: 'text' | 'select' | 'boolean' | 'datetime' | 'textarea' | 'number' | 'multiselect' | 'file', options?: { label: string; value: string }[] } => {
+    // Сначала получаем поле из store
+    const storeField = getExtraFieldById(fieldKey);
     
-    // Сначала получаем поле из store (для дополнительных полей)
-    const storeField = fieldsStore.getFieldBySlug(slug, incident.типИнцидента);
-    
-    // Если поле найдено в store, используем его тип и опции
     if (storeField) {
       const options = storeField.selectOptions?.map(opt => ({ label: opt.label, value: opt.label }));
       
@@ -132,19 +158,15 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
     if (fieldType === 'datetime') return { inputType: 'datetime', options };
     if (fieldType === 'boolean') return { inputType: 'boolean', options };
     if (fieldType === 'number') return { inputType: 'number', options };
+    if (fieldType === 'file') return { inputType: 'file', options };
     
     return { inputType: 'text', options };
   };
 
   // Функция для рендеринга значения поля с учётом типа
   const renderFieldValue = (fieldKey: string, value: string) => {
-    // Убираем префикс custom: если есть
-    const slug = fieldKey.replace('custom:', '');
-    
     const { inputType, options } = getFieldInputType(fieldKey);
-    
-    // Получаем поле из store для цветов
-    const storeField = fieldsStore.getFieldBySlug(slug, incident.типИнцидента);
+    const storeField = getExtraFieldById(fieldKey);
     
     // Для select/multiselect полей рендерим цветные бейджи
     if (inputType === 'select' || inputType === 'multiselect') {
@@ -159,7 +181,6 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
       return (
         <div className="flex flex-wrap gap-1">
           {values.map((val, idx) => {
-            // Ищем опцию в store для получения цветов
             const storeOption = storeField?.selectOptions?.find(opt => opt.label === val);
             const option = options.find(o => o.value === val);
             return (
@@ -176,6 +197,43 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
               </span>
             );
           })}
+        </div>
+      );
+    }
+    
+    // Для file полей рендерим как список файлов с кнопкой скачать
+    if (inputType === 'file') {
+      if (!value || value === '—' || value === '') {
+        return (
+          <div className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words">
+            —
+          </div>
+        );
+      }
+      const files = value.split(',').map(s => s.trim()).filter(s => s);
+      return (
+        <div className="flex flex-wrap gap-1">
+          {files.map((file, idx) => (
+            <span
+              key={idx}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+            >
+              {getFileIcon(file)}
+              {file}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // Имитация скачивания (в реальности будет запрос к API)
+                  alert(`Скачивание файла: ${file}`);
+                }}
+                className="ml-1 p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+                title="Скачать"
+              >
+                <Download className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
         </div>
       );
     }
@@ -213,7 +271,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
     
     // Для number с postfix
     if (inputType === 'number') {
-      const postfix = fieldKey === 'response_time' ? ' мин' : '';
+      const postfix = storeField?.postfix || (fieldKey === 'response_time' ? ' мин' : '');
       return (
         <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
           {value}{postfix}
@@ -310,7 +368,7 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
     return () => document.removeEventListener('click', handleClick);
   }, []);
 
-  const openFieldEditor = (fieldKey: string, label: string, value: string, inputType: 'text' | 'select' | 'boolean' | 'datetime' | 'textarea' | 'number' | 'multiselect' = 'text', options?: { label: string; value: string }[], isAdditional = false) => {
+  const openFieldEditor = (fieldKey: string, label: string, value: string, inputType: 'text' | 'select' | 'boolean' | 'datetime' | 'textarea' | 'number' | 'multiselect' | 'file' = 'text', options?: { label: string; value: string }[], isAdditional = false) => {
     setEditingField({ key: fieldKey, label, value, inputType, options, isAdditional });
   };
 
@@ -357,14 +415,14 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
               style={{ userSelect: 'text' }}
           >
             {columns.map((col, index) => {
-              const value = getIncidentColumnValue(incident, col.key);
+              const value = getIncidentColumnValueReact(incident, col.key);
               return (
                 <div
                   key={col.key}
                   className={`px-3 h-10 flex items-center text-sm text-gray-900 dark:text-gray-100 border-r border-gray-150 dark:border-gray-700 truncate flex-shrink-0`}
                   style={{ width: `${col.width}px`, userSelect: 'text' }}
                 >
-                  {renderFieldValue(col.key, value)}
+                  {value}
                 </div>
               );
             })}
@@ -504,15 +562,15 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
                 </div>
 
                 {/* Additional Fields Section */}
-                {typeExtraFields.length > 0 && (
+                {typeExtraFieldIds.length > 0 && (
                   <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
                     <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Дополнительные поля</div>
                     <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                      {typeExtraFields.map((slug) => {
-                        const { icon, bg } = getFieldIcon(slug);
-                        const fieldName = slugToNameMap[slug] || slug;
+                      {typeExtraFieldIds.map((id) => {
+                        const { icon, bg } = getFieldIcon(id);
+                        const fieldName = getFieldDisplayName(id);
                         return (
-                          <div key={slug} className="flex items-start gap-3 min-w-0">
+                          <div key={id} className="flex items-start gap-3 min-w-0">
                             <div className={`w-10 h-10 ${bg} rounded-lg flex items-center justify-center flex-shrink-0`}>
                               {icon}
                             </div>
@@ -521,15 +579,15 @@ export default function IncidentRow({ incident, columns }: IncidentRowProps) {
                                 <div className="text-xs text-gray-500 dark:text-gray-400 w-28 flex-shrink-0">{fieldName}</div>
                                 <button
                                   onClick={() => {
-                                    const { inputType, options } = getFieldInputType(slug);
-                                    openFieldEditor(slug, fieldName, incident.дополнительныеПоля?.[slug] ?? '', inputType, options, true);
+                                    const { inputType, options } = getFieldInputType(id);
+                                    openFieldEditor(id, fieldName, incident.дополнительныеПоля?.[id] ?? '', inputType, options, true);
                                   }}
                                   className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 flex-shrink-0"
                                 >
                                   <Pencil className="w-3 h-3" />
                                 </button>
                               </div>
-                              {renderFieldValue(slug, incident.дополнительныеПоля?.[slug] ?? '—')}
+                              {renderFieldValue(id, incident.дополнительныеПоля?.[id] ?? '—')}
                             </div>
                           </div>
                         );

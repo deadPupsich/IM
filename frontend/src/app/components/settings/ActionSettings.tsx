@@ -38,7 +38,9 @@ export default function ActionSettings() {
   } = useIncidentActionsStore();
 
   const { getTypes } = useIncidentTypesStore();
-  const { getAllFieldsForType } = useIncidentFieldsStore();
+  const baseFields = useIncidentFieldsStore((state) => state.baseFields);
+  const extraFields = useIncidentFieldsStore((state) => state.extraFields);
+  const availableFields = [...baseFields, ...extraFields];
 
   const [expandedAction, setExpandedAction] = useState<string | null>(null);
   const [targetConfig, setTargetConfig] = useState<{ [key: string]: any }>({});
@@ -106,6 +108,10 @@ export default function ActionSettings() {
   };
 
   const handleRemoveAction = (id: string) => {
+    const action = actions.find(a => a.id === id);
+    if (!confirm(`Удалить действие "${action?.name || id}"? Это действие нельзя отменить.`)) {
+      return;
+    }
     removeAction(id);
   };
 
@@ -143,7 +149,6 @@ export default function ActionSettings() {
   };
 
   const activeTypes = getTypes();
-  const availableFields = getAllFieldsForType(selectedTypeForFieldSearch);
 
   const renderTargetSelector = (action: typeof actions[0]) => {
     const config = targetConfig[action.id] || {};
@@ -330,35 +335,41 @@ export default function ActionSettings() {
           return (
             <div key={action.id} className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: `${action.iconColor || '#3b82f6'}20` }}
+                <div className="flex items-start gap-3">
+                  <button
+                    onClick={() => setExpandedAction(isExpanded ? null : action.id)}
+                    className="flex-shrink-0 mt-0.5"
                   >
-                    <IconComponent
-                      className="w-5 h-5"
-                      style={{ color: action.iconColor || '#3b82f6' }}
-                    />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-blue-900 dark:text-blue-300">
-                      {action.name || 'Новое действие'}
-                    </h4>
-                    <p className="text-xs text-blue-800 dark:text-blue-400">{action.description}</p>
+                    <ChevronDown className={`w-5 h-5 text-blue-600 dark:text-blue-400 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
+                  </button>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: `${action.iconColor || '#3b82f6'}20` }}
+                    >
+                      <IconComponent
+                        className="w-5 h-5"
+                        style={{ color: action.iconColor || '#3b82f6' }}
+                      />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-blue-900 dark:text-blue-300">
+                        {action.name || 'Новое действие'}
+                      </h4>
+                      <p className="text-xs text-blue-800 dark:text-blue-400">{action.description}</p>
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setExpandedAction(isExpanded ? null : action.id)}
-                    className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-                  >
-                    {isExpanded ? (
-                      <ChevronUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    )}
-                  </button>
+                  {isExpanded && (
+                    <button
+                      onClick={() => setExpandedAction(null)}
+                      className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      Готово
+                    </button>
+                  )}
                   <button
                     onClick={() => handleRemoveAction(action.id)}
                     className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"

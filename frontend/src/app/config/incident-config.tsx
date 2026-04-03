@@ -1,6 +1,8 @@
 import { BaseColumnKey, DynamicColumnKey, Incident, IncidentTypeId } from '../types/incident.ts';
 import { useIncidentFieldsStore } from '../store/incidentFieldsStore.ts';
 import { useIncidentTypesStore } from '../store/incidentTypesStore.ts';
+import { getFileIcon } from '../utils/fileIcons.tsx';
+import React from 'react';
 
 export interface IncidentColumnDefinition {
   key: DynamicColumnKey;
@@ -41,23 +43,19 @@ export function getIncidentTypeDefinition(typeId: IncidentTypeId | string): Inci
   if (!type) return null;
 
   const fieldsStore = useIncidentFieldsStore.getState();
-  const extraFields = type.fieldIds
-    .map((fieldId) => {
-      const field = fieldsStore.getFieldBySlug(fieldId, typeId as string);
-      if (!field) return null;
-      return {
-        id: field.slug,
-        label: field.name,
-        width: 150, // Дефолтная ширина, можно хранить в поле
-      };
-    })
-    .filter((f): f is IncidentTypeFieldDefinition => f !== null);
+  const extraFields = fieldsStore.getExtraFieldsByIds(type.fieldIds);
+  const mappedExtraFields = extraFields
+    .map((field) => ({
+      id: field.id,
+      label: field.name,
+      width: 150,
+    }));
 
   return {
     id: type.id,
     label: type.label,
     description: type.description,
-    extraFields,
+    extraFields: mappedExtraFields,
   };
 }
 
@@ -72,18 +70,13 @@ export function getExtraColumnDefinitions(typeId: IncidentTypeId | string): Inci
     return [];
   }
 
-  return type.fieldIds
-    .map((fieldId) => {
-      const field = fieldsStore.getFieldBySlug(fieldId, typeId as string);
-      if (!field) return null;
-      return {
-        key: `custom:${field.slug}` as DynamicColumnKey,
-        label: field.name,
-        width: 150,
-        isDefault: false,
-      };
-    })
-    .filter((col): col is IncidentColumnDefinition => col !== null);
+  const extraFields = fieldsStore.getExtraFieldsByIds(type.fieldIds);
+  return extraFields.map((field) => ({
+    key: `custom:${field.id}` as DynamicColumnKey,
+    label: field.name,
+    width: 150,
+    isDefault: false,
+  }));
 }
 
 /**
@@ -117,6 +110,61 @@ export function getIncidentColumnValue(incident: Incident, columnKey: DynamicCol
   const value = incident[columnKey as BaseColumnKey];
   if (columnKey === 'списокФайлов' && Array.isArray(value)) {
     return value.length > 0 ? `${value.length} файл(ов)` : 'Нет файлов';
+  }
+
+  return String(value ?? '—');
+}
+
+/**
+ * Получает значение колонки для инцидента как React элемент (для рендеринга в таблице)
+ */
+export function getIncidentColumnValueReact(incident: Incident, columnKey: DynamicColumnKey): React.ReactNode {
+  if (columnKey.startsWith('custom:')) {
+    const fieldId = columnKey.replace('custom:', '');
+    const value = incident.дополнительныеПоля?.[fieldId];
+    if (!value) return '—';
+    
+    // Проверяем, является ли поле типом file
+    const fieldsStore = useIncidentFieldsStore.getState();
+    const field = fieldsStore.getExtraFieldById(fieldId);
+    
+    if (field?.type === 'file') {
+      const files = value.split(',').map(s => s.trim()).filter(s => s);
+      if (files.length === 0) return '—';
+      return (
+        <div className="flex flex-wrap gap-1">
+          {files.map((file, idx) => (
+            <span
+              key={idx}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+            >
+              {getFileIcon(file)}
+              {file}
+            </span>
+          ))}
+        </div>
+      );
+    }
+    
+    return value;
+  }
+
+  const value = incident[columnKey as BaseColumnKey];
+  if (columnKey === 'списокФайлов' && Array.isArray(value)) {
+    if (value.length === 0) return 'Нет файлов';
+    return (
+      <div className="flex flex-wrap gap-1">
+        {value.map((file, idx) => (
+          <span
+            key={idx}
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+          >
+            {getFileIcon(file)}
+            {file}
+          </span>
+        ))}
+      </div>
+    );
   }
 
   return String(value ?? '—');

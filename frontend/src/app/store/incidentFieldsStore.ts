@@ -7,7 +7,6 @@ export const DEFAULT_BASE_FIELDS: CustomField[] = [
   {
     id: 'title',
     name: 'Название',
-    slug: 'title',
     type: 'string',
     icon: 'FileText',
     iconColor: '#3b82f6',
@@ -17,7 +16,6 @@ export const DEFAULT_BASE_FIELDS: CustomField[] = [
   {
     id: 'assignee',
     name: 'Ответственный',
-    slug: 'assignee',
     type: 'string',
     icon: 'User',
     iconColor: '#22c55e',
@@ -27,7 +25,6 @@ export const DEFAULT_BASE_FIELDS: CustomField[] = [
   {
     id: 'source',
     name: 'Источник',
-    slug: 'source',
     type: 'select',
     icon: 'Database',
     iconColor: '#f97316',
@@ -51,7 +48,6 @@ export const DEFAULT_BASE_FIELDS: CustomField[] = [
   {
     id: 'host',
     name: 'Хост',
-    slug: 'host',
     type: 'string',
     icon: 'Server',
     iconColor: '#6366f1',
@@ -61,7 +57,6 @@ export const DEFAULT_BASE_FIELDS: CustomField[] = [
   {
     id: 'login',
     name: 'Login',
-    slug: 'login',
     type: 'string',
     icon: 'Key',
     iconColor: '#f59e0b',
@@ -71,7 +66,6 @@ export const DEFAULT_BASE_FIELDS: CustomField[] = [
   {
     id: 'status',
     name: 'Статус',
-    slug: 'status',
     type: 'select',
     icon: 'CircleCheck',
     iconColor: '#22c55e',
@@ -87,7 +81,6 @@ export const DEFAULT_BASE_FIELDS: CustomField[] = [
   {
     id: 'date',
     name: 'Дата',
-    slug: 'date',
     type: 'datetime',
     icon: 'Calendar',
     iconColor: '#06b6d4',
@@ -102,7 +95,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'priority',
       name: 'Приоритет',
-      slug: 'priority',
       type: 'select',
       icon: 'Flag',
       iconColor: '#ef4444',
@@ -118,7 +110,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'detected_at',
       name: 'Дата обнаружения',
-      slug: 'detected_at',
       type: 'datetime',
       icon: 'Clock',
       iconColor: '#06b6d4',
@@ -128,7 +119,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'description',
       name: 'Описание',
-      slug: 'description',
       type: 'multiline',
       icon: 'FileText',
       iconColor: '#3b82f6',
@@ -138,7 +128,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'response_time',
       name: 'Время реакции (мин)',
-      slug: 'response_time',
       type: 'number',
       icon: 'Timer',
       iconColor: '#f59e0b',
@@ -149,7 +138,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'needs_escalation',
       name: 'Требуется эскалация',
-      slug: 'needs_escalation',
       type: 'boolean',
       icon: 'ArrowUpRight',
       iconColor: '#a855f7',
@@ -159,7 +147,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'affected_systems',
       name: 'Затронутые системы',
-      slug: 'affected_systems',
       type: 'select',
       icon: 'Network',
       iconColor: '#6366f1',
@@ -179,7 +166,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'priority',
       name: 'Приоритет',
-      slug: 'priority',
       type: 'select',
       icon: 'Flag',
       iconColor: '#ef4444',
@@ -195,7 +181,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'detected_at',
       name: 'Дата обнаружения',
-      slug: 'detected_at',
       type: 'datetime',
       icon: 'Clock',
       iconColor: '#06b6d4',
@@ -205,7 +190,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'description',
       name: 'Описание',
-      slug: 'description',
       type: 'multiline',
       icon: 'FileText',
       iconColor: '#3b82f6',
@@ -215,7 +199,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'response_time',
       name: 'Время реакции (мин)',
-      slug: 'response_time',
       type: 'number',
       icon: 'Timer',
       iconColor: '#f59e0b',
@@ -226,7 +209,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'needs_escalation',
       name: 'Требуется эскалация',
-      slug: 'needs_escalation',
       type: 'boolean',
       icon: 'ArrowUpRight',
       iconColor: '#a855f7',
@@ -236,7 +218,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'affected_systems',
       name: 'Затронутые системы',
-      slug: 'affected_systems',
       type: 'string',
       icon: 'Network',
       iconColor: '#6366f1',
@@ -248,7 +229,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'priority',
       name: 'Приоритет',
-      slug: 'priority',
       type: 'select',
       icon: 'Flag',
       iconColor: '#ef4444',
@@ -264,7 +244,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'detected_at',
       name: 'Дата обнаружения',
-      slug: 'detected_at',
       type: 'datetime',
       icon: 'Clock',
       iconColor: '#06b6d4',
@@ -274,7 +253,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'description',
       name: 'Описание',
-      slug: 'description',
       type: 'multiline',
       icon: 'FileText',
       iconColor: '#3b82f6',
@@ -284,7 +262,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'response_time',
       name: 'Время реакции (мин)',
-      slug: 'response_time',
       type: 'number',
       icon: 'Timer',
       iconColor: '#f59e0b',
@@ -295,7 +272,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'needs_escalation',
       name: 'Требуется эскалация',
-      slug: 'needs_escalation',
       type: 'boolean',
       icon: 'ArrowUpRight',
       iconColor: '#a855f7',
@@ -305,7 +281,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'affected_systems',
       name: 'Затронутые системы',
-      slug: 'affected_systems',
       type: 'string',
       icon: 'Network',
       iconColor: '#6366f1',
@@ -317,7 +292,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'priority',
       name: 'Приоритет',
-      slug: 'priority',
       type: 'select',
       icon: 'Flag',
       iconColor: '#ef4444',
@@ -333,7 +307,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'detected_at',
       name: 'Дата обнаружения',
-      slug: 'detected_at',
       type: 'datetime',
       icon: 'Clock',
       iconColor: '#06b6d4',
@@ -343,7 +316,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'description',
       name: 'Описание',
-      slug: 'description',
       type: 'multiline',
       icon: 'FileText',
       iconColor: '#3b82f6',
@@ -353,7 +325,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'response_time',
       name: 'Время реакции (мин)',
-      slug: 'response_time',
       type: 'number',
       icon: 'Timer',
       iconColor: '#f59e0b',
@@ -364,7 +335,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'needs_escalation',
       name: 'Требуется эскалация',
-      slug: 'needs_escalation',
       type: 'boolean',
       icon: 'ArrowUpRight',
       iconColor: '#a855f7',
@@ -374,7 +344,6 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
     {
       id: 'affected_systems',
       name: 'Затронутые системы',
-      slug: 'affected_systems',
       type: 'string',
       icon: 'Network',
       iconColor: '#6366f1',
@@ -387,101 +356,55 @@ export const DEFAULT_EXTRA_FIELDS: Record<string, CustomField[]> = {
 interface IncidentFieldsState {
   // Базовые поля (общие для всех типов)
   baseFields: CustomField[];
-  // Дополнительные поля по типам инцидентов
-  extraFields: Record<string, CustomField[]>;
-  // Пользовательские поля (добавленные администратором)
-  customFields: CustomField[];
+  // Дополнительные поля (глобальные, можно прикрепить к любому типу)
+  extraFields: CustomField[];
   
   // Actions для базовых полей
   setBaseFields: (fields: CustomField[]) => void;
   
-  // Actions для дополнительных полей по типам
-  setExtraFields: (typeId: string, fields: CustomField[]) => void;
-  addExtraField: (typeId: string, field: CustomField) => void;
-  removeExtraField: (typeId: string, fieldId: string) => void;
-  updateExtraField: (typeId: string, fieldId: string, updates: Partial<CustomField>) => void;
-  
-  // Actions для пользовательских полей
-  addCustomField: (field: CustomField) => void;
-  removeCustomField: (fieldId: string) => void;
-  updateCustomField: (fieldId: string, updates: Partial<CustomField>) => void;
+  // Actions для дополнительных полей
+  addExtraField: (field: CustomField) => void;
+  removeExtraField: (fieldId: string) => void;
+  updateExtraField: (fieldId: string, updates: Partial<CustomField>) => void;
   
   // Утилиты
-  getAllFieldsForType: (typeId: string) => CustomField[];
-  getFieldBySlug: (slug: string, typeId?: string) => CustomField | null;
+  getExtraFieldById: (id: string) => CustomField | null;
+  getExtraFieldsByIds: (ids: string[]) => CustomField[];
 }
 
 export const useIncidentFieldsStore = create<IncidentFieldsState>()(
   persist(
     (set, get) => ({
       baseFields: DEFAULT_BASE_FIELDS,
-      extraFields: DEFAULT_EXTRA_FIELDS,
-      customFields: [],
-      
+      extraFields: [],
+
       setBaseFields: (fields) => set({ baseFields: fields }),
-      
-      setExtraFields: (typeId, fields) =>
+
+      addExtraField: (field) =>
         set((state) => ({
-          extraFields: {
-            ...state.extraFields,
-            [typeId]: fields,
-          },
+          extraFields: [...state.extraFields, field],
         })),
-      
-      addExtraField: (typeId, field) =>
+
+      removeExtraField: (fieldId) =>
         set((state) => ({
-          extraFields: {
-            ...state.extraFields,
-            [typeId]: [...(state.extraFields[typeId] ?? []), field],
-          },
+          extraFields: state.extraFields.filter((f) => f.id !== fieldId),
         })),
-      
-      removeExtraField: (typeId, fieldId) =>
+
+      updateExtraField: (fieldId, updates) =>
         set((state) => ({
-          extraFields: {
-            ...state.extraFields,
-            [typeId]: (state.extraFields[typeId] ?? []).filter((f) => f.id !== fieldId),
-          },
-        })),
-      
-      updateExtraField: (typeId, fieldId, updates) =>
-        set((state) => ({
-          extraFields: {
-            ...state.extraFields,
-            [typeId]: (state.extraFields[typeId] ?? []).map((f) =>
-              f.id === fieldId ? { ...f, ...updates } : f
-            ),
-          },
-        })),
-      
-      addCustomField: (field) =>
-        set((state) => ({
-          customFields: [...state.customFields, field],
-        })),
-      
-      removeCustomField: (fieldId) =>
-        set((state) => ({
-          customFields: state.customFields.filter((f) => f.id !== fieldId),
-        })),
-      
-      updateCustomField: (fieldId, updates) =>
-        set((state) => ({
-          customFields: state.customFields.map((f) =>
+          extraFields: state.extraFields.map((f) =>
             f.id === fieldId ? { ...f, ...updates } : f
           ),
         })),
-      
-      getAllFieldsForType: (typeId) => {
-        const { baseFields, extraFields, customFields } = get();
-        const typeExtraFields = extraFields[typeId] ?? [];
-        return [...baseFields, ...typeExtraFields, ...customFields];
+
+      getExtraFieldById: (id) => {
+        const { extraFields } = get();
+        return extraFields.find((f) => f.id === id) ?? null;
       },
-      
-      getFieldBySlug: (slug, typeId) => {
-        const { baseFields, extraFields, customFields } = get();
-        const typeExtraFields = typeId ? (extraFields[typeId] ?? []) : [];
-        const allFields = [...baseFields, ...typeExtraFields, ...customFields];
-        return allFields.find((f) => f.slug === slug) ?? null;
+
+      getExtraFieldsByIds: (ids) => {
+        const { extraFields } = get();
+        return extraFields.filter((f) => ids.includes(f.id));
       },
     }),
     {

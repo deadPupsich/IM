@@ -16,8 +16,15 @@ export default function IncidentTypeSettings() {
     getTypes,
   } = useIncidentTypesStore();
 
-  const { baseFields, extraFields, getAllFieldsForType } = useIncidentFieldsStore();
+  const baseFields = useIncidentFieldsStore((state) => state.baseFields);
+  const extraFields = useIncidentFieldsStore((state) => state.extraFields);
+  const getExtraFieldById = useIncidentFieldsStore((state) => state.getExtraFieldById);
   const { actions, typeActions, addActionToType, removeActionFromType } = useIncidentActionsStore();
+
+  // Собираем все доступные поля для выбора (базовые не показываем, только доп.)
+  const getAvailableFieldsForType = () => {
+    return [...extraFields];
+  };
 
   const [expandedTypeId, setExpandedTypeId] = useState<string | null>(null);
   const [fieldSearch, setFieldSearch] = useState<{ [key: string]: string }>({});
@@ -84,16 +91,12 @@ export default function IncidentTypeSettings() {
     }
   };
 
-  const getFieldBySlug = (slug: string) => {
-    const allFields = [...baseFields];
-    Object.values(extraFields).forEach(fields => {
-      fields.forEach(f => {
-        if (!allFields.find(af => af.slug === f.slug)) {
-          allFields.push(f);
-        }
-      });
-    });
-    return allFields.find(f => f.slug === slug);
+  const getFieldById = (id: string) => {
+    // Сначала ищем в базовых полях
+    const baseField = baseFields.find(f => f.id === id);
+    if (baseField) return baseField;
+    // Потом в дополнительных
+    return getExtraFieldById(id);
   };
 
   const getActionByName = (name: string) => {
@@ -113,7 +116,7 @@ export default function IncidentTypeSettings() {
         {paginatedTypes.map((type) => {
           const typeFieldIds = getTypeFieldIds(type.id);
           const typeActionNames = typeActions[type.id] || [];
-          const typeFields = typeFieldIds.map(slug => getFieldBySlug(slug)).filter(Boolean);
+          const typeFields = typeFieldIds.map(id => getFieldById(id)).filter(Boolean);
           const isExpanded = expandedTypeId === type.id;
 
           return (
@@ -197,18 +200,15 @@ export default function IncidentTypeSettings() {
                       </div>
 
                       <div className="mt-2 max-h-40 overflow-y-auto bg-blue-100/50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
-                        {getAllFieldsForType(type.id)
+                        {getAvailableFieldsForType()
                           .filter(f => {
-                            // Фильтруем системные поля
-                            const systemFieldSlugs = new Set(['title', 'assignee', 'source', 'host', 'login', 'status', 'date']);
-                            if (systemFieldSlugs.has(f.slug)) return false;
                             return f.name.toLowerCase().includes((fieldSearch[type.id] || '').toLowerCase()) &&
-                              !typeFieldIds.includes(f.slug);
+                              !typeFieldIds.includes(f.id);
                           })
                           .map(field => (
                             <button
-                              key={field.slug}
-                              onClick={() => addFieldToType(type.id, field.slug)}
+                              key={field.id}
+                              onClick={() => addFieldToType(type.id, field.id)}
                               className="w-full px-3 py-2 text-left text-sm hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors flex items-center justify-between"
                             >
                               <span className="text-gray-900 dark:text-gray-100">{field.name}</span>
@@ -224,14 +224,14 @@ export default function IncidentTypeSettings() {
 
                         return (
                           <div
-                            key={field.slug}
+                            key={field.id}
                             className="flex items-center gap-2 bg-blue-100/50 dark:bg-blue-900/30 p-3 rounded-lg"
                           >
                             <span className="flex-1 text-sm text-gray-900 dark:text-gray-100">{field.name}</span>
                             <span className="text-xs text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 px-2 py-1 rounded">{field.type}</span>
 
                             <button
-                              onClick={() => removeFieldFromType(type.id, field.slug)}
+                              onClick={() => removeFieldFromType(type.id, field.id)}
                               className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />

@@ -12,7 +12,7 @@ import {
   getIncidentColumnValue,
   getIncidentTypeDefinition,
   IncidentColumnDefinition,
-} from '../config/incident-config.ts';
+} from '../config/incident-config.tsx';
 import {
   Dialog,
   DialogContent,

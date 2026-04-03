@@ -45,6 +45,10 @@ export default function IntegrationSettings() {
   };
 
   const removeIntegration = (id: string) => {
+    const integration = integrations.find(i => i.id === id);
+    if (!confirm(`Удалить интеграцию "${integration?.name || id}"? Это действие нельзя отменить.`)) {
+      return;
+    }
     setIntegrations(integrations.filter(i => i.id !== id));
   };
 
@@ -74,7 +78,10 @@ export default function IntegrationSettings() {
   };
 
   const removeField = (integrationId: string, fieldId: string) => {
-    setIntegrations(integrations.map(i => 
+    if (!confirm('Удалить это поле маппинга?')) {
+      return;
+    }
+    setIntegrations(integrations.map(i =>
       i.id === integrationId ? { ...i, fields: i.fields.filter(f => f.id !== fieldId) } : i
     ));
   };

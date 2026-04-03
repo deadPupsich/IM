@@ -27,6 +27,7 @@ import {
   Flag,
   Clock,
   Server,
+  Download,
 } from 'lucide-react';
 import { mockUser, mockUsersDirectory } from '../data/mockData.ts';
 import DraggableField from './DraggableField.tsx';
@@ -36,7 +37,8 @@ import { InvestigationAttachment, InvestigationEntry, useIncidentCollaboration }
 import { useIncidentTypesStore } from '../store/incidentTypesStore.ts';
 import { useIncidentFieldsStore } from '../store/incidentFieldsStore.ts';
 import { useIncidentActionsStore } from '../store/incidentActionsStore.ts';
-import { getIncidentTypeDefinition } from '../config/incident-config.ts';
+import { getIncidentTypeDefinition } from '../config/incident-config.tsx';
+import { getFileIcon, getFileIconLarge } from '../utils/fileIcons.tsx';
 import { SYSTEM_INCIDENT_ACTIONS } from '../config/incident-actions.ts';
 import { useIncidentsStore } from '../store/incidents.ts';
 import { Incident } from '../types/incident.ts';
@@ -175,6 +177,39 @@ const fieldTypes: FieldTypeDefinition[] = [
         <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
           Нет
         </span>
+      );
+    }
+  },
+  {
+    id: 'evidence_files',
+    label: 'Файлы доказательств',
+    type: 'file',
+    icon: getFileIconLarge('file.txt'),
+    getValue: (incident) => {
+      const value = incident.дополнительныеПоля?.evidence_files;
+      if (!value || value === '—' || value === '') return '—';
+      const files = value.split(',').map(s => s.trim()).filter(s => s);
+      if (files.length === 0) return '—';
+      return (
+        <div className="flex flex-wrap gap-1">
+          {files.map((file, i) => (
+            <span key={i} className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+              {getFileIcon(file)}
+              {file}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  alert(`Скачивание файла: ${file}`);
+                }}
+                className="ml-1 p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+                title="Скачать"
+              >
+                <Download className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        </div>
       );
     }
   },
@@ -360,7 +395,8 @@ export default function IncidentDetailPage() {
   const incidents = useIncidentsStore((state) => state.incidents);
   const updateIncident = useIncidentsStore((state) => state.updateIncident);
   const typesStore = useIncidentTypesStore();
-  const fieldsStore = useIncidentFieldsStore();
+  const getExtraFieldsByIds = useIncidentFieldsStore((state) => state.getExtraFieldsByIds);
+  const getExtraFieldById = useIncidentFieldsStore((state) => state.getExtraFieldById);
   const actionsStore = useIncidentActionsStore();
 
   const incident = useMemo(() => {
@@ -507,26 +543,69 @@ export default function IncidentDetailPage() {
   const baseFieldSlugs = new Set(['title', 'assignee', 'source', 'host', 'login', 'status', 'team', 'date']);
   
   // Получаем fieldIds для типа инцидента из types store
-  const typeFieldSlugs = incident ? new Set(typesStore.getTypeFieldIds(incident.типИнцидента)) : new Set<string>();
-  
-  const requiredFields = allFields.filter((field) => baseFieldIds.has(field.id));
-  
+  const typeFieldIds = incident ? typesStore.getTypeFieldIds(incident.типИнцидента) : [];
+
+  // Получаем дополнительные поля, выбранные для типа
+  const typeExtraFields = getExtraFieldsByIds(typeFieldIds);
+  const typeExtraFieldIds = new Set(typeExtraFields.map(f => f.id));
+
+  // Создаём динамические определения для дополнительных полей из store
+  const dynamicExtraFieldDefinitions: FieldTypeDefinition[] = typeExtraFields.map(f => ({
+    id: f.id,
+    label: f.name,
+    type: f.type as any,
+    icon: f.type === 'file' ? getFileIconLarge('file.txt') : <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />,
+    selectOptions: f.selectOptions?.map(opt => ({ label: opt.label, value: opt.label })),
+    allowMultiple: f.allowMultiple,
+    prefix: f.prefix,
+    postfix: f.postfix,
+    getValue: (incident: Incident) => {
+      const value = incident.дополнительныеПоля?.[f.id];
+      if (!value || value === '') return '—';
+      if (f.type === 'file') {
+        const files = value.split(',').map(s => s.trim()).filter(s => s);
+        if (files.length === 0) return '—';
+        return (
+          <div className="flex flex-wrap gap-1">
+            {files.map((file, i) => (
+              <span key={i} className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                {getFileIcon(file)}
+                {file}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    alert(`Скачивание файла: ${file}`);
+                  }}
+                  className="ml-1 p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+                  title="Скачать"
+                >
+                  <Download className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        );
+      }
+      return value;
+    }
+  }));
+
+  // All fields combined - include dynamic extra fields
+  const allFieldsWithExtras = [...allFields, ...dynamicExtraFieldDefinitions];
+
+  const requiredFields = allFieldsWithExtras.filter((field) => baseFieldIds.has(field.id));
+
   // Дополнительные поля - только те, что выбраны в настройках типа инцидента
-  const typeSpecificFields = allFields.filter((field) => {
+  const typeSpecificFields = allFieldsWithExtras.filter((field) => {
     // Пропускаем базовые поля
     if (baseFieldIds.has(field.id)) return false;
-    // Проверяем, есть ли поле в настройках типа (через маппинг slug)
-    const slug = fieldIdToSlugMap[field.id] || field.id;
-    return typeFieldSlugs.has(slug);
+    // Проверяем, есть ли поле в выбранных для типа
+    return typeExtraFieldIds.has(field.id);
   });
-  
-  // Фильтруем поля, у которых есть значения
-  const displayedOptionalFields = typeSpecificFields.filter((field) => {
-    const value = field.getValue(incident);
-    if (value === '—' || value === '' || value === null || value === undefined) return false;
-    if (typeof value === 'object') return true;
-    return true;
-  });
+
+  // Отображаем все дополнительные поля, даже если они пустые
+  const displayedOptionalFields = typeSpecificFields;
 
   if (!incident) {
     return (
@@ -549,14 +628,14 @@ export default function IncidentDetailPage() {
     const fieldDef = allFields.find(f => f.id === fieldId);
     
     // Для дополнительных полей берем информацию из store
-    const storeField = incident ? fieldsStore.getFieldBySlug(fieldId, incident.типИнцидента) : null;
+    const storeField = getExtraFieldById(fieldId);
 
     let inputType: 'text' | 'textarea' | 'select' | 'boolean' | 'datetime' | 'file' | 'number' | 'multiselect' = 'text';
     let value = String(incident[fieldId as keyof Incident] ?? incident.дополнительныеПоля?.[fieldId] ?? '');
     let options: { label: string; value: string }[] = [];
 
     // Используем тип из store если есть
-    if (storeField?.type) {
+    if (storeField) {
       switch (storeField.type) {
         case 'select':
           inputType = storeField.allowMultiple ? 'multiselect' : 'select';

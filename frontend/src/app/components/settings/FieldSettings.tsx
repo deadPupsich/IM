@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Plus, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, Search, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { CustomField, SelectOptionValue } from '../../types/settings.ts';
 import { HexColorPicker } from 'react-colorful';
@@ -19,27 +19,6 @@ const iconsList = [
 
 const ITEMS_PER_PAGE = 10;
 
-// Валидация slug: только латинские буквы, цифры и подчёркивание (как в Postgres)
-// Начинается с буквы или подчёркивания, не может содержать последовательные подчёркивания
-const isValidSlug = (slug: string): boolean => {
-  if (!slug) return false;
-  // Проверка на соответствие шаблону: начинается с буквы или _, далее буквы, цифры, _
-  const slugRegex = /^[a-z_][a-z0-9_]*$/;
-  if (!slugRegex.test(slug)) return false;
-  // Проверка на последовательные подчёркивания
-  if (slug.includes('__')) return false;
-  return true;
-};
-
-const slugify = (value: string): string => {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9_]/g, '_')
-    .replace(/_+/g, '_')
-    .replace(/^_+|_+$/g, '');
-};
-
 const capitalizeFirst = (str: string) => {
   if (!str) return '';
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -48,13 +27,8 @@ const capitalizeFirst = (str: string) => {
 export default function FieldSettings() {
   const { 
     baseFields, 
-    extraFields, 
-    customFields,
+    extraFields,
     setBaseFields,
-    addCustomField,
-    removeCustomField,
-    updateCustomField,
-    setExtraFields,
     addExtraField,
     removeExtraField,
     updateExtraField,
@@ -68,79 +42,45 @@ export default function FieldSettings() {
   const [iconColorPickerOpen, setIconColorPickerOpen] = useState<{ [key: string]: boolean }>({});
   const [optionColorPicker, setOptionColorPicker] = useState<{ fieldId: string; optionIndex: number; pickerType: 'border' | 'text' | 'bg' } | null>(null);
 
-  // Собираем все уникальные поля: базовые + все дополнительные из типов + пользовательские
-  const allFields: CustomField[] = (() => {
-    const fieldMap = new Map<string, CustomField>();
-
-    // Добавляем базовые поля
-    baseFields.forEach(f => fieldMap.set(f.slug, f));
-
-    // Добавляем все дополнительные поля из всех типов
-    if (extraFields && typeof extraFields === 'object') {
-      Object.values(extraFields).forEach(typeFields => {
-        if (Array.isArray(typeFields)) {
-          typeFields.forEach(f => {
-            if (!fieldMap.has(f.slug)) {
-              fieldMap.set(f.slug, f);
-            }
-          });
-        }
-      });
-    }
-
-    // Добавляем пользовательские поля
-    customFields.forEach(f => fieldMap.set(f.slug, f));
-
-    return Array.from(fieldMap.values());
-  })();
+  // Собираем все поля: базовые + дополнительные
+  const allFields: CustomField[] = [...baseFields, ...extraFields];
 
   // Определяем тип поля для UI
   const getFieldCategory = (fieldId: string) => {
     if (baseFields.some(f => f.id === fieldId)) return 'base';
-    if (customFields.some(f => f.id === fieldId)) return 'custom';
-    // Проверяем, является ли поле дополнительным в каком-либо типе
-    const isExtra = Object.values(extraFields || {}).some(typeFields =>
-      Array.isArray(typeFields) && typeFields.some(f => f.id === fieldId)
-    );
-    if (isExtra) return 'extra';
-    return 'custom';
+    return 'extra';
   };
 
   const addField = () => {
     const newField: CustomField = {
       id: Date.now().toString(),
       name: '',
-      slug: '',
       type: 'string',
       icon: 'FileText',
       iconColor: '#3b82f6',
       required: false,
       selectOptions: [],
-      slugLocked: false,
     };
-    addCustomField(newField);
+    addExtraField(newField);
     setEditingField(newField.id);
-    setCurrentPage(Math.ceil((customFields.length + 1) / ITEMS_PER_PAGE));
+    setCurrentPage(Math.ceil((extraFields.length + 1) / ITEMS_PER_PAGE));
   };
 
   const removeField = (id: string) => {
     const category = getFieldCategory(id);
-    
+    const field = allFields.find(f => f.id === id);
+
+    if (!confirm(`Удалить поле "${field?.name || id}"? Это действие нельзя отменить.`)) {
+      return;
+    }
+
     if (category === 'base') {
       // Базовые поля нельзя удалить
       return;
     }
-    
-    if (category === 'extra') {
-      // Удаляем из всех типов, где это поле используется
-      Object.keys(extraFields || {}).forEach(typeId => {
-        removeExtraField(typeId, id);
-      });
-      return;
-    }
-    
-    // Это пользовательское поле
-    removeCustomField(id);
+
+    // Удаляем дополнительное поле
+    removeExtraField(id);
   };
 
   const updateField = (id: string, updates: Partial<CustomField>) => {
@@ -151,35 +91,15 @@ export default function FieldSettings() {
       }
     }
 
-    // Валидация slug
-    if (updates.slug !== undefined) {
-      const newSlug = updates.slug;
-      if (newSlug && !isValidSlug(newSlug)) {
-        return; // Нельзя установить невалидный slug
-      }
-    }
-
     const category = getFieldCategory(id);
-    
+
     if (category === 'base') {
       setBaseFields(baseFields.map(f => f.id === id ? { ...f, ...updates } : f));
-      // Обновляем также во всех extraFields где это поле используется
-      Object.keys(extraFields || {}).forEach(typeId => {
-        updateExtraField(typeId, id, updates);
-      });
       return;
     }
-    
-    if (category === 'extra') {
-      // Обновляем во всех типах, где используется это поле
-      Object.keys(extraFields || {}).forEach(typeId => {
-        updateExtraField(typeId, id, updates);
-      });
-      return;
-    }
-    
-    // Это пользовательское поле
-    updateCustomField(id, updates);
+
+    // Обновляем дополнительное поле
+    updateExtraField(id, updates);
   };
 
   const addSelectOption = (fieldId: string) => {
@@ -310,34 +230,72 @@ export default function FieldSettings() {
           const isEditing = editingField === field.id;
           const fieldCategory = getFieldCategory(field.id);
           const isBaseField = fieldCategory === 'base';
-          const isExtraField = fieldCategory === 'extra';
-          const isCustomField = fieldCategory === 'custom';
 
           return (
             <div
               key={field.id}
               className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
             >
-              {isEditing ? (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-lg font-semibold text-blue-900 dark:text-blue-300">
-                        {capitalizeFirst(field.name) || 'Новое поле'}
-                      </h4>
-                      {isBaseField && (
-                        <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded">
-                          Системное
-                        </span>
-                      )}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-start gap-3">
+                  <button
+                    onClick={() => setEditingField(isEditing ? null : field.id)}
+                    className="flex-shrink-0 mt-0.5"
+                  >
+                    <ChevronDown className={`w-5 h-5 text-blue-600 dark:text-blue-400 transition-transform ${isEditing ? '' : '-rotate-90'}`} />
+                  </button>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: `${field.iconColor}20` }}
+                    >
+                      <IconComponent className="w-5 h-5" style={{ color: field.iconColor }} />
                     </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold text-blue-900 dark:text-blue-300">
+                          {field.name}
+                        </h4>
+                        {isBaseField && (
+                          <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded">
+                            Системное
+                          </span>
+                        )}
+                        {!isBaseField && (
+                          <span className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-2 py-0.5 rounded">
+                            Доп. поле
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-blue-800 dark:text-blue-400">
+                        {field.type}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {isEditing && (
                     <button
                       onClick={() => setEditingField(null)}
                       className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
                     >
                       Готово
                     </button>
-                  </div>
+                  )}
+                  {!isBaseField && (
+                    <button
+                      onClick={() => removeField(field.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {isEditing && (
+                <div className="space-y-4 pt-4 border-t border-blue-200 dark:border-blue-800">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
@@ -354,35 +312,6 @@ export default function FieldSettings() {
                       {isBaseField && (
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                           Для системного поля название менять нельзя.
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-blue-900 dark:text-blue-300 mb-1">
-                        Slug в БД
-                      </label>
-                      <input
-                        type="text"
-                        value={field.slug}
-                        onChange={(e) => {
-                          const value = slugify(e.target.value);
-                          updateField(field.id, { slug: value });
-                        }}
-                        placeholder="field_name"
-                        disabled={field.slugLocked}
-                        className={`w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 dark:border-blue-700 dark:bg-gray-800 dark:text-gray-100 dark:disabled:bg-gray-700 font-mono ${
-                          field.slug && !isValidSlug(field.slug) ? 'border-red-500 focus:ring-red-500' : ''
-                        }`}
-                      />
-                      <p className="mt-1 text-xs text-blue-800 dark:text-blue-400">
-                        {field.slugLocked
-                          ? 'Slug уже зафиксирован и больше не редактируется.'
-                          : 'Только латинские буквы, цифры и подчёркивание. Начинается с буквы.'}
-                      </p>
-                      {field.slug && !isValidSlug(field.slug) && (
-                        <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-                          Некорректный slug. Пример: field_name, priority, detected_at
                         </p>
                       )}
                     </div>
@@ -687,54 +616,6 @@ export default function FieldSettings() {
                       />
                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: `${field.iconColor}20` }}
-                  >
-                    <IconComponent className="w-5 h-5" style={{ color: field.iconColor }} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-semibold text-blue-900 dark:text-blue-300">
-                        {field.name}
-                      </h4>
-                      {isBaseField && (
-                        <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded">
-                          Системное
-                        </span>
-                      )}
-                      {isExtraField && (
-                        <span className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-2 py-0.5 rounded">
-                          Доп. поле
-                        </span>
-                      )}
-                      {isCustomField && (
-                        <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded">
-                          Пользовательское
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-blue-800 dark:text-blue-400">
-                      {field.slug} • {field.type}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setEditingField(field.id)}
-                    className="px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-                  >
-                    Редактировать
-                  </button>
-                  {(isExtraField || isCustomField) && (
-                    <button
-                      onClick={() => removeField(field.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
                 </div>
               )}
             </div>
