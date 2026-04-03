@@ -38,6 +38,7 @@ export default function IncidentFieldEditDialog({
   const [booleanValue, setBooleanValue] = useState(value === 'true');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [existingFileNames, setExistingFileNames] = useState<string[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [multiselectOpen, setMultiselectOpen] = useState(false);
 
@@ -118,6 +119,29 @@ export default function IncidentFieldEditDialog({
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      setSelectedFiles(prev => [...prev, ...files]);
+    }
+  };
+
   const toggleOption = (optionValue: string) => {
     if (inputType !== 'multiselect') return;
     
@@ -147,7 +171,6 @@ export default function IncidentFieldEditDialog({
       <DialogContent className="sm:max-w-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
         <DialogHeader>
           <DialogTitle>Редактировать поле</DialogTitle>
-          <DialogDescription>{label}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2">
@@ -287,11 +310,23 @@ export default function IncidentFieldEditDialog({
             </div>
           ) : inputType === 'file' ? (
             <div className="space-y-3">
-              <label className="flex items-center justify-center w-full px-4 py-8 border-2 border-blue-200 dark:border-blue-700 border-dashed rounded-lg cursor-pointer bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+              <label
+                className={`flex items-center justify-center w-full px-4 py-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+                  isDragging
+                    ? 'border-blue-500 bg-blue-100 dark:bg-blue-900/40'
+                    : 'border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30'
+                }`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
                 <div className="flex flex-col items-center gap-2">
                   <Upload className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                   <span className="text-sm text-blue-700 dark:text-blue-300">
-                    Нажмите для загрузки
+                    Нажмите для загрузки или перетащите файлы
+                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Поддерживается любой тип файлов
                   </span>
                 </div>
                 <input
