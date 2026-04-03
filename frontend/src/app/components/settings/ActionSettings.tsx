@@ -43,7 +43,9 @@ export default function ActionSettings() {
   const [targetConfig, setTargetConfig] = useState<{ [key: string]: any }>({});
   const [iconSearch, setIconSearch] = useState<{ [key: string]: string }>({});
   const [colorPickerOpen, setColorPickerOpen] = useState<{ [key: string]: boolean }>({});
+  const [colorPickerPosition, setColorPickerPosition] = useState<{ top: number; left: number } | null>(null);
   const colorPickerRef = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const colorButtonRef = useRef<HTMLButtonElement | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTypeForFieldSearch, setSelectedTypeForFieldSearch] = useState<string>('security');
 
@@ -58,7 +60,38 @@ export default function ActionSettings() {
   };
 
   const toggleColorPicker = (actionId: string) => {
-    setColorPickerOpen(prev => ({ ...prev, [actionId]: !prev[actionId] }));
+    if (colorPickerOpen[actionId]) {
+      setColorPickerOpen(prev => ({ ...prev, [actionId]: false }));
+      setColorPickerPosition(null);
+      return;
+    }
+
+    if (colorButtonRef.current) {
+      const rect = colorButtonRef.current.getBoundingClientRect();
+      const pickerHeight = 360;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      // Определяем позицию: снизу или сверху
+      const top = spaceBelow < pickerHeight && spaceAbove > spaceBelow
+        ? rect.top - pickerHeight
+        : rect.bottom;
+
+      // Центрируем по горизонтали относительно кнопки
+      let left = rect.left + rect.width / 2;
+
+      // Защита от выхода за края экрана (ширина пикера ~260px + padding)
+      const pickerWidth = 300;
+      if (left - pickerWidth / 2 < 0) {
+        left = pickerWidth / 2;
+      } else if (left + pickerWidth / 2 > window.innerWidth) {
+        left = window.innerWidth - pickerWidth / 2;
+      }
+
+      setColorPickerPosition({ top, left });
+    }
+
+    setColorPickerOpen(prev => ({ ...prev, [actionId]: true }));
   };
 
   const hexToRgb = (hex: string) => {
@@ -83,6 +116,7 @@ export default function ActionSettings() {
       const openPickerId = Object.keys(colorPickerOpen).find(key => colorPickerOpen[key]);
       if (openPickerId && colorPickerRef.current[openPickerId] && !colorPickerRef.current[openPickerId]?.contains(target)) {
         setColorPickerOpen({});
+        setColorPickerPosition(null);
       }
     };
 
@@ -470,14 +504,19 @@ export default function ActionSettings() {
                         <div className="relative">
                           <button
                             type="button"
+                            ref={(el) => { colorButtonRef.current = el; }}
                             onClick={() => toggleColorPicker(action.id)}
                             className="w-12 h-10 rounded-lg border-2 border-gray-300 dark:border-gray-600 hover:border-blue-500 transition-colors shadow-sm"
                             style={{ backgroundColor: action.iconColor || '#3b82f6' }}
                           />
-                          {colorPickerOpen[action.id] && (
+                          {colorPickerOpen[action.id] && colorPickerPosition && (
                             <div
                               ref={(el) => { colorPickerRef.current[action.id] = el; }}
-                              className="absolute top-full left-0 mt-2 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-[100] w-[260px] overflow-visible"
+                              className="fixed p-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-[100] w-[260px] overflow-visible"
+                              style={{
+                                top: `${colorPickerPosition.top + 8}px`,
+                                left: `${colorPickerPosition.left - 130}px`,
+                              }}
                               data-color-picker
                             >
                               <HexColorPicker
