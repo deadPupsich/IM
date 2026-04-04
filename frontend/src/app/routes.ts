@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router";
 import { MainLayout } from "./layout";
 import { IncidentsPage, MyIncidentsPage, IncidentDetailPage } from "./features/incidents";
+import { ViolatorsPage, ViolatorDetailPage } from "./features/violators";
 import { DashboardPage } from "./features/dashboard";
 import { SettingsPage } from "./features/settings";
 import { LoginPage } from "./features/auth";
@@ -18,6 +19,8 @@ export const router = createBrowserRouter([
       { index: true, Component: IncidentsPage },
       { path: "my-incidents", Component: MyIncidentsPage },
       { path: "incident/:id", Component: IncidentDetailPage },
+      { path: "violators", Component: ViolatorsPage },
+      { path: "violator/:id", Component: ViolatorDetailPage },
       { path: "dashboard", Component: DashboardPage },
       { path: "settings", Component: SettingsPage },
       { path: "trash", Component: TrashPage },

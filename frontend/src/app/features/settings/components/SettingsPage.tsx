@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Server, Link2, FileType, Hash, MessageSquare, Zap, Users, UserCog } from 'lucide-react';
+import { Server, Link2, FileType, Hash, MessageSquare, Zap, Users, UserCog, AlertTriangle } from 'lucide-react';
 import ActiveDirectorySettings from './ActiveDirectorySettings.tsx';
 import IntegrationSettings from './IntegrationSettings.tsx';
 import IncidentTypeSettings from './IncidentTypeSettings.tsx';
 import FieldSettings from './FieldSettings/FieldSettings.tsx';
+import ViolatorFieldSettings from './ViolatorFieldSettings.tsx';
 import TelegramSettings from './TelegramSettings.tsx';
 import ActionSettings from './ActionSettings/ActionSettings.tsx';
 import TeamsSettings from './TeamsSettings.tsx';
@@ -13,7 +14,8 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('fields');
 
   const tabs = [
-    { id: 'fields', label: 'Поля', icon: Hash },
+    { id: 'fields', label: 'Поля инцидентов', icon: Hash },
+    { id: 'violator-fields', label: 'Поля нарушителей', icon: AlertTriangle },
     { id: 'incident-types', label: 'Настройка инцидентов', icon: FileType },
     { id: 'actions', label: 'Действия', icon: Zap },
     { id: 'teams', label: 'Команды', icon: Users },
@@ -55,6 +57,7 @@ export default function SettingsPage() {
 
         <div className="p-6">
           {activeTab === 'fields' && <FieldSettings />}
+          {activeTab === 'violator-fields' && <ViolatorFieldSettings />}
           {activeTab === 'incident-types' && <IncidentTypeSettings />}
           {activeTab === 'actions' && <ActionSettings />}
           {activeTab === 'teams' && <TeamsSettings />}
